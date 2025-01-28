@@ -8,14 +8,14 @@
           <contract :name="fileStore.contract.name" :x="fileStore.contract.x" :y="fileStore.contract.y">
 
           </contract>
-          <variable v-for="variable in fileStore.contract.variables" :key="variable.name" :name="variable.name"
+          <!-- <variable v-for="variable in fileStore.contract.variables" :key="variable.name" :name="variable.name"
             :data="variable" :x="variable.x" :y="variable.y" @click="fileStore.showProperties" />
           <struct v-for="struct in fileStore.contract.structs" :key="struct.name" :name="struct.name"
-            :literals="struct.literals" :x="struct.x" :y="struct.y" />
+            :literals="struct.literals" :x="struct.x" :y="struct.y" @click="fileStore.showProperties" />
           <function v-for="_function in fileStore.contract.functions" :key="_function.name" :name="_function.name"
-            :x="_function.x" :y="_function.y" :params="_function.params" :_return="_function._return" />
+            :x="_function.x" :y="_function.y" :params="_function.params" :_return="_function._return" @click="fileStore.showProperties" />
           <function v-if="fileStore.contract.constructor" :name="fileStore.contract.constructor.name"
-            :x="fileStore.contract.constructor.x" :y="fileStore.contract.constructor.y" />
+            :x="fileStore.contract.constructor.x" :y="fileStore.contract.constructor.y" /> -->
         </v-layer>
       </v-stage>
       <Properties :element="fileStore.selectedElement"></Properties>
@@ -35,7 +35,7 @@ import Variable from './components/palette/scd/Variable.vue'
 import Struct from './components/palette/scd/Struct.vue'
 import Function from './components/palette/scd/Function.vue'
 import { useContractStorage } from '@/stores/contract'
-fileStore = useContractStorage()
+var fileStore = useContractStorage()
 
 onBeforeMount(() => {
   fileStore.selectedElement = reactive({ name: "", type: "", visibility: "" })
@@ -149,14 +149,14 @@ onBeforeMount(() => {
 
 })
 
-// const showProperties = (element) => {
-//   console.log(element);
-//   if (element?.target?.attrs?.data) {
-//     fileStore.selectedElement = element.target.attrs.data;
-//     console.log(fileStore.selectedElement);
-//   } else {
-//     console.log("element not selected !");
-//   }
-// }
+const showProperties = (element) => {
+  console.log(element);
+  if (element?.target?.attrs?.data) {
+    fileStore.selectedElement = element.target.attrs.data;
+    console.log(fileStore.selectedElement);
+  } else {
+    console.log("element not selected !");
+  }
+}
 
 </script>

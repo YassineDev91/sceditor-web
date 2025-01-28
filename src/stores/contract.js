@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 export const useContractStorage = defineStore("contract", {
   state: () => {
     return {
-      constract: {
+      contract: {
         name: "Ballot",
         x: 10,
         y: 10,
@@ -100,11 +100,16 @@ export const useContractStorage = defineStore("contract", {
     logSomthing() {
       console.log("im calling from the store !");
     },
+    showProperties(element) {
+      if (element?.target?.attrs?.data) {
+        this.selectedElement = element.target.attrs.data;
+        console.log(this.selectedElement);
+      } else {
+        console.log("element not selected !");
+      }
+    },
   },
   getters: {
-    showProperties(element) {
-      console.log("calling from getters");
-      return element?.target?.attrs?.data;
-    },
+    
   },
 });
