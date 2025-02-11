@@ -17,8 +17,8 @@ const props = defineProps({
 const rectConfig = ref({
     x: props.x,
     y: props.y,
-    width: window.innerWidth/2,
-    height: window.innerHeight/2,
+    width: window.innerWidth/1.5,
+    height: window.innerHeight/1.3,
     stroke: 'black',
     strokeWidth: 1,
 })

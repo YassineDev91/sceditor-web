@@ -6,10 +6,13 @@
         <v-text :config="nameConfig"></v-text>
         <v-line :config="nameUnderLineConfig"></v-line>
         <!-- Parameters -->
-        <Parameter v-for="param in params" :key="param.id" :name="param.name" :x="props.x" :y="props.y - 20">
-        </Parameter>
-        <Return v-if="_return" :name="_return.name" :x="props.x + rectConfig.width - 100" :y="props.y + rectConfig.height">
-        </Return>
+        <Parameter v-for="param in params" :key="param.id" :name="param.name" :x="props.x" :y="props.y - 20" />
+
+        <Statement v-for="(stmt, index) in statements?.filter(elm => elm.type == 'AssignmentStatement')" :key="stmt.id" :expressions="stmt.expressions" :x="rectConfig.x"
+            :y="rectConfig.y + (index * 15) + 30" />
+
+        <Return v-if="_return" :name="_return.name" :x="props.x + rectConfig.width - 100"
+            :y="props.y + rectConfig.height" />
     </v-group>
 </template>
 
@@ -17,12 +20,14 @@
 import { ref } from "vue"
 import Parameter from "./Parameter.vue"
 import Return from './Return.vue'
+import Statement from '@/components/palette/scd/Statement.vue'
 
 const props = defineProps({
     x: Number,
     y: Number,
     name: String,
     params: Array,
+    statements: Array,
     _return: { name: String, type: String }
 })
 const rectConfig = ref({
