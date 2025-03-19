@@ -438,7 +438,7 @@ export const useContractStorage = defineStore("contract", {
             name: "winningProposal",
             x: 20,
             y: 330,
-            _return: { name: "winningProposal" },
+            _return: { name: "winningProposal_", type:"uint" },
             visibility: "public",
             modifiers: ["view"],
             body: [
@@ -484,7 +484,7 @@ export const useContractStorage = defineStore("contract", {
             name: "winnerName",
             x: 20,
             y: 530,
-            _return: { name: "winnerName", type:"byte32" },
+            _return: { name: "winnerName_", type:"byte32" },
             modifiers: ["external", "view"],
             body: [
               {
