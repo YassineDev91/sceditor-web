@@ -73,7 +73,7 @@ var selectedFunction = ref(null)
 const showModal = ref(false)
 
 const toggleLayer = () => {
-
+    fileStore.scdStage = !fileStore.scdStage
     isMainLayerVisible.value = !isMainLayerVisible.value
     isFunctionLayerVisible.value = !isFunctionLayerVisible.value
 

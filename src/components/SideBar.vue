@@ -26,7 +26,9 @@ import Palette from './inc/Palette.vue';
 import Properties from './inc/Properties.vue';
 import { ref } from 'vue';
 
-
+const props = defineProps({
+    currentStage:String
+})
 var fileStore = useContractStorage()
 
 const menu = ref([

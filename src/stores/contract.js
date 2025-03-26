@@ -499,6 +499,7 @@ export const useContractStorage = defineStore("contract", {
         ],
       },
       selectedElement: {},
+      scdStage:true
     };
   },
   actions: {
