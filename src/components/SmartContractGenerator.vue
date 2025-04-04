@@ -27,43 +27,65 @@
             </button>
 
         </div>
-        <pre v-if="generatedCode">{{ generatedCode }}</pre>
     </div>
-    <Drawer v-model:open="showDrawer"></Drawer>
+    <Drawer v-model:open="showDrawer">
+        <div class=" bg-slate-800 border-solid border-white outline-1 w-full h-full rounded-md ">
+            <div class="text-white text-sm p-3">
+                <pre><code v-html="highlightedCode"></code></pre>
+            </div>
+        </div>
+    </Drawer>
 </template>
 
 <script setup>
 import { useContractStorage } from "@/stores/contract";
 import { InboxIcon } from "@heroicons/vue/24/outline";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import Drawer from "./Drawer.vue";
+import hljs from "highlight.js";
+import 'highlight.js/styles/github-dark-dimmed.css';   // Import the theme (optional)
+
 
 const prompt = ref("");
 const sc_language = ref("");
-const generatedCode = ref("");
+const generatedCode = ref("empty");
 var showDrawer = ref(false)
 
 const fileStore = useContractStorage()
 async function generate() {
     showDrawer.value = true
-    
-    const response = await fetch("http://localhost:6000/generate-code", {  // Change to localhost:11434 if no backend
+
+
+    const response = await fetch("http://localhost:3000/api/v1/generate", {  // Change to localhost:11434 if no backend
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+        },
         body: JSON.stringify({ prompt: prompt.value })
     });
 
     const data = await response.json();
-    generatedCode.value = extractCode(data.response);  // Extract Solidity, Rust, or Vyper code
+    // generatedCode.value = extractCode(data.response);  // Extract Solidity, Rust, or Vyper code
+    generatedCode.value = data.output;
 }
 
 function exportContract() {
     alert("exporting...")
 }
-
+const highlightedCode = computed(() => {
+    let highlighted = hljs.highlightAuto(generatedCode.value).value;
+    console.log(highlighted);
+    
+  return highlighted
+});
 // Function to extract Solidity, Rust, or Vyper code from response
 function extractCode(response) {
     const match = response.match(/```(solidity|rust|vyper)?\n([\s\S]+?)\n```/);
     return match ? match[2] : "No valid code found.";
 }
 </script>
+
+<style>
+pre {
+  overflow-x: auto; /* Allow horizontal scrolling for <pre> itself */
+}</style>

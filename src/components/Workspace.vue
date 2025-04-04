@@ -1,11 +1,13 @@
 <template>
+    {{ fileStore.stage }}
     <div v-if="fileStore.contract.name" class="h-full w-full dark:bg-slate-200 rounded-sm">
-        <button class="text-left text-black text-xs mx-1 mt-1 flex flex-row items-center space-x-1" @click="toggleLayer" v-if="!isMainLayerVisible">
+        <button class="text-left text-black text-xs mx-1 mt-1 flex flex-row items-center space-x-1" @click="toggleLayer"
+            v-if="!isMainLayerVisible">
             <ArrowLeftCircleIcon class="w-5"></ArrowLeftCircleIcon>
             <span>Back</span>
         </button>
         <div class=" flex flex-row">
-            <v-stage :config="{ width: 970, height: 720 }">
+            <v-stage ref="stageRef" :config="{ width: 970, height: 720 }">
                 <v-layer>
                     <contract :name="fileStore.contract.name" :x="fileStore.contract.x" :y="fileStore.contract.y" />
                 </v-layer>
@@ -19,13 +21,14 @@
 
                     <function v-for="_function in fileStore.contract.functions" :key="_function.name"
                         :name="_function.name" :x="_function.x" :y="_function.y" :params="_function.params"
-                        :statements="_function.body" :_return="_function._return" @click="fileStore.showProperties"
+                        :statements="_function.body" :_return='_function._return' @click="fileStore.showProperties"
                         @dblclick="showFunctionLayer(_function)" />
 
                     <function v-if="fileStore.contract.constructor" :name="fileStore.contract.constructor.name"
                         :x="fileStore.contract.constructor.x" :y="fileStore.contract.constructor.y" />
 
                 </v-layer>
+
                 <v-layer :visble="isFunctionLayerVisible" v-if="isFunctionLayerVisible">
 
                     <AssignmentStatement
@@ -71,6 +74,7 @@ var isMainLayerVisible = ref(true);
 var isFunctionLayerVisible = ref(!isMainLayerVisible.value)
 var selectedFunction = ref(null)
 const showModal = ref(false)
+const stageRef = ref(null)
 
 const toggleLayer = () => {
     fileStore.scdStage = !fileStore.scdStage
@@ -83,6 +87,24 @@ const showFunctionLayer = (func) => {
     selectedFunction = func
     toggleLayer()
 }
+
+const handleExport = () => {
+    const dataURL = stageRef.value.getNode().toDataURL({
+        pixelRatio: 2 // double resolution
+    });
+
+    const link = document.createElement('a');
+    link.download = 'stage.png';
+    link.href = dataURL;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+
+defineExpose({
+    handleExport
+})
+
 </script>
 
 <style scoped>

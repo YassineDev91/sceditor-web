@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { ref } from "vue";
 
 export const useContractStorage = defineStore("contract", {
   state: () => {
@@ -499,7 +500,7 @@ export const useContractStorage = defineStore("contract", {
         ],
       },
       selectedElement: {},
-      scdStage:true
+      scdStage:true,
     };
   },
   actions: {
@@ -520,7 +521,8 @@ export const useContractStorage = defineStore("contract", {
     },
     createStruct() {
 
-    }
+    },
+    
   },
   getters: {
 

@@ -1,26 +1,32 @@
 <template>
     <v-group :draggable="true">
-        <v-rect :config="rectConfig"></v-rect>
+        <v-rect ref="rectRef" :config="rectConfig"></v-rect>
         <v-rect :config="paramsConfig"></v-rect>
         <v-rect :config="returnConfig"></v-rect>
         <v-text :config="nameConfig"></v-text>
         <v-line :config="nameUnderLineConfig"></v-line>
+
         <!-- Parameters -->
         <Parameter v-for="param in params" :key="param.id" :name="param.name" :x="props.x" :y="props.y - 20" />
 
-        <Statement v-for="(stmt, index) in statements?.filter(elm => elm.type == 'AssignmentStatement')" :key="stmt.id" :expressions="stmt.expressions" :x="rectConfig.x"
-            :y="rectConfig.y + (index * 15) + 30" />
+        <!-- Statements -->
+        <Statement v-for="(stmt, index) in statements?.filter(elm => elm.type == 'AssignmentStatement')" :key="stmt.id"
+            :expressions="stmt.expressions" :x="rectConfig.x" :y="rectConfig.y + (index * 15) + 30"
+            @max-width="updateRectWidth" />
 
-        <Return v-if="_return" :name="_return.name" :x="props.x + rectConfig.width - 100"
-            :y="props.y + rectConfig.height" />
+        <!-- Return Statement -->
+        <Return v-if="_return" :name="_return.name" :x="props.x" :y="props.y + rectConfig.height" />
     </v-group>
 </template>
 
 <script setup>
-import { ref } from "vue"
-import Parameter from "./Parameter.vue"
-import Return from './Return.vue'
-import Statement from '@/components/palette/scd/Statement.vue'
+import { ref, watch } from "vue";
+import Parameter from "./Parameter.vue";
+import Return from './Return.vue';
+import Statement from '@/components/palette/scd/Statement.vue';
+
+const rectRef = ref(null);
+const maxWidth = ref(200);
 
 const props = defineProps({
     x: Number,
@@ -28,39 +34,60 @@ const props = defineProps({
     name: String,
     params: Array,
     statements: Array,
-    _return: { name: String, type: String }
-})
+    _return: Object
+});
+
 const rectConfig = ref({
     x: props.x,
     y: props.y,
-    width: 200,
+    width: maxWidth.value, // Bind to dynamic maxWidth
     height: 100,
     stroke: 'black',
     strokeWidth: 1,
     dash: [3, 2],
-})
+});
+
 const nameConfig = ref({
     x: props.x + 10,
     y: props.y + 5,
     fontSize: 12,
     text: props.name
-})
+});
+
 const nameUnderLineConfig = ref({
-    points: [rectConfig.value.x, rectConfig.value.y + nameConfig.value.fontSize + 10, rectConfig.value.x + rectConfig.value.width, rectConfig.value.y + nameConfig.value.fontSize + 10],
+    points: [
+        rectConfig.value.x,
+        rectConfig.value.y + nameConfig.value.fontSize + 10,
+        rectConfig.value.x + rectConfig.value.width,
+        rectConfig.value.y + nameConfig.value.fontSize + 10
+    ],
     stroke: 'black',
     strokeWidth: 1,
     lineJoin: 'round',
     dash: [3, 2],
-})
+});
+
 const returnConfig = ref({
     x: props.x,
     y: props.y + rectConfig.value.height
-})
+});
+
 const paramsConfig = ref({
     x: props.x,
     y: props.y,
+});
 
-})
+// Function to update the rectangle width dynamically
+const updateRectWidth = (width) => {
+    if (width > maxWidth.value) {
+        maxWidth.value = width;
+        rectConfig.value.width = width + 20; // Add some padding
+        nameUnderLineConfig.value.points = [
+            rectConfig.value.x,
+            rectConfig.value.y + nameConfig.value.fontSize + 10,
+            rectConfig.value.x + rectConfig.value.width,
+            rectConfig.value.y + nameConfig.value.fontSize + 10
+        ]
+    }
+};
 </script>
-
-<style></style>

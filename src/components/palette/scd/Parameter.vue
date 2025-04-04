@@ -15,7 +15,7 @@ const props = defineProps({
 const rectConfig = ref({
     x: props.x,
     y: props.y,
-    width: 50,
+    width: 70,
     height: 20,
     stroke: 'black',
     strokeWidth: 1,
