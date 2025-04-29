@@ -3,7 +3,7 @@
         <v-ellipse :config="ellipseConfig">
         </v-ellipse>
         <v-text :config="textConfig" />
-
+        <v-ellipse :config="selectionEllipseConfig" v-if="selected == true"></v-ellipse>
     </v-group>
 </template>
 <script setup>
@@ -14,7 +14,8 @@ const props = defineProps({
     x: Number,
     y: Number,
     name: String,
-    data:Object
+    data:Object,
+    selected:Boolean
 });
 const ellipseConfig = ref({
     x: props.x,
@@ -24,6 +25,14 @@ const ellipseConfig = ref({
     fill: '#ff9ff3',
     stroke: 'black',
     strokeWidth: 1,
+})
+const selectionEllipseConfig = ref({
+    x: props.x,
+    y: props.y,
+    radiusX: 50,
+    radiusY: 20,
+    stroke: '#3498db',
+    strokeWidth: 2,
 })
 const textConfig = ref({
     x: ellipseConfig.value.x - props.name.length * 2.5,

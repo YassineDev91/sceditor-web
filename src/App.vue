@@ -5,7 +5,6 @@
       <Header :sctitle="fileStore.contract.name" :workspace="workspaceRef"></Header>
       <Workspace ref="workspaceRef"></Workspace>
     </div>
-
   </div>
 
 

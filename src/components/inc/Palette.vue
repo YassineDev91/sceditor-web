@@ -26,13 +26,13 @@ const elements = [
     { label: 'Literal', type: 'literal', icon: 'three-point', stage: 'SCD', },
     // {  label: 'Return', type: 'return', icon: '' },
     // {  label: 'Parameter', type: 'parameter', icon: '' },
-  
+
     // FD
-    { label: 'Assignment', icon: 'assignment', type: 'image', stage: 'FD' },
-    { label: 'Call', icon: 'event', type: 'arrow', stage: 'FD' },
-    { label: 'Condition', icon: 'git', type: 'star', stage: 'FD' },
-    { label: 'Loop', icon: 'loop', type: 'star', stage: 'FD' },
-    { label: 'Literal', icon: 'three-point', type: 'star', stage: 'FD' },
+    { label: 'Assignment', icon: 'assignment', type: 'image', stage: 'FD', action: () => createStatement('assignment') },
+    { label: 'Call', icon: 'event', type: 'arrow', stage: 'FD', action: () => createStatement('callback') },
+    { label: 'Condition', icon: 'git', type: 'star', stage: 'FD', action: () => createStatement('condition') },
+    { label: 'Loop', icon: 'loop', type: 'star', stage: 'FD', action: () => createStatement('loop') },
+    { label: 'Literal', icon: 'three-point', type: 'star', stage: 'FD', action: () => createStatement('literal') },
 ]
 function startDrag(element) {
     // this.$emit('start-drag', element);
@@ -68,6 +68,38 @@ function createFunction() {
         x: 100,
         y: 100
     })
+}
+
+function createStatement(type) {
+    switch (type) {
+        case 'assignment':
+            console.log('creating assignment statement ...');
+            fileStore.selectedFunction.body.push({
+                type: "AssignmentStatement",
+                expressions: {
+                    left: "",
+                    right: ""
+                }
+            })
+            break;
+        case 'loop':
+            console.log('creating loop statement ...');
+
+            fileStore.selectedFunction.body.push({
+                type: "LoopStatement",
+                condition: {
+                    type: "BinaryExpression",
+                    left: "",
+                    operator: "",
+                    right: ""
+                },
+                body: []
+            })
+            break;
+
+        default:
+            break;
+    }
 }
 </script>
 

@@ -15,6 +15,7 @@ export const useContractStorage = defineStore("contract", {
             visibility: "public",
             x: 70,
             y: 50,
+            isSelected: false
           },
           {
             name: "chairperson",
@@ -22,13 +23,17 @@ export const useContractStorage = defineStore("contract", {
             visibility: "public",
             x: 180,
             y: 50,
+            isSelected: false
+
           },
           {
             name: "proposals",
             type: "Proposal[]",
             visibility: "public",
             x: 290,
-            y: 50
+            y: 50,
+            isSelected: false
+
           }
         ],
 
@@ -59,6 +64,7 @@ export const useContractStorage = defineStore("contract", {
                 name: "vote",
               },
             ],
+            isSelected:false
           },
           {
             name: "Proposal",
@@ -75,7 +81,9 @@ export const useContractStorage = defineStore("contract", {
                 type: "uint",
                 name: "voteCount"
               }
-            ]
+            ],
+            isSelected:false
+
           }
         ],
         constructor: {
@@ -136,6 +144,7 @@ export const useContractStorage = defineStore("contract", {
             name: "giveRightToVote",
             x: 270,
             y: 200,
+            isSelected:false,
             params: [
               {
                 name: "voter",
@@ -202,6 +211,7 @@ export const useContractStorage = defineStore("contract", {
             name: "delegate",
             x: 510,
             y: 200,
+            isSelected:false,
             params: [
               {
                 name: "to",
@@ -367,6 +377,7 @@ export const useContractStorage = defineStore("contract", {
             name: "Vote",
             x: 240,
             y: 330,
+            isSelected:false,
             params: [
               { name: "proposal" }
             ],
@@ -439,9 +450,10 @@ export const useContractStorage = defineStore("contract", {
             name: "winningProposal",
             x: 20,
             y: 330,
-            _return: { name: "winningProposal_", type:"uint" },
+            _return: { name: "winningProposal_", type: "uint" },
             visibility: "public",
             modifiers: ["view"],
+            isSelected:false,
             body: [
               {
                 type: "AssignmentStatement",
@@ -455,23 +467,23 @@ export const useContractStorage = defineStore("contract", {
                 init: "uint p = 0",
                 condition: "p < proposals.length", //draft i need to check if its optimal to make it BinaryExpression instead of a literal
                 step: 1,
-                body:[
+                body: [
                   {
-                    type:"ConditionalStatement",
-                    condition:"proposals[p].voteCount > winningVoteCount",
-                    body:[
+                    type: "ConditionalStatement",
+                    condition: "proposals[p].voteCount > winningVoteCount",
+                    body: [
                       {
-                        type:"AssignmentStatement",
-                        expressions:{
-                          left:"winningVoteCount",
-                          right:"proposals[p].voteCount"
+                        type: "AssignmentStatement",
+                        expressions: {
+                          left: "winningVoteCount",
+                          right: "proposals[p].voteCount"
                         }
                       },
                       {
-                        type:"AssignmentStatement",
-                        expressions:{
-                          left:"winningProposal_",
-                          right:"p"
+                        type: "AssignmentStatement",
+                        expressions: {
+                          left: "winningProposal_",
+                          right: "p"
                         }
                       }
                     ]
@@ -485,8 +497,9 @@ export const useContractStorage = defineStore("contract", {
             name: "winnerName",
             x: 20,
             y: 530,
-            _return: { name: "winnerName_", type:"byte32" },
+            _return: { name: "winnerName_", type: "byte32" },
             modifiers: ["external", "view"],
+            isSelected:false,
             body: [
               {
                 type: "AssignmentStatement",
@@ -499,8 +512,9 @@ export const useContractStorage = defineStore("contract", {
           },
         ],
       },
+      selectedFunction: {},
       selectedElement: {},
-      scdStage:true,
+      scdStage: true,
     };
   },
   actions: {
@@ -508,13 +522,18 @@ export const useContractStorage = defineStore("contract", {
       console.log("im calling from the store !");
     },
     showProperties(element) {
+      this.clearSelection()
+      
       if (element?.target?.attrs?.data) {
         this.selectedElement = element.target.attrs.data;
-        console.log(this.selectedElement);
+        this.selectedElement.isSelected = true
       } else {
-        console.log("element not selected !");
+        console.log("selection error !");
         this.selectedElement = {}
       }
+    },
+    clearSelection() {
+      this.selectedElement.isSelected = false
     },
     showFunctionalDiagram(element) {
 
@@ -522,11 +541,14 @@ export const useContractStorage = defineStore("contract", {
     createStruct() {
 
     },
-    
+    selector(element) {
+
+    }
+
   },
   getters: {
 
-    
+
 
   },
 });

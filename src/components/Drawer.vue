@@ -30,11 +30,15 @@
                                 </TransitionChild>
                                 <div class="flex h-full flex-col overflow-y-scroll bg-slate-700 py-6 shadow-xl">
                                     <div class="px-4 sm:px-6">
-                                        <DialogTitle class="text-base font-semibold text-white">{{props.title}}
+                                        <DialogTitle class="text-base font-semibold text-white">
+                                            <div class="grid grid-cols-2">
+                                                <span>{{ props.title }}</span>
+                                                <ClipboardDocumentIcon class="w-5 content-end"></ClipboardDocumentIcon>
+                                            </div>
                                         </DialogTitle>
                                     </div>
                                     <div class="relative mt-6 flex-1 px-4 sm:px-6">
-                                       <slot></slot>
+                                        <slot></slot>
                                     </div>
                                 </div>
                             </DialogPanel>
@@ -49,7 +53,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
-import { XMarkIcon } from '@heroicons/vue/24/outline'
+import { ClipboardDocumentIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 
 
 
@@ -58,9 +62,9 @@ const props = defineProps({
         type: String,
         default: "Code"
     },
-    open:{
-        type:Boolean,
-        default:false
+    open: {
+        type: Boolean,
+        default: false
     }
 })
 const emit = defineEmits(['update:open'])

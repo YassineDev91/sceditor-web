@@ -3,9 +3,8 @@
         <v-rect ref="rectRef" :config="rectConfig"></v-rect>
         <v-rect :config="paramsConfig"></v-rect>
         <v-rect :config="returnConfig"></v-rect>
-        <v-text :config="nameConfig"></v-text>
         <v-line :config="nameUnderLineConfig"></v-line>
-
+        <v-rect :config="selectionConfig" v-if="selected"></v-rect>
         <!-- Parameters -->
         <Parameter v-for="param in params" :key="param.id" :name="param.name" :x="props.x" :y="props.y - 20" />
 
@@ -16,6 +15,8 @@
 
         <!-- Return Statement -->
         <Return v-if="_return" :name="_return.name" :x="props.x" :y="props.y + rectConfig.height" />
+        
+        <v-text :config="nameConfig"></v-text>
     </v-group>
 </template>
 
@@ -32,10 +33,13 @@ const props = defineProps({
     x: Number,
     y: Number,
     name: String,
+    data:Object,
+    selected:Boolean,
     params: Array,
     statements: Array,
     _return: Object
 });
+
 
 const rectConfig = ref({
     x: props.x,
@@ -51,7 +55,8 @@ const nameConfig = ref({
     x: props.x + 10,
     y: props.y + 5,
     fontSize: 12,
-    text: props.name
+    text: props.name,
+    data:props.data
 });
 
 const nameUnderLineConfig = ref({
@@ -77,11 +82,22 @@ const paramsConfig = ref({
     y: props.y,
 });
 
+const selectionConfig = ref({
+    x: props.x,
+    y: props.y,
+    width: rectConfig.value.width, // Bind to dynamic maxWidth
+    height: rectConfig.value.height,
+    stroke: '#3498db',
+    strokeWidth: 1.5,
+})
+
 // Function to update the rectangle width dynamically
 const updateRectWidth = (width) => {
     if (width > maxWidth.value) {
         maxWidth.value = width;
         rectConfig.value.width = width + 20; // Add some padding
+        selectionConfig.value.width = rectConfig.value.width
+        selectionConfig.value.height = rectConfig.value.height
         nameUnderLineConfig.value.points = [
             rectConfig.value.x,
             rectConfig.value.y + nameConfig.value.fontSize + 10,
