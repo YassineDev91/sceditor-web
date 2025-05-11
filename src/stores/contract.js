@@ -5,512 +5,377 @@ export const useContractStorage = defineStore("contract", {
   state: () => {
     return {
       contract: {
-        name: "Ballot",
-        x: 10,
-        y: 10,
-        variables: [
+        "name": "Purchase",
+        "x": 10,
+        "y": 10,
+        "variables": [
           {
-            name: "voters",
-            type: "mapping(address => Voter)",
-            visibility: "public",
-            x: 70,
-            y: 50,
-            isSelected: false
+            "name": "value",
+            "type": {
+              "base": "uint"
+            },
+            "visibility": "public",
+            "x": 50,
+            "y": 50
           },
           {
-            name: "chairperson",
-            type: "address",
-            visibility: "public",
-            x: 180,
-            y: 50,
-            isSelected: false
-
+            "name": "seller",
+            "type": {
+              "base": "address",
+              "payable": true
+            },
+            "visibility": "public",
+            "x": 60,
+            "y": 80
           },
           {
-            name: "proposals",
-            type: "Proposal[]",
-            visibility: "public",
-            x: 290,
-            y: 50,
-            isSelected: false
-
+            "name": "buyer",
+            "type": {
+              "base": "address",
+              "payable": true
+            },
+            "visibility": "public",
+            "x": 70,
+            "y": 110
+          },
+          {
+            "name": "state",
+            "type": {
+              "base": "State"
+            },
+            "visibility": "public",
+            "x": 80,
+            "y": 140
           }
         ],
-
-        structs: [
+        "structs": [
           {
-            name: "Voter",
-            x: 560,
-            y: 30,
-            literals: [
+            "name": "State",
+            "x": 120,
+            "y": 180,
+            "literals": [
               {
-                visibility: "public",
-                type: "uint",
-                name: "wieght",
-              },
-              {
-                visibility: "public",
-                type: "bool",
-                name: "voted",
-              },
-              {
-                visibility: "public",
-                type: "address",
-                name: "delegate",
-              },
-              {
-                visibility: "public",
-                type: "uint",
-                name: "vote",
-              },
-            ],
-            isSelected:false
-          },
-          {
-            name: "Proposal",
-            x: 350,
-            y: 30,
-            literals: [
-              {
-                visibility: "public",
-                type: "byte32",
-                name: "name"
-              },
-              {
-                visibility: "public",
-                type: "uint",
-                name: "voteCount"
-              }
-            ],
-            isSelected:false
-
-          }
-        ],
-        constructor: {
-          name: "<<constructor>>",
-          x: 20,
-          y: 200,
-          params: [
-            {
-              name: "proposalNames",
-              type: "byte32[]",
-              modifiers: ["memory"],
-            },
-          ],
-          body: [
-            {
-              type: "AssignmentStatement",
-              expressions: {
-                left: 'chairperson',
-                right: "msg.sender",
-              }
-            },
-            {
-              type: "AssignmentStatement",
-              expressions: {
-                left: 'voters[chairperson].weight',
-                right: "1",
-              }
-            },
-            {
-              type: "LoopStatement",
-              expressions: {
-                init: "uint i = 0",
-                condition: "i < proposalNames.length",
-                step: 1,
-              },
-              body: [
-                {
-                  type: "CallStatement",
-                  method: "push",
-                  object: "proposals",
-                  params: [
-                    {
-                      name: "",
-                      type: "Proposal",
-                      init: {
-                        name: "proposalNames[i]",
-                        voteCount: "0"
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        functions: [
-          {
-            name: "giveRightToVote",
-            x: 270,
-            y: 200,
-            isSelected:false,
-            params: [
-              {
-                name: "voter",
-                type: "address",
-              },
-            ],
-            modifiers: ["external"],
-            body: [
-              {
-                type: "CallStatement",
-                method: "require",
-                object: "",
-                params: [
-                  {
-                    type: "BinaryExpression",
-                    left: "msg.sender",
-                    operator: "==",
-                    right: "chairperson"
-                  },
-                  {
-                    type: "Literal",
-                    value: "Only chairperson can give right to vote."
-                  }
-                ]
-              },
-              {
-                type: "CallStatement",
-                method: "require",
-                object: "",
-                params: [
-                  {
-                    type: "Literal",
-                    value: "!voters[voter].voted"
-                  },
-                  {
-                    type: "Literal",
-                    value: "The voter already voted."
-                  }
-                ]
-              },
-              {
-                type: "CallStatement",
-                method: "require",
-                object: "",
-                params: [
-                  {
-                    type: "BinaryExpression",
-                    left: "voters[voter].weight",
-                    operator: "==",
-                    right: "voters[voter].weight"
-                  }
-                ]
-              },
-              {
-                type: "AssignmentStatement",
-                expressions: {
-                  left: "voters[voter.weight]",
-                  right: "1"
-                }
-              }
-            ]
-          },
-          {
-            name: "delegate",
-            x: 510,
-            y: 200,
-            isSelected:false,
-            params: [
-              {
-                name: "to",
-                type: "address",
-              },
-            ],
-            modifiers: ["external"],
-            body: [
-              {
-                type: "AssignmentStatement",
-                expressions: {
-                  left: "Voter storage sender",
-                  right: "voters[msg.sender]"
-                }
-              },
-              {
-                type: "CallStatement",
-                method: "require",
-                object: "",
-                params: [
-                  {
-                    type: "BinaryExpression",
-                    left: "sender.weight",
-                    operator: "!=",
-                    right: "0"
-                  },
-                  {
-                    type: "Literal",
-                    value: "You have no right to vote"
-                  }
-                ]
-              },
-              {
-                type: "CallStatement",
-                method: "require",
-                object: "",
-                params: [
-                  {
-                    type: "Literal",
-                    value: "!sender.voted"
-                  },
-                  {
-                    type: "Literal",
-                    value: "You already voted."
-                  }
-                ]
-              },
-              {
-                type: "CallStatement",
-                method: "require",
-                object: "",
-                params: [
-                  {
-                    type: "BinaryExpression",
-                    left: "to",
-                    operator: "!=",
-                    right: "msg.sender"
-                  },
-                  {
-                    type: "Literal",
-                    value: "Self-delegation is disallowed."
-                  }
-                ]
-              },
-              {
-                type: "LoopStatement", //draft
-                condition: {
-                  type: "BinaryExpression",
-                  left: "voters[to].delegate",
-                  operator: "!=",
-                  right: "address(0)"
+                "type": {
+                  "base": "enumLiteral"
                 },
-                body: [
+                "name": "Created"
+              },
+              {
+                "type": {
+                  "base": "enumLiteral"
+                },
+                "name": "Locked"
+              },
+              {
+                "type": {
+                  "base": "enumLiteral"
+                },
+                "name": "Release"
+              },
+              {
+                "type": {
+                  "base": "enumLiteral"
+                },
+                "name": "Inactive"
+              }
+            ]
+          }
+        ],
+        "constructor": {
+          "params": [],
+          "modifiers": [
+            "payable"
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "AssignmentStatement",
+                "expressions": [
                   {
-                    type: "AssignementStatement",
-                    expressions: {
-                      left: "to",
-                      right: "voters[to].delegate"
+                    "left": {
+                      "type": "Variable",
+                      "name": "seller"
+                    },
+                    "right": {
+                      "type": "Identifier",
+                      "value": "caller"
                     }
-                  },
+                  }
+                ]
+              },
+              {
+                "type": "AssignmentStatement",
+                "expressions": [
                   {
-                    type: "CallStatement",
-                    method: "require",
-                    object: "",
-                    params: [
-                      {
-                        type: "BinaryExpression",
-                        left: "to",
-                        operator: "!=",
-                        right: "msg.sender"
+                    "left": {
+                      "type": "Variable",
+                      "name": "value"
+                    },
+                    "right": {
+                      "type": "BinaryOperation",
+                      "operator": "/",
+                      "left": {
+                        "type": "Identifier",
+                        "value": "transaction.value"
                       },
-                      {
-                        type: "Literal",
-                        value: "Found loop in delegation."
+                      "right": {
+                        "type": "Literal",
+                        "value": 2
                       }
-                    ]
-                  },
-
-                ]
-              },
-              {
-                type: "AssignmentStatement",
-                expressions: {
-                  left: "Voter storage delegate_",
-                  right: "voters[to]"
-                }
-              },
-              {
-                type: "CallStatement",
-                object: "",
-                method: "require",
-                params: [
-                  {
-                    type: "BinaryExpression",
-                    left: "delegate_.weight",
-                    operator: ">=",
-                    right: "1"
-                  }
-                ]
-              },
-              {
-                type: "AssignmentStatement",
-                expressions: {
-                  left: "sender.voted",
-                  right: "true"
-                }
-              },
-              {
-                type: "AssignmentStatement",
-                expressions: {
-                  left: "sender.delegate",
-                  right: "to"
-                }
-              },
-              {
-                type: "ConditionalStatement",
-                condition: "delegate_.voted",
-                body: [
-                  {
-                    type: "AssignmentStatement",
-                    expressions: {
-                      left: "proposals[delegate_.vote].voteCount",
-                      right: "proposals[delegate_.vote].voteCount + sender.weight"
                     }
                   }
-                ],
-                else: {
-                  body: [
+                ]
+              },
+              {
+                "type": "IfStatement",
+                "condition": {
+                  "type": "BinaryOperation",
+                  "operator": "!=",
+                  "left": {
+                    "type": "BinaryOperation",
+                    "operator": "*",
+                    "left": {
+                      "type": "Literal",
+                      "value": 2
+                    },
+                    "right": {
+                      "type": "Identifier",
+                      "value": "value"
+                    }
+                  },
+                  "right": {
+                    "type": "Identifier",
+                    "value": "transaction.value"
+                  }
+                },
+                "then": {
+                  "type": "Block",
+                  "statements": [
                     {
-                      type: "AssignmentStatement",
-                      expressions: {
-                        left: "delegate_.weight",
-                        right: "delegate_.weight + sender.weight"
-                      }
+                      "type": "RevertStatement",
+                      "error": "ValueNotEven"
                     }
                   ]
                 }
               }
             ]
-          },
-
-          {
-            name: "Vote",
-            x: 240,
-            y: 330,
-            isSelected:false,
-            params: [
-              { name: "proposal" }
-            ],
-            modifiers: ["external"],
-            body: [
-              {
-                type: "AssignmentStatement",
-                expressions: {
-                  left: "Voter storage sender",
-                  right: "voters[msg.sender]"
-                }
-              },
-              {
-                type: "CallStatement",
-                object: "",
-                method: "require",
-                params: [
-                  {
-                    type: "BinaryExpression",
-                    left: "sender.weight",
-                    operator: "!=",
-                    right: "0"
-                  },
-                  {
-                    type: "Literal",
-                    value: "Has no right to vote"
-                  }
-                ]
-              },
-              {
-                type: "CallStatement",
-                object: "",
-                method: "require",
-                params: [
-                  {
-                    type: "Literal",
-                    value: "!sender.voted"
-                  },
-                  {
-                    type: "Literal",
-                    value: "Already voted."
-                  }
-                ]
-              },
-              {
-                type: "AssignmentStatement",
-                expressions: {
-                  left: "sender.voted",
-                  right: "true"
-                }
-              },
-              {
-                type: "AssignmentStatement",
-                expressions: {
-                  left: "sender.vote",
-                  right: "proposal"
-                }
-              },
-              {
-                type: "AssignmentStatement",
-                expressions: {
-                  left: "proposals[proposal].voteCount",
-                  right: "proposals[proposal].voteCount + sender.weight"
-                }
-              }
-            ]
-          },
-
-          {
-            name: "winningProposal",
-            x: 20,
-            y: 330,
-            _return: { name: "winningProposal_", type: "uint" },
-            visibility: "public",
-            modifiers: ["view"],
-            isSelected:false,
-            body: [
-              {
-                type: "AssignmentStatement",
-                expressions: {
-                  left: "uint winningVoteCount",
-                  right: "0"
-                }
-              },
-              {
-                type: "LoopStatement",
-                init: "uint p = 0",
-                condition: "p < proposals.length", //draft i need to check if its optimal to make it BinaryExpression instead of a literal
-                step: 1,
-                body: [
-                  {
-                    type: "ConditionalStatement",
-                    condition: "proposals[p].voteCount > winningVoteCount",
-                    body: [
-                      {
-                        type: "AssignmentStatement",
-                        expressions: {
-                          left: "winningVoteCount",
-                          right: "proposals[p].voteCount"
-                        }
-                      },
-                      {
-                        type: "AssignmentStatement",
-                        expressions: {
-                          left: "winningProposal_",
-                          right: "p"
-                        }
-                      }
-                    ]
-                  }
-                ]
-              },
-            ]
-          },
-
-          {
-            name: "winnerName",
-            x: 20,
-            y: 530,
-            _return: { name: "winnerName_", type: "byte32" },
-            modifiers: ["external", "view"],
-            isSelected:false,
-            body: [
-              {
-                type: "AssignmentStatement",
-                expressions: {
-                  left: "winnerName_",
-                  right: "proposals[winningProposal()].name"
-                }
-              }
-            ]
-          },
-        ],
+          }
+        },
+        // "functions": [
+        //   {
+        //     "name": "abort",
+        //     "x": 200,
+        //     "y": 200,
+        //     "params": [],
+        //     "modifiers": [
+        //       "external",
+        //       "onlySeller",
+        //       "inState(State.Created)"
+        //     ],
+        //     "body": {
+        //       "type": "Block",
+        //       "statements": [
+        //         {
+        //           "type": "EmitStatement",
+        //           "event": "Aborted",
+        //           "args": []
+        //         },
+        //         {
+        //           "type": "AssignmentStatement",
+        //           "expressions": [
+        //             {
+        //               "left": {
+        //                 "type": "Variable",
+        //                 "name": "state"
+        //               },
+        //               "right": {
+        //                 "type": "Identifier",
+        //                 "value": "State.Inactive"
+        //               }
+        //             }
+        //           ]
+        //         },
+        //         {
+        //           "type": "CallStatement",
+        //           "object": "seller",
+        //           "method": "refund",
+        //           "params": [
+        //             {
+        //               "type": "BinaryOperation",
+        //               "operator": "*",
+        //               "left": {
+        //                 "type": "Literal",
+        //                 "value": 2
+        //               },
+        //               "right": {
+        //                 "type": "Identifier",
+        //                 "value": "value"
+        //               }
+        //             }
+        //           ]
+        //         }
+        //       ]
+        //     }
+        //   },
+        //   {
+        //     "name": "confirmPurchase",
+        //     "x": 200,
+        //     "y": 300,
+        //     "params": [],
+        //     "modifiers": [
+        //       "external",
+        //       "inState(State.Created)",
+        //       "payable"
+        //     ],
+        //     "body": {
+        //       "type": "Block",
+        //       "statements": [
+        //         {
+        //           "type": "AssignmentStatement",
+        //           "expressions": [
+        //             {
+        //               "left": {
+        //                 "type": "Variable",
+        //                 "name": "buyer"
+        //               },
+        //               "right": {
+        //                 "type": "Identifier",
+        //                 "value": "caller"
+        //               }
+        //             }
+        //           ]
+        //         },
+        //         {
+        //           "type": "AssignmentStatement",
+        //           "expressions": [
+        //             {
+        //               "left": {
+        //                 "type": "Variable",
+        //                 "name": "state"
+        //               },
+        //               "right": {
+        //                 "type": "Identifier",
+        //                 "value": "State.Locked"
+        //               }
+        //             }
+        //           ]
+        //         },
+        //         {
+        //           "type": "EmitStatement",
+        //           "event": "PurchaseConfirmed",
+        //           "args": []
+        //         }
+        //       ]
+        //     }
+        //   },
+        //   {
+        //     "name": "confirmReceived",
+        //     "x": 200,
+        //     "y": 400,
+        //     "params": [],
+        //     "modifiers": [
+        //       "external",
+        //       "onlyBuyer",
+        //       "inState(State.Locked)"
+        //     ],
+        //     "body": {
+        //       "type": "Block",
+        //       "statements": [
+        //         {
+        //           "type": "EmitStatement",
+        //           "event": "ItemReceived",
+        //           "args": []
+        //         },
+        //         {
+        //           "type": "AssignmentStatement",
+        //           "expressions": [
+        //             {
+        //               "left": {
+        //                 "type": "Variable",
+        //                 "name": "state"
+        //               },
+        //               "right": {
+        //                 "type": "Identifier",
+        //                 "value": "State.Release"
+        //               }
+        //             }
+        //           ]
+        //         },
+        //         {
+        //           "type": "CallStatement",
+        //           "object": "buyer",
+        //           "method": "refund",
+        //           "params": [
+        //             {
+        //               "type": "Identifier",
+        //               "value": "value"
+        //             }
+        //           ]
+        //         }
+        //       ]
+        //     }
+        //   },
+        //   {
+        //     "name": "refundSeller",
+        //     "x": 200,
+        //     "y": 500,
+        //     "params": [],
+        //     "modifiers": [
+        //       "external",
+        //       "onlySeller",
+        //       "inState(State.Release)"
+        //     ],
+        //     "body": {
+        //       "type": "Block",
+        //       "statements": [
+        //         {
+        //           "type": "EmitStatement",
+        //           "event": "SellerRefunded",
+        //           "args": []
+        //         },
+        //         {
+        //           "type": "AssignmentStatement",
+        //           "expressions": [
+        //             {
+        //               "left": {
+        //                 "type": "Variable",
+        //                 "name": "state"
+        //               },
+        //               "right": {
+        //                 "type": "Identifier",
+        //                 "value": "State.Inactive"
+        //               }
+        //             }
+        //           ]
+        //         },
+        //         {
+        //           "type": "CallStatement",
+        //           "object": "seller",
+        //           "method": "refund",
+        //           "params": [
+        //             {
+        //               "type": "BinaryOperation",
+        //               "operator": "*",
+        //               "left": {
+        //                 "type": "Literal",
+        //                 "value": 3
+        //               },
+        //               "right": {
+        //                 "type": "Identifier",
+        //                 "value": "value"
+        //               }
+        //             }
+        //           ]
+        //         }
+        //       ]
+        //     }
+        //   }
+        // ],
+        // "custom": {
+        //   "ai-hint": "Buyer-seller escrow transaction with state transitions and refund logic",
+        //   "blockchain-agnostic": true
+        // }
       },
       selectedFunction: {},
       selectedElement: {},
@@ -523,7 +388,7 @@ export const useContractStorage = defineStore("contract", {
     },
     showProperties(element) {
       this.clearSelection()
-      
+
       if (element?.target?.attrs?.data) {
         this.selectedElement = element.target.attrs.data;
         this.selectedElement.isSelected = true

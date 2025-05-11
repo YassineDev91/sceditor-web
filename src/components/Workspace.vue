@@ -7,7 +7,7 @@
             <span>Back</span>
         </button>
         <div class=" flex flex-row">
-            <v-stage ref="stageRef" :config="{ width: 970, height: 720 }">
+            <v-stage ref="stageRef" :config="{ width: getWindowWidth(), height: getWindowHeight() }">
                 <v-layer>
                     <contract :name="fileStore.contract.name" :x="fileStore.contract.x" :y="fileStore.contract.y"
                         @click="fileStore.clearSelection" />
@@ -23,11 +23,11 @@
 
                     <function v-for="_function in fileStore.contract.functions" :key="_function.name"
                         :name="_function.name" :x="_function.x" :y="_function.y" :data="_function"
-                        :params="_function.params" :statements="_function.body" :_return='_function._return'
+                        :params="_function.params" :statements="_function.body" :returnParams='_function.returnParams'
                         @click="fileStore.showProperties" @dblclick="showFunctionLayer(_function)"
                         :selected="_function.isSelected" />
 
-                    <function v-if="fileStore.contract.constructor" :name="fileStore.contract.constructor.name"
+                    <function v-if="fileStore.contract.constructor" name="<<constructor>>"
                         :x="fileStore.contract.constructor.x" :y="fileStore.contract.constructor.y" />
 
                 </v-layer>
@@ -35,7 +35,7 @@
                 <v-layer ref="functionLayer" :visble="isFunctionLayerVisible" v-if="isFunctionLayerVisible"
                     @vue:mounted="loadFLayersNode">
 
-                    <Statement v-for="(statement, index) in selectedFunction.body" :x="50*index" :y="110 * index"
+                    <Statement v-for="(statement, index) in selectedFunction.body" :x="50" :y="70*index"
                         :expressions="statement.expressions" :type="statement.type" @dragmove="handleDragMove" />
 
                     <v-arrow v-for="connector in connectors" :config="getArrowConfig(connector)">
@@ -92,7 +92,12 @@ onMounted(() => {
     const layer = mainLayer.value;
 
 })
-
+const getWindowWidth = () => {
+    return window.innerWidth
+}
+const getWindowHeight = () => {
+    return window.innerHeight
+}
 const loadFLayersNode = () => {
     const layer = functionLayer.value.getNode();
 
@@ -111,14 +116,16 @@ const loadFLayersNode = () => {
 }
 
 // for connecting nodes
-const targets = ref([]);
-const connectors = ref([]);
+var targets = ref([]);
+var connectors = ref([]);
 
 const toggleLayer = () => {
     fileStore.scdStage = !fileStore.scdStage
     isMainLayerVisible.value = !isMainLayerVisible.value
     isFunctionLayerVisible.value = !isFunctionLayerVisible.value
 
+    connectors.value = []
+    targets.value=[]
 
     // generateConnectors(selectedFunction.body)
 
@@ -162,7 +169,7 @@ const generateConnectors = (nodes) => {
 
 
         const offsetX = 100
-        const offsetY = 110
+        const offsetY = 70
         const connector = {
             id: from._id + '' + to._id,
             points: [from.x() + offsetX, from.y() + offsetY, to.x() + offsetX, to.y() + offsetY],
@@ -208,14 +215,14 @@ const getConnectorPoints = (from, to) => {
 
     let index = targets.value.indexOf(from)
 
-    const offsetX = 100 +50 * (index)
-    const offsetY = 100 + 110 * (index)
+    const offsetX = 150
+    const offsetY = 100 + 70 * (index)
 
     return [
         from.x() + offsetX,
         from.y() + offsetY,
         to.x() + offsetX,
-        to.y() + offsetY+7,
+        to.y() + offsetY-35,
     ];
 
 }
@@ -224,7 +231,6 @@ const handleDragMove = (e) => {
 
     targets.value = targets.value.map((target) => {
         if (target._id === id) {
-            console.log('x', e.target.x())
             target.x(e.target.x())
             target.y(e.target.y())
 

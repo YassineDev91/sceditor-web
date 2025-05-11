@@ -14,7 +14,7 @@
             @max-width="updateRectWidth" />
 
         <!-- Return Statement -->
-        <Return v-if="_return" :name="_return.name" :x="props.x" :y="props.y + rectConfig.height" />
+        <Return v-if="returnParams" :name="returnParams.name" :x="props.x" :y="props.y + rectConfig.height" />
         
         <v-text :config="nameConfig"></v-text>
     </v-group>
@@ -37,7 +37,7 @@ const props = defineProps({
     selected:Boolean,
     params: Array,
     statements: Array,
-    _return: Object
+    returnParams: Object
 });
 
 
