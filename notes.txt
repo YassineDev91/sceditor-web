@@ -1,0 +1,32 @@
+
+<!-- Final Optimized Version of All Files (including Statement block rendering) -->
+
+<!-- AssignmentStatement.vue -->
+<template>
+  <v-group :x="x" :y="y" draggable @dragend="onDragEnd">
+    <v-rect :width="width" :height="height" fill="#f1f5f9" stroke="#334155" cornerRadius="8" shadowBlur="5" />
+    <v-text :text="label" :x="10" :y="10" fontSize="14" fontStyle="bold" />
+    <v-text :text="expressions.left" :x="20" :y="35" fontSize="12" fill="#0f172a" />
+    <v-text :text="'= ' + expressions.right" :x="150" :y="35" fontSize="12" fill="#0f172a" />
+  </v-group>
+</template>
+
+<script setup>
+import { ref, watch } from 'vue';
+
+const props = defineProps({
+  x: Number,
+  y: Number,
+  expressions: Object,
+  onUpdatePosition: Function
+});
+
+const width = 260;
+const height = 60;
+const label = '🟢 Assignment';
+
+function onDragEnd(e) {
+  const { x, y } = e.target.attrs;
+  if (props.onUpdatePosition) props.onUpdatePosition({ x, y });
+}
+</script>

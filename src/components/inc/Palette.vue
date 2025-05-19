@@ -58,7 +58,11 @@ function createVaribale() {
     fileStore.contract.variables.push({
         name: "new_variable",
         x: 100,
-        y: 100
+        y: 100,
+        type: {
+            base: "",
+            payable: false
+        }
     })
 }
 
@@ -66,7 +70,11 @@ function createFunction() {
     fileStore.contract.functions.push({
         name: "new_function",
         x: 100,
-        y: 100
+        y: 100,
+        body: {
+            "type": "Block",
+            "statements": []
+        }
     })
 }
 

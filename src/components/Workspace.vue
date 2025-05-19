@@ -1,6 +1,6 @@
 <template>
     {{ fileStore.stage }}
-    <div v-if="fileStore.contract.name" class="h-full w-full dark:bg-slate-200 rounded-sm">
+    <div v-if="fileStore.contract.name" class="h-full w-full dark:bg-[#F7F7F7] rounded-sm">
         <button class="text-left text-black text-xs mx-1 mt-1 flex flex-row items-center space-x-1" @click="toggleLayer"
             v-if="!isMainLayerVisible">
             <ArrowLeftCircleIcon class="w-5"></ArrowLeftCircleIcon>
@@ -13,9 +13,9 @@
                         @click="fileStore.clearSelection" />
                 </v-layer>
                 <v-layer ref="mainLayer" :visible="isMainLayerVisible">
-                    <variable v-for="variable in fileStore.contract.variables" :key="variable.name"
-                        :name="variable.name" :data="variable" :x="variable.x" :y="variable.y"
-                        @click="fileStore.showProperties" :selected="variable.isSelected" />
+                    <variable v-for="variable in fileStore.contract.variables" :key="variable.name" :data="variable"
+                        :x="variable.x" :y="variable.y" @click="fileStore.showProperties"
+                        :selected="variable.isSelected" />
 
                     <struct v-for="struct in fileStore.contract.structs" :key="struct.name" :name="struct.name"
                         :data="struct" :literals="struct.literals" :x="struct.x" :y="struct.y"
@@ -23,9 +23,9 @@
 
                     <function v-for="_function in fileStore.contract.functions" :key="_function.name"
                         :name="_function.name" :x="_function.x" :y="_function.y" :data="_function"
-                        :params="_function.params" :statements="_function.body" :returnParams='_function.returnParams'
-                        @click="fileStore.showProperties" @dblclick="showFunctionLayer(_function)"
-                        :selected="_function.isSelected" />
+                        :params="_function.params" :statements="_function.body.statements"
+                        :returnParams='_function.returnParams' @click="fileStore.showProperties"
+                        @dblclick="showFunctionLayer(_function)" :selected="_function.isSelected" />
 
                     <function v-if="fileStore.contract.constructor" name="<<constructor>>"
                         :x="fileStore.contract.constructor.x" :y="fileStore.contract.constructor.y" />
@@ -35,8 +35,10 @@
                 <v-layer ref="functionLayer" :visble="isFunctionLayerVisible" v-if="isFunctionLayerVisible"
                     @vue:mounted="loadFLayersNode">
 
-                    <Statement v-for="(statement, index) in selectedFunction.body" :x="50" :y="70*index"
-                        :expressions="statement.expressions" :type="statement.type" @dragmove="handleDragMove" />
+                    <!-- <Statement v-for="(statement, index) in selectedFunction.body.statements" :x="50" :y="70*index"
+                        :statement="statement" :type="statement.type" @dragmove="handleDragMove" /> -->
+                    <StatementRenderer v-for="(stmt, index) in selectedFunction.body.statements" :statement="stmt"
+                        :x="Math.random()" :y="Math.random()" @dragmove="handleDragMove" />
 
                     <v-arrow v-for="connector in connectors" :config="getArrowConfig(connector)">
 
@@ -76,6 +78,7 @@ import { useContractStorage } from '@/stores/contract'
 import { ArrowLeftCircleIcon, CheckBadgeIcon } from '@heroicons/vue/24/outline';
 import Statement from './palette/fd/Statement.vue';
 import { Tag } from 'konva/lib/shapes/Label';
+import StatementRenderer from './palette/fd/StatementRenderer.vue';
 
 var fileStore = useContractStorage()
 
@@ -109,8 +112,6 @@ const loadFLayersNode = () => {
     console.log('number of connections:', connectors.value.length);
 
 
-
-
     // console.log("Connectors:", connectors.value);
 
 }
@@ -125,7 +126,7 @@ const toggleLayer = () => {
     isFunctionLayerVisible.value = !isFunctionLayerVisible.value
 
     connectors.value = []
-    targets.value=[]
+    targets.value = []
 
     // generateConnectors(selectedFunction.body)
 
@@ -178,7 +179,7 @@ const generateConnectors = (nodes) => {
         }
 
 
-        console.log(connector.points)
+        // console.log(connector.points)
         connector.from = from
         connector.to = to
         results.push(connector)
@@ -193,9 +194,12 @@ const getArrowConfig = (connector) => {
     const toNode = targets.value.find((t) => t._id == connector.to._id)
 
     if (!fromNode || !toNode) return { points: [0, 0, 0, 0] };
-    console.log(connector.from._id)
+    // console.log(connector.from._id)
     let points = getConnectorPoints(fromNode, toNode)
-    console.log('points', points)
+    // console.log('from',fromNode.x(),'to',toNode.x());
+    // console.log('from',fromNode.y(),'to',toNode.y());
+    
+    // console.log('points', points)
     return {
         id: connector.id,
         points: points,
@@ -219,14 +223,15 @@ const getConnectorPoints = (from, to) => {
     const offsetY = 100 + 70 * (index)
 
     return [
-        from.x() + offsetX,
-        from.y() + offsetY,
-        to.x() + offsetX,
-        to.y() + offsetY-35,
+        from.x() +from.width()/2,
+        from.y() +from.height(),
+        to.x()+to.width()/2 ,
+        to.y(),
     ];
 
 }
 const handleDragMove = (e) => {
+
     const id = e.target._id;
 
     targets.value = targets.value.map((target) => {

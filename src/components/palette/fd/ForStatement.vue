@@ -3,6 +3,7 @@
         <v-rect :config="rectConfig"></v-rect>
         <v-text :config="textConfig" />
 
+        <v-image :config="iconConfig" />
         <StatementRenderer :statement="statement" />
         <!-- <v-text :config="contentConfig" v-for="expression in props.statement" :text="expression.params.type" /> -->
 
@@ -10,6 +11,7 @@
 </template>
 <script setup>
 import { onMounted, ref } from "vue";
+import { useImage } from "vue-konva";
 
 onMounted(() => {
     console.log();
@@ -27,22 +29,16 @@ const rectConfig = ref({
     y: props.y,
     width: 200,
     height: 130,
-    stroke: 'black',
+    stroke: '#F6ECB2',
+    fill: "#FFFDE4",
     cornerRadius: 5,
-    fill: "#E7F4FE",
-    stroke: "#84B2E9"
+    strokeWidth: 2,
 })
 const textConfig = ref({
     x: rectConfig.value.x + 45,
     y: rectConfig.value.y + 17,
-    text: "LoopStatement",
+    text: "ForStatement",
     fontSize: 15,
-})
-
-const groupConfig = ref({
-    x: props.x,
-    y: props.y,
-    draggable: true,
 })
 
 const contentConfig = ref({
@@ -51,6 +47,28 @@ const contentConfig = ref({
     fontSize: 12,
 })
 
+const groupConfig = ref({
+    x: props.x,
+    y: props.y,
+    draggable: true,
+})
+const [image] = useImage("src/assets/icons/forStatementIcon.png")
+const iconConfig = ref({
+    x: rectConfig.value.x + 10,
+    y: rectConfig.value.y + 10,
+    width: 30,
+    height: 30,
+    image: image
+})
+
+onMounted(() => {
+    console.log("loaded!");
+
+})
 </script>
 
 <style></style>
+
+
+<!-- stroke: '#F6ECB2', -->
+<!-- fill:"#FFFDE4", -->

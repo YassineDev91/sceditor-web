@@ -25,8 +25,8 @@ export const useContractStorage = defineStore("contract", {
               "payable": true
             },
             "visibility": "public",
-            "x": 60,
-            "y": 80
+            "x": 50,
+            "y": 110
           },
           {
             "name": "buyer",
@@ -35,8 +35,8 @@ export const useContractStorage = defineStore("contract", {
               "payable": true
             },
             "visibility": "public",
-            "x": 70,
-            "y": 110
+            "x": 50,
+            "y": 170
           },
           {
             "name": "state",
@@ -44,15 +44,15 @@ export const useContractStorage = defineStore("contract", {
               "base": "State"
             },
             "visibility": "public",
-            "x": 80,
-            "y": 140
+            "x": 50,
+            "y": 230
           }
         ],
         "structs": [
           {
             "name": "State",
-            "x": 120,
-            "y": 180,
+            "x": 250,
+            "y": 200,
             "literals": [
               {
                 "type": {
@@ -82,6 +82,8 @@ export const useContractStorage = defineStore("contract", {
           }
         ],
         "constructor": {
+          "x": 250,
+          "y": 50,
           "params": [],
           "modifiers": [
             "payable"
@@ -162,216 +164,301 @@ export const useContractStorage = defineStore("contract", {
             ]
           }
         },
-        // "functions": [
-        //   {
-        //     "name": "abort",
-        //     "x": 200,
-        //     "y": 200,
-        //     "params": [],
-        //     "modifiers": [
-        //       "external",
-        //       "onlySeller",
-        //       "inState(State.Created)"
-        //     ],
-        //     "body": {
-        //       "type": "Block",
-        //       "statements": [
-        //         {
-        //           "type": "EmitStatement",
-        //           "event": "Aborted",
-        //           "args": []
-        //         },
-        //         {
-        //           "type": "AssignmentStatement",
-        //           "expressions": [
-        //             {
-        //               "left": {
-        //                 "type": "Variable",
-        //                 "name": "state"
-        //               },
-        //               "right": {
-        //                 "type": "Identifier",
-        //                 "value": "State.Inactive"
-        //               }
-        //             }
-        //           ]
-        //         },
-        //         {
-        //           "type": "CallStatement",
-        //           "object": "seller",
-        //           "method": "refund",
-        //           "params": [
-        //             {
-        //               "type": "BinaryOperation",
-        //               "operator": "*",
-        //               "left": {
-        //                 "type": "Literal",
-        //                 "value": 2
-        //               },
-        //               "right": {
-        //                 "type": "Identifier",
-        //                 "value": "value"
-        //               }
-        //             }
-        //           ]
-        //         }
-        //       ]
-        //     }
-        //   },
-        //   {
-        //     "name": "confirmPurchase",
-        //     "x": 200,
-        //     "y": 300,
-        //     "params": [],
-        //     "modifiers": [
-        //       "external",
-        //       "inState(State.Created)",
-        //       "payable"
-        //     ],
-        //     "body": {
-        //       "type": "Block",
-        //       "statements": [
-        //         {
-        //           "type": "AssignmentStatement",
-        //           "expressions": [
-        //             {
-        //               "left": {
-        //                 "type": "Variable",
-        //                 "name": "buyer"
-        //               },
-        //               "right": {
-        //                 "type": "Identifier",
-        //                 "value": "caller"
-        //               }
-        //             }
-        //           ]
-        //         },
-        //         {
-        //           "type": "AssignmentStatement",
-        //           "expressions": [
-        //             {
-        //               "left": {
-        //                 "type": "Variable",
-        //                 "name": "state"
-        //               },
-        //               "right": {
-        //                 "type": "Identifier",
-        //                 "value": "State.Locked"
-        //               }
-        //             }
-        //           ]
-        //         },
-        //         {
-        //           "type": "EmitStatement",
-        //           "event": "PurchaseConfirmed",
-        //           "args": []
-        //         }
-        //       ]
-        //     }
-        //   },
-        //   {
-        //     "name": "confirmReceived",
-        //     "x": 200,
-        //     "y": 400,
-        //     "params": [],
-        //     "modifiers": [
-        //       "external",
-        //       "onlyBuyer",
-        //       "inState(State.Locked)"
-        //     ],
-        //     "body": {
-        //       "type": "Block",
-        //       "statements": [
-        //         {
-        //           "type": "EmitStatement",
-        //           "event": "ItemReceived",
-        //           "args": []
-        //         },
-        //         {
-        //           "type": "AssignmentStatement",
-        //           "expressions": [
-        //             {
-        //               "left": {
-        //                 "type": "Variable",
-        //                 "name": "state"
-        //               },
-        //               "right": {
-        //                 "type": "Identifier",
-        //                 "value": "State.Release"
-        //               }
-        //             }
-        //           ]
-        //         },
-        //         {
-        //           "type": "CallStatement",
-        //           "object": "buyer",
-        //           "method": "refund",
-        //           "params": [
-        //             {
-        //               "type": "Identifier",
-        //               "value": "value"
-        //             }
-        //           ]
-        //         }
-        //       ]
-        //     }
-        //   },
-        //   {
-        //     "name": "refundSeller",
-        //     "x": 200,
-        //     "y": 500,
-        //     "params": [],
-        //     "modifiers": [
-        //       "external",
-        //       "onlySeller",
-        //       "inState(State.Release)"
-        //     ],
-        //     "body": {
-        //       "type": "Block",
-        //       "statements": [
-        //         {
-        //           "type": "EmitStatement",
-        //           "event": "SellerRefunded",
-        //           "args": []
-        //         },
-        //         {
-        //           "type": "AssignmentStatement",
-        //           "expressions": [
-        //             {
-        //               "left": {
-        //                 "type": "Variable",
-        //                 "name": "state"
-        //               },
-        //               "right": {
-        //                 "type": "Identifier",
-        //                 "value": "State.Inactive"
-        //               }
-        //             }
-        //           ]
-        //         },
-        //         {
-        //           "type": "CallStatement",
-        //           "object": "seller",
-        //           "method": "refund",
-        //           "params": [
-        //             {
-        //               "type": "BinaryOperation",
-        //               "operator": "*",
-        //               "left": {
-        //                 "type": "Literal",
-        //                 "value": 3
-        //               },
-        //               "right": {
-        //                 "type": "Identifier",
-        //                 "value": "value"
-        //               }
-        //             }
-        //           ]
-        //         }
-        //       ]
-        //     }
-        //   }
-        // ],
+        "functions": [
+          {
+            "name": "abort",
+            "x": 450,
+            "y": 200,
+            "params": [],
+            "modifiers": [
+              "external",
+              "onlySeller",
+              "inState(State.Created)"
+            ],
+            "body": {
+              "type": "Block",
+              "statements": [
+
+                {
+                  "type": "EmitStatement",
+                  "event": "Aborted",
+                  "args": []
+                },
+                {
+                  "type": "AssignmentStatement",
+                  "expressions": [
+                    {
+                      "left": {
+                        "type": "Variable",
+                        "name": "state"
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "value": "State.Inactive"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "CallStatement",
+                  "object": "seller",
+                  "method": "refund",
+                  "params": [
+                    {
+                      "type": "BinaryOperation",
+                      "operator": "*",
+                      "left": {
+                        "type": "Literal",
+                        "value": 2
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "value": "value"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "confirmPurchase",
+            "x": 450,
+            "y": 350,
+            "params": [],
+            "modifiers": [
+              "external",
+              "inState(State.Created)",
+              "payable"
+            ],
+            "body": {
+              "type": "Block",
+              "statements": [
+                
+                {
+                  "type": "AssignmentStatement",
+                  "expressions": [
+                    {
+                      "left": {
+                        "type": "Variable",
+                        "name": "buyer"
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "value": "caller"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "AssignmentStatement",
+                  "expressions": [
+                    {
+                      "left": {
+                        "type": "Variable",
+                        "name": "state"
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "value": "State.Locked"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "EmitStatement",
+                  "event": "PurchaseConfirmed",
+                  "args": []
+                },
+                {
+                  "type": "ForStatement",
+                  "init": {
+                    "type": "AssignmentStatement",
+                    "expressions": [
+                      {
+                        "left": {
+                          "type": "Variable",
+                          "name": "i"
+                        },
+                        "right": {
+                          "type": "Literal",
+                          "value": 0
+                        }
+                      }
+                    ]
+                  },
+                  "condition": {
+                    "type": "BinaryOperation",
+                    "operator": "<",
+                    "left": {
+                      "type": "Identifier",
+                      "value": "i"
+                    },
+                    "right": {
+                      "type": "MemberAccess",
+                      "object": "_values",
+                      "member": "length"
+                    }
+                  },
+                  "post": {
+                    "type": "AssignmentStatement",
+                    "expressions": [
+                      {
+                        "left": {
+                          "type": "Variable",
+                          "name": "i"
+                        },
+                        "right": {
+                          "type": "BinaryOperation",
+                          "operator": "+",
+                          "left": {
+                            "type": "Identifier",
+                            "value": "i"
+                          },
+                          "right": {
+                            "type": "Literal",
+                            "value": 1
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "body": {
+                    "type": "Block",
+                    "statements": [
+                      {
+                        "type": "IfStatement",
+                        "condition": {
+                          "type": "BinaryOperation",
+                          "operator": ">=",
+                          "left": {
+                            "type": "Identifier",
+                            "value": "i"
+                          },
+                          "right": {
+                            "type": "MemberAccess",
+                            "object": "bidsList",
+                            "member": "length"
+                          }
+                        },
+                        "then": {
+                          "type": "Block",
+                          "statements": [
+                            {
+                              "type": "BreakStatement"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "confirmReceived",
+            "x": 200,
+            "y": 400,
+            "params": [],
+            "modifiers": [
+              "external",
+              "onlyBuyer",
+              "inState(State.Locked)"
+            ],
+            "body": {
+              "type": "Block",
+              "statements": [
+                {
+                  "type": "EmitStatement",
+                  "event": "ItemReceived",
+                  "args": []
+                },
+                {
+                  "type": "AssignmentStatement",
+                  "expressions": [
+                    {
+                      "left": {
+                        "type": "Variable",
+                        "name": "state"
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "value": "State.Release"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "CallStatement",
+                  "object": "buyer",
+                  "method": "refund",
+                  "params": [
+                    {
+                      "type": "Identifier",
+                      "value": "value"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "refundSeller",
+            "x": 200,
+            "y": 550,
+            "params": [],
+            "modifiers": [
+              "external",
+              "onlySeller",
+              "inState(State.Release)"
+            ],
+            "body": {
+              "type": "Block",
+              "statements": [
+                {
+                  "type": "EmitStatement",
+                  "event": "SellerRefunded",
+                  "args": []
+                },
+                {
+                  "type": "AssignmentStatement",
+                  "expressions": [
+                    {
+                      "left": {
+                        "type": "Variable",
+                        "name": "state"
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "value": "State.Inactive"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "CallStatement",
+                  "object": "seller",
+                  "method": "refund",
+                  "params": [
+                    {
+                      "type": "BinaryOperation",
+                      "operator": "*",
+                      "left": {
+                        "type": "Literal",
+                        "value": 3
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "value": "value"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
         // "custom": {
         //   "ai-hint": "Buyer-seller escrow transaction with state transitions and refund logic",
         //   "blockchain-agnostic": true
