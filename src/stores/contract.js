@@ -405,8 +405,8 @@ export const useContractStorage = defineStore("contract", {
           },
           {
             "name": "refundSeller",
-            "x": 200,
-            "y": 550,
+            "x": 500,
+            "y": 50,
             "params": [],
             "modifiers": [
               "external",

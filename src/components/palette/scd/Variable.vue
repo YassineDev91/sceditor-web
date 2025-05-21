@@ -5,7 +5,7 @@
         <v-text :config="textConfig" />
         <v-text :config="typeTextConfig" />
         <v-rect :config="selectionRectConfig" v-if="selected == true"></v-rect>
-        <v-image :config="iconConfig"/>
+        <v-image :config="iconConfig" />
     </v-group>
 </template>
 <script setup>
@@ -59,18 +59,18 @@ const textConfig = ref({
 const typeTextConfig = ref({
     x: props.x + typeMarginX,
     y: props.y + typeMarginY,
-    text:  props.data.type.payable ? props.data.type.base+' payable':props.data.type.base,
+    text: props.data.type.payable ? props.data.type.base + ' payable' : props.data.type.base,
     fill: 'gray',
     fontSize: 12,
     data: props.data.type.base
 })
 const [image] = useImage("src/assets/icons/variable_icon.png")
 const iconConfig = ref({
-    x:props.x+5,
-    y:props.y+10,
-    image:image,
-    width:30,
-    height:30
+    x: props.x + 5,
+    y: props.y + 10,
+    image: image,
+    width: 30,
+    height: 30
 })
 
 onMounted(() => {

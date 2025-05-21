@@ -3,18 +3,15 @@
         <!-- <div class="h-3 my-4 mx-3">
             <Logo></Logo>
         </div> -->
-        <ul class="flex flex-col space-y-1">
-            <Palette></Palette>
-        </ul>
         <!-- <hr class="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700"> -->
-        <!-- <div class="col-auto mx-3 mt-1">
+        <div class="col-auto mx-3 mt-1">
             <Properties :element="fileStore.selectedElement"></Properties>
-        </div> -->
+        </div>
         
-        <!-- <hr class="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700">
+        <!-- <hr class="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700"> -->
         <div class="col-auto mx-3 mt-1">
             <SmartContractGenerator />
-        </div> -->
+        </div>
 
     </div>
 </template>

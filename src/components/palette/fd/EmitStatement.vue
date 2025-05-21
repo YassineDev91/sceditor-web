@@ -1,11 +1,11 @@
 <!-- EmitStatement.vue -->
 <template>
 
-    <v-group ref="groupRef" :config="groupConfig">
+    <v-group ref="groupRef" :config="groupConfig" @dragmove="e => emit('dragmove', e)">
         <v-rect ref="rectRef" :config="rectConfig"></v-rect>
         <v-text :config="textConfig"></v-text>
         <v-image :config="iconConfig"></v-image>
-        <AddStatement ref="addStatementCmp" :coordinates="{ x: props.x + 30, y: props.y + 60 }"></AddStatement>
+        <!-- <AddStatement ref="addStatementCmp" :coordinates="{ x: props.x + 30, y: props.y + 60 }"></AddStatement> -->
 
     </v-group>
 </template>
@@ -14,6 +14,8 @@
 import { onMounted, ref } from 'vue';
 import { useImage } from 'vue-konva';
 import AddStatement from './AddStatement.vue';
+const emit = defineEmits(['dragmove']);
+
 const props = defineProps({
     x: Number,
     y: Number,
@@ -28,7 +30,8 @@ const rectConfig = ref({
     height: 100,
     cornerRadius: 5,
     fill: "#FFDBD4",
-    stroke: "#FA9580"
+    stroke: "#FA9580",
+    
 
 })
 

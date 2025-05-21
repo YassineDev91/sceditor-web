@@ -1,6 +1,5 @@
 <template>
-    <v-group ref="groupRef" :config="groupConfig">
-        <!-- <v-line :config="lineConfig" /> -->
+    <v-group ref="groupRef" :config="groupConfig" @dragmove="e => emit('dragmove', e)">
         <v-rect ref="rectRef" :config="rectConfig">
         </v-rect>
         <v-text :config="textConfig" />
@@ -13,7 +12,6 @@
             <v-rect :config="contentRectConfig2"></v-rect>
             <v-text :config="rightConfig" />
         </v-group>
-        <!-- <AddStatement ref="addStatementCmp" :coordinates="addStatementCoordinates"></AddStatement> -->
 
     </v-group>
 </template>
@@ -21,7 +19,7 @@
 import { onMounted, ref, computed } from "vue";
 import { useImage } from "vue-konva";
 import AddStatement from "./AddStatement.vue";
-
+const emit = defineEmits(['dragmove']);
 
 const groupRef = ref({})
 const rectRef = ref({})
@@ -39,7 +37,7 @@ const rectConfig = ref({
     stroke: 'black',
     cornerRadius: 5,
     fill: "#E7F4FE",
-    stroke: "#84B2E9"
+    stroke: "#84B2E9",
 })
 const textConfig = ref({
     x: rectConfig.value.x + 45,
@@ -57,8 +55,8 @@ const groupConfig = ref({
 
 
 const contentRectConfig1 = ref({
-    x: rectConfig.value.x + 35,
-    y: textConfig.value.y + 30,
+    x: rectConfig.value.x,
+    y: textConfig.value.y,
     height: 30,
     width: 140,
     stroke: "#84B2E9",
@@ -91,12 +89,12 @@ const rightConfig = ref({
 })
 
 const leftSideConfig = ref({
-    x: props.x,
-    y: props.y,
+    x: 40,
+    y: 30,
 })
 const rightSideConfig = ref({
-    x: props.x,
-    y: props.y,
+    x: leftSideConfig.value.x,
+    y: leftSideConfig.value.y,
 
 })
 // const addStatementCoordinates = computed(() => ({
@@ -116,7 +114,7 @@ const iconConfig = ref({
 onMounted(() => {
     groupRef.value.getNode().width(rectRef.value.getNode().width())
     groupRef.value.getNode().height(rectRef.value.getNode().height())
-    console.log("NODE HEIGHT:", 2 + contentRectConfig2.value.height);
+    // console.log("NODE HEIGHT:", 2 + contentRectConfig2.value.height);
 
 })
 </script>

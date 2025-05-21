@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col space-y-2 ">
+    <div class="flex flex-col text-sm space-y-2 ">
         <h1 class="mb-2">
             Code generation
         </h1>
@@ -18,13 +18,13 @@
         </textarea>
         <div class="flex flex-row space-x-2">
             <button @click="generate"
-                class="hover:bg-slate-700 w-full shadow-sm px-2 py-1 border border-slate-200 rounded-md">
+                class="hover:bg-slate-700 w-full text-sm shadow-sm px-2 py-1 border border-slate-700 bg-slate-800/45 rounded-md">
                 Generate Code
             </button>
-            <button @click="exportContract" :disabled="(prompt == '' | sc_language == '')"
-                class="disabled:hover:bg-transparent disabled:text-slate-500 disabled:border-slate-500 hover:bg-slate-700 w-full shadow-sm px-2 py-1 border border-slate-200 rounded-md">
+            <!-- <button @click="exportContract" :disabled="(prompt == '' | sc_language == '')"
+                class="disabled:hover:bg-transparent text-sm disabled:text-slate-500 disabled:border-slate-500 hover:bg-slate-700 w-full shadow-sm px-2 py-1 border border-slate-200 rounded-md">
                 Export {{ sc_language }}
-            </button>
+            </button> -->
 
         </div>
     </div>

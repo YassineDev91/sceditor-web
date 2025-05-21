@@ -1,8 +1,16 @@
 <template>
+    <div class="text-indigo-400 ml-3 font-semibold">
+        <span v-if="fileStore.scdStage">
+            Structural Diagram
+        </span>
+        <span v-else>
+            Functional Diagram
+        </span>
+    </div>
     <div class="flex flex-col p-2">
         <div v-for="element in getPaletteElements()" :key="element.id" class="m-0.5">
             <div @dragstart="startDrag(element)" draggable="true" @click="element.action"
-                class="flex p-1 bg-white dark:bg-slate-300/15 hover:dark:bg-slate-300/20 dark:text-white rounded-sm space-x-2 items-center">
+                class="flex p-1.5 cursor-pointer rounded-md border bg-slate-800/25 border-slate-700 hover:dark:bg-slate-300/20 dark:text-white space-x-2 items-center">
                 <div class="bg-slate-200 rounded-sm shadow-md">
                     <img :src="'src/assets/icons/' + element.icon + '.png'"
                         class="w-5 h-5 p-1 shadow-sm object-contain">
@@ -21,7 +29,7 @@ var fileStore = useContractStorage()
 const elements = [
     // SCD
     { label: 'Struct', type: 'struct', icon: 'struct', stage: 'SCD', action: () => { createStruct() } },
-    { label: 'Variable', type: 'variable', icon: 'variable', stage: 'SCD', action: () => { createVaribale() } },
+    { label: 'Variable', type: 'variable', icon: 'variable', stage: 'SCD', action: () => { createVariable() } },
     { label: 'Function', type: 'function', icon: 'function', stage: 'SCD', action: () => { createFunction() } },
     { label: 'Literal', type: 'literal', icon: 'three-point', stage: 'SCD', },
     // {  label: 'Return', type: 'return', icon: '' },
@@ -29,8 +37,9 @@ const elements = [
 
     // FD
     { label: 'Assignment', icon: 'assignment', type: 'image', stage: 'FD', action: () => createStatement('assignment') },
-    { label: 'Call', icon: 'event', type: 'arrow', stage: 'FD', action: () => createStatement('callback') },
+    { label: 'Call', icon: 'event', type: 'arrow', stage: 'FD', action: () => createStatement('call') },
     { label: 'Condition', icon: 'git', type: 'star', stage: 'FD', action: () => createStatement('condition') },
+    { label: 'Emit', icon: 'emit', type: 'arrow', stage: 'FD', action: () => createStatement('emit') },
     { label: 'Loop', icon: 'loop', type: 'star', stage: 'FD', action: () => createStatement('loop') },
     { label: 'Literal', icon: 'three-point', type: 'star', stage: 'FD', action: () => createStatement('literal') },
 ]
@@ -54,7 +63,7 @@ function createStruct() {
     })
 }
 
-function createVaribale() {
+function createVariable() {
     fileStore.contract.variables.push({
         name: "new_variable",
         x: 100,
@@ -82,27 +91,47 @@ function createStatement(type) {
     switch (type) {
         case 'assignment':
             console.log('creating assignment statement ...');
-            fileStore.selectedFunction.body.push({
+            fileStore.selectedFunction.body.statements.push({
                 type: "AssignmentStatement",
-                expressions: {
-                    left: "",
-                    right: ""
-                }
+                expressions: [
+                    {
+                        "left": {
+                            "type": "",
+                            "name": ""
+                        },
+                        "right": {
+                            "type": "",
+                            "value": ""
+                        }
+                    }
+                ]
             })
             break;
-        case 'loop':
-            console.log('creating loop statement ...');
+        case "call":
+            console.log(`creating loop ${type} ...`);
 
-            fileStore.selectedFunction.body.push({
-                type: "LoopStatement",
-                condition: {
-                    type: "BinaryExpression",
-                    left: "",
-                    operator: "",
-                    right: ""
-                },
-                body: []
-            })
+            break;
+        case "condition":
+            console.log(`creating loop ${type} ...`);
+
+            break;
+        case "emit":
+            console.log(`creating loop ${type} ...`);
+
+            break;
+        case 'loop':
+            console.log(`creating loop ${type} ...`);
+
+            // fileStore.selectedFunction.body.statements.push({
+            //     type: "LoopStatement",
+            //     condition: {
+            //         type: "BinaryExpression",
+            //         left: "",
+            //         operator: "",
+            //         right: ""
+            //     },
+            //     body: []
+            // })
             break;
 
         default:

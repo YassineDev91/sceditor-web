@@ -81,21 +81,31 @@ const closeModal = () => {
     emit('update:open', false)
 }
 const newContract = () => {
-    if (fileStore.contract != null)
+    const isContractEmpty = fileStore.contract.name == null ? true : false
+    if (isContractEmpty) {
+        createNewContract(contractName.value)
+    } else {
         if (confirm("A new contract will replace the current one, are you sure ?", "yes or no"))
-            fileStore.contract =
-            {
-                "name": fileStore.contract.name,
-                "x": 10,
-                "y": 10,
-                "variables": [],
-                "structs": [],
-                "constructor": {},
-                "functions": [],
-            }
-
+            createNewContract(contractName.value)
+    }
     localOpen.value = false
     emit('update:open', false)
+    console.log("done", contractName.value);
 
+}
+const createNewContract = (name) => {
+    fileStore.contract =
+    {
+        "name": name,
+        "x": 10,
+        "y": 10,
+        "variables": [],
+        "structs": [],
+        "constructor": {
+            "x": 100,
+            "y": 100
+        },
+        "functions": [],
+    }
 }
 </script>

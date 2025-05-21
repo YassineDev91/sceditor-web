@@ -8,7 +8,7 @@
       </span>
       );
     </div> -->
-  <v-group ref="groupRef" :config="groupConfig">
+    <v-group ref="groupRef" :config="groupConfig" @dragmove="e => $emit('dragmove', e)">
     <v-rect ref="rectRef" :config="rectConfig"></v-rect>
     <v-text :config="textConfig"></v-text>
     <v-image :config="iconConfig" />
@@ -24,6 +24,9 @@
 import { onMounted, ref } from 'vue';
 import { useImage } from 'vue-konva';
 import AddStatement from './AddStatement.vue';
+
+const emit = defineEmits(['dragmove']);
+
 const props = defineProps({
   x: Number,
   y: Number,
