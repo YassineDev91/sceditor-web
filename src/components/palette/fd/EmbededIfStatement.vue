@@ -22,14 +22,17 @@ const props = defineProps({
     statement: Object
 });
 
+
 const contentRectConfig = ref({
-    x: props.x +20,
+    x: props.x +10,
     y: props.y,
     height: 10,
-    width: 100,
+    width: 200,
     fill: "#FFECD1",
     borderColor: "",
-    content: "condition",
+    content: props.statement.condition
+        ? `${props.statement.condition.left.value} ${props.statement.condition.operator} ${props.statement.condition.right.object}.${props.statement.condition.right.member}`
+        : "Condition",
     fontSize: 14
 })
 
