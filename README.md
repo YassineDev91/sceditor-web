@@ -90,8 +90,8 @@ If you use this tool in academic work, please cite:
 ```bibtex
 @article{Your2025Paper,
   title={SCEditor-web: A Web-Based Graphical Editor for Smart Contract Modeling and AI-Powered Code Generation},
-  author={Your Name and Collaborators},
-  journal={Q1 Journal Name},
+  author={Y Ait Hsain, N Laaz, S Mbarki},
+  journal={Journal},
   year={2025},
   note={Under Review}
 }
