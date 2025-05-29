@@ -51,8 +51,8 @@ export const useContractStorage = defineStore("contract", {
         "structs": [
           {
             "name": "State",
-            "x": 250,
-            "y": 200,
+            "x": 150,
+            "y": 100,
             "literals": [
               {
                 "type": {

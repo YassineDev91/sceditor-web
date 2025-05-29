@@ -1,5 +1,13 @@
 <template>
-    <v-group :config="{ draggable: true }">
+    <v-group :config="{
+            x: 100,
+            y: 100,
+        name: props.name,
+        type: 'Struct',
+        width: rectConfig.width,
+        height: rectConfig.height,
+        draggable: true
+    }">
         <!-- <v-line :config="lineConfig" /> -->
         <v-rect :config="rectConfig">
         </v-rect>
@@ -9,7 +17,7 @@
             :name="literal.name" :data="literal" :x="rectConfig.x + 10" :y="rectConfig.y + (index * 25) + 35">
         </Literal>
         <v-text :config="textConfig" />
-        <v-image :config="iconConfig"/>
+        <v-image :config="iconConfig" />
 
     </v-group>
 </template>
@@ -38,8 +46,8 @@ const rectConfig = ref({
     y: props.y,
     width: 150,
     height: 140,
-    fill:"#E9E5FD",
-    cornerRadius:5,
+    fill: "#E9E5FD",
+    cornerRadius: 5,
     stroke: '#9673A6',
     strokeWidth: 1,
 })
@@ -49,7 +57,7 @@ const selectionRectConfig = ref({
     width: rectConfig.value.width,
     height: rectConfig.value.height,
     stroke: '#3498db',
-    cornerRadius:5,
+    cornerRadius: 5,
     strokeWidth: 2,
 })
 const textConfig = ref({
@@ -62,11 +70,11 @@ const textConfig = ref({
 const [image] = useImage("src/assets/icons/struct_icon.png")
 
 const iconConfig = ref({
-    x:rectConfig.value.x + 30,
-    y:rectConfig.value.y + 5,
-    width:20,
-    height:20,
-    image:image
+    x: rectConfig.value.x + 30,
+    y: rectConfig.value.y + 5,
+    width: 20,
+    height: 20,
+    image: image
 })
 // const lineConfig = ref({
 //     points: [rectConfig.value.x, rectConfig.value.y + textConfig.value.fontSize + 5, rectConfig.value.x + rectConfig.value.width, rectConfig.value.y + textConfig.value.fontSize + 5],

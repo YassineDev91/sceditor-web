@@ -9,7 +9,7 @@
     </div>
     <div class="flex flex-col p-2">
         <div v-for="element in getPaletteElements()" :key="element.id" class="m-0.5">
-            <div @dragstart="startDrag(element)" draggable="true" @click="element.action"
+            <div @dragstart="startDrag($event, element)" draggable="true" @click="element.action"
                 class="flex p-1.5 cursor-pointer rounded-md border bg-slate-800/25 border-slate-700 hover:dark:bg-slate-300/20 dark:text-white space-x-2 items-center">
                 <div class="bg-slate-200 rounded-sm shadow-md">
                     <img :src="'src/assets/icons/' + element.icon + '.png'"
@@ -43,9 +43,9 @@ const elements = [
     { label: 'Loop', icon: 'loop', type: 'star', stage: 'FD', action: () => createStatement('loop') },
     { label: 'Literal', icon: 'three-point', type: 'star', stage: 'FD', action: () => createStatement('literal') },
 ]
-function startDrag(element) {
-    // this.$emit('start-drag', element);
-}
+const startDrag = (event, item) => {
+  event.dataTransfer.setData('application/json', JSON.stringify(item));
+};
 function getPaletteElements() {
 
     return elements.filter((elm) => {
@@ -61,6 +61,7 @@ function createStruct() {
         x: 100,
         y: 100
     })
+    console.log("creating struct ...", fileStore.contract.structs);
 }
 
 function createVariable() {

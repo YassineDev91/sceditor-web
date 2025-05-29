@@ -5,6 +5,7 @@
         <v-rect ref="rectRef" :config="rectConfig"></v-rect>
         <v-text :config="textConfig"></v-text>
         <v-image :config="iconConfig"></v-image>
+        <ContentRectangle :config="contentRect"></ContentRectangle>
         <!-- <AddStatement ref="addStatementCmp" :coordinates="{ x: props.x + 30, y: props.y + 60 }"></AddStatement> -->
 
     </v-group>
@@ -13,7 +14,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useImage } from 'vue-konva';
-import AddStatement from './AddStatement.vue';
+import ContentRectangle from './ContentRectangle.vue';
 const emit = defineEmits(['dragmove']);
 
 const props = defineProps({
@@ -31,16 +32,24 @@ const rectConfig = ref({
     cornerRadius: 5,
     fill: "#FFDBD4",
     stroke: "#FA9580",
-    
-
 })
 
 const textConfig = ref({
     x: rectConfig.value.x + 45,
     y: rectConfig.value.y + 17,
     fontSize: 15,
-    text: props.statement.type
+    text:props.statement.type
+})
 
+const contentRect = ref({
+    x: textConfig.value.x,
+    y: rectConfig.value.y+40,
+    content: props.statement.event,
+    height:30,
+    width:140,
+    fillColor: "#FEFDF8",
+    borderColor: "#FA9580",
+    fontSize:14
 })
 const groupConfig = ref({
     x: props.x,

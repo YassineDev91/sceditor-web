@@ -1,0 +1,305 @@
+<template>
+    {{ fileStore.stage }}
+    <div v-if="fileStore.contract.name" class="h-full w-full dark:bg-[#F7F7F7] rounded-sm">
+        <button class="text-left text-black text-xs mx-1 mt-1 flex flex-row items-center space-x-1" @click="toggleLayer"
+            v-if="!isMainLayerVisible">
+            <ArrowLeftCircleIcon class="w-5"></ArrowLeftCircleIcon>
+            <span>Back</span>
+        </button>
+        <div ref="workspaceRef" class=" flex flex-row">
+            <v-stage ref="stageRef" :config="stageConfig">
+
+                <v-layer>
+                    <contract :name="fileStore.contract.name" :x="fileStore.contract.x" :y="fileStore.contract.y"
+                        :dimensions="stageConfig" @click="fileStore.clearSelection" />
+                </v-layer>
+                <v-layer ref="mainLayer" :visible="isMainLayerVisible">
+                    <variable v-for="variable in fileStore.contract.variables" :key="variable.name" :data="variable"
+                        :x="variable.x" :y="variable.y" @click="fileStore.showProperties"
+                        :selected="variable.isSelected" />
+
+                    <struct v-for="struct in fileStore.contract.structs" :key="struct.name" :name="struct.name"
+                        :data="struct" :literals="struct.literals" :x="struct.x" :y="struct.y"
+                        @click="fileStore.showProperties" :selected="struct.isSelected" />
+
+                    <function v-for="_function in fileStore.contract.functions" :key="_function.name"
+                        :name="_function.name" :x="_function.x" :y="_function.y" :data="_function"
+                        :params="_function.params" :statements="_function.body.statements"
+                        :returnParams='_function.returnParams' @click="fileStore.showProperties"
+                        @dblclick="showFunctionLayer(_function)" :selected="_function.isSelected" />
+
+                    <function v-if="fileStore.contract.constructor" name="<<constructor>>"
+                        :x="fileStore.contract.constructor.x" :y="fileStore.contract.constructor.y" />
+
+                </v-layer>
+
+                <v-layer ref="functionLayer" :visible="isFunctionLayerVisible" v-if="isFunctionLayerVisible"
+                    @vue:mounted="loadFLayersNode">
+
+                    <!-- <Statement v-for="(statement, index) in selectedFunction.body.statements" :x="50" :y="70*index"
+                        :statement="statement" :type="statement.type" @dragmove="handleDragMove" /> -->
+                    <StatementRenderer v-for="(stmt, index) in selectedFunction.body.statements" :statement="stmt"
+                        :x="20 * Math.random()" :y="80 * index" @dragmove="handleDragMove" />
+
+                    <v-arrow v-for="connector in connectors" :config="getArrowConfig(connector)">
+
+                    </v-arrow>
+                </v-layer>
+            </v-stage>
+
+        </div>
+    </div>
+    <div v-if="!fileStore.contract.name"
+        class="h-full w-full dark:bg-slate-300 rounded-sm workspace flex items-center justify-center">
+
+        <button @click="showModal = true"
+            class=" w-20 h-20 border px-3 py-2 text-xl items-center text-center dark:bg-gray-500 dark:hover:bg-gray-600 bg-white hover:bg-slate-100 border-dashed border-black text-gray-400 rounded-sm">+
+        </button>
+
+    </div>
+
+    <Modal v-model:open="showModal" title="New Smart Contract Diagram">
+        <div class="flex flex-col gap-2">
+            <label for="contractName">Title</label>
+            <input type="text" name="contractName" id="contractName"
+                class="p-1 outline-none border border-1 rounded focus:border-blue-600">
+        </div>
+    </Modal>
+</template>
+
+<script setup>
+import { computed, nextTick, onMounted, ref, watchEffect } from 'vue';
+import Contract from '@/components/palette/scd/Contract.vue'
+import Variable from '@/components/palette/scd/Variable.vue'
+import Struct from '@/components/palette/scd/Struct.vue'
+import Function from '@/components/palette/scd/Function.vue'
+import AssignmentStatement from '@/components/palette/fd/AssignmentStatement.vue'
+import Modal from './Modal.vue';
+import { useContractStorage } from '@/stores/contract'
+import { ArrowLeftCircleIcon, CheckBadgeIcon } from '@heroicons/vue/24/outline';
+import Statement from './palette/fd/Statement.vue';
+import { Tag } from 'konva/lib/shapes/Label';
+import StatementRenderer from './palette/fd/StatementRenderer.vue';
+
+var fileStore = useContractStorage()
+
+var isMainLayerVisible = ref(true);
+var isFunctionLayerVisible = ref(!isMainLayerVisible.value)
+var selectedFunction = ref(null)
+const showModal = ref(false)
+const stageRef = ref(null)
+const mainLayer = ref(null)
+const functionLayer = ref(null)
+// on mount load layers
+
+onMounted(() => {
+    const layer = mainLayer.value;
+
+})
+
+const loadFLayersNode = () => {
+    const layer = functionLayer.value.getNode();
+
+    targets.value = layer.getChildren()
+
+    // targets.value = generateTargets(layer.getChildren())
+    connectors.value = generateConnectors(layer.getChildren())
+
+    console.log('number of connections:', connectors.value.length);
+
+
+    // console.log("Connectors:", connectors.value);
+
+}
+const heightCanvaRef = ref(0);
+const widthCanvaRef = ref(0);
+const workspaceRef = ref(null)
+const stageConfig = computed(() => ({
+    width: widthCanvaRef.value - 30,
+    height: window.innerHeight - 30
+}));
+onMounted(async () => {
+    await nextTick(); // ensures DOM is rendered
+    if (workspaceRef.value) {
+        const { offsetWidth, offsetHeight } = workspaceRef.value;
+        widthCanvaRef.value = offsetWidth
+        heightCanvaRef.value = window.innerHeight
+        console.log('Width:', offsetWidth, 'Height:', offsetHeight);
+        // workspaceRef.value.getNode().height(offsetHeight)
+        // workspaceRef.value.getNode().width(offsetWidth)
+        nextTick(() => {
+            const stage = stageRef.value?.getNode();
+            if (stage) {
+                stage.setSize({ width: widthCanvaRef.value, height: heightCanvaRef.value });
+                stage.draw();
+            }
+        });
+    }
+});
+// for connecting nodes
+var targets = ref([]);
+var connectors = ref([]);
+
+const toggleLayer = () => {
+    fileStore.scdStage = !fileStore.scdStage
+    isMainLayerVisible.value = !isMainLayerVisible.value
+    isFunctionLayerVisible.value = !isFunctionLayerVisible.value
+
+    connectors.value = []
+    targets.value = []
+
+    // generateConnectors(selectedFunction.body)
+
+}
+const showFunctionLayer = (func) => {
+    fileStore.selectedFunction = func
+    selectedFunction = func
+    toggleLayer()
+}
+
+const handleExport = () => {
+    const dataURL = stageRef.value.getNode().toDataURL({
+        pixelRatio: 2 // double resolution
+    });
+
+    const link = document.createElement('a');
+    link.download = 'stage.png';
+    link.href = dataURL;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+
+/*  
+    ********************************************************************* 
+    ---------------------- my way for linking nodes ----------------
+    ********************************************************************* 
+*/
+
+const generateConnectors = (nodes) => {
+
+    const results = []
+    for (let index = 0; index < nodes.length - 1; index++) {
+
+
+        const from = nodes[index];
+        const to = nodes[index + 1]
+
+        console.log(from.getClassName(), 'x', from.x(), 'y', from.y())
+
+
+
+        const offsetX = 100
+        const offsetY = 70
+        const fromPos = from.getAbsolutePosition();
+        const toPos = to.getAbsolutePosition();
+        const connector = {
+            id: from._id + '' + to._id,
+            // points: [from.x() + offsetX, from.y() + offsetY, to.x() + offsetX, to.y() + offsetY],
+            points: [
+                fromPos.x ,
+                fromPos.y ,
+                toPos.x ,
+                toPos.y 
+            ], stroke: 'black',
+            fill: 'black',
+        }
+
+
+        // console.log(connector.points)
+        connector.from = from
+        connector.to = to
+        results.push(connector)
+
+    }
+    return results
+}
+
+// getting arrow config
+const getArrowConfig = (connector) => {
+    const fromNode = targets.value.find((t) => t._id == connector.from._id)
+    const toNode = targets.value.find((t) => t._id == connector.to._id)
+
+    if (!fromNode || !toNode) return { points: [0, 0, 0, 0] };
+    // console.log(connector.from._id)
+    let points = getConnectorPoints(fromNode, toNode)
+    // console.log('from',fromNode.x(),'to',toNode.x());
+    // console.log('from',fromNode.y(),'to',toNode.y());
+
+    // console.log('points', points)
+    return {
+        id: connector.id,
+        points: points,
+        fill: 'black',
+        stroke: 'black',
+    };
+
+}
+const getConnectorPoints = (from, to) => {
+
+    const dx = to.x() - from.x();
+    const dy = to.y() - from.y();
+    let angle = Math.atan2(-dy, dx);
+
+    const radius = 50;
+
+
+    let index = targets.value.indexOf(from)
+
+    const offsetX = 150
+    const offsetY = 100 + 70 * (index)
+    const fromPos = from.getAbsolutePosition();
+    const toPos = to.getAbsolutePosition();
+    return [
+        // from.x() + from.width() / 2,
+        // from.y() + from.height(),
+        // to.x() + to.width() / 2,
+        // to.y(),
+        fromPos.x ,
+        fromPos.y ,
+        toPos.x ,
+        toPos.y,
+    ];
+
+}
+const handleDragMove = (e) => {
+
+    const id = e.target._id;
+
+    targets.value = targets.value.map((target) => {
+        if (target._id === id) {
+            target.x(e.target.x())
+            target.y(e.target.y())
+
+        }
+        return target
+    }
+    );
+    const layer = functionLayer.value?.getNode();
+if (layer) layer.draw();
+
+};
+// ------------- Connecting nodes end -------------------------------
+defineExpose({
+    handleExport
+})
+
+watchEffect(() => {
+    console.log('Stage config:', stageConfig.value);
+});
+
+</script>
+
+<style scoped>
+.workspace {
+    flex: 1;
+    /* Take remaining space */
+    background-color: #f8f9fa4f;
+    /* Light background */
+    background-image: radial-gradient(rgb(202, 202, 202) 1px, transparent 1px);
+    background-size: 20px 20px;
+    /* Adjust dot spacing */
+    height: 100vh;
+    /* Full height */
+}
+</style>

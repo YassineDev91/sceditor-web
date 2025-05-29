@@ -1,5 +1,6 @@
 <template>
-    <v-group :config="{ draggable: true }">
+    <v-group :config="{ draggable: true }" @mouseover="isHovered = true" @mouseout="isHovered = false">
+        <v-rect v-if="isHovered" :config="hoverRectConfig" />
         <v-rect :config="rectConfig">
         </v-rect>
         <v-text :config="textConfig" />
@@ -9,7 +10,7 @@
     </v-group>
 </template>
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useImage } from "vue-konva";
 
 const nameMarginX = 40
@@ -18,7 +19,7 @@ const typeMarginX = nameMarginX
 const typeMarginY = 27
 const variableRectWidth = 160
 const variableRectheight = 50
-
+const isHovered = ref(false)
 
 const props = defineProps({
     x: Number,
@@ -72,6 +73,18 @@ const iconConfig = ref({
     width: 30,
     height: 30
 })
+
+const hoverRectConfig = computed(() => ({
+    x: rectConfig.value.x-1,
+    y: rectConfig.value.y-1,
+    width: rectConfig.value.width +2,
+    height: rectConfig.value.height + 2,
+    stroke: '#3b82f6',
+    strokeWidth: 2,
+    dash: [4, 2],
+    listening: false,  // prevent this rect from capturing mouse events
+    cornerRadius:5
+}));
 
 onMounted(() => {
     // console.log("Variable mounted", props.data.name.length)

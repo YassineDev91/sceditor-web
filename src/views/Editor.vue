@@ -1,5 +1,5 @@
 <template>
-  <!-- <div class="flex flex-col bg-white dark:bg-gray-900 dark:text-white font-mono">
+  <div class="flex flex-col bg-white dark:bg-gray-900 dark:text-white font-mono">
 
     <Header :sctitle="fileStore.contract.name" :workspace="workspaceRef"></Header>
     <div class="grid grid-cols-5 bg-white dark:bg-gray-900 dark:text-white font-mono">
@@ -9,18 +9,17 @@
       </div>
       <RightSideBar class="col-span-1 h-screen"></RightSideBar>
     </div>
-  </div> -->
+  </div>
 
-  <RouterView></RouterView>
 </template>
 
 <script setup>
 import { onBeforeMount, reactive, ref } from 'vue'
-import Header from './components/Header.vue'
-import SideBar from './components/SideBar.vue'
-import Workspace from './components/Workspace.vue'
+import Header from '@/components/Header.vue'
+import SideBar from '@/components/SideBar.vue'
+import Workspace from '@/components/Workspace.vue'
 import { useContractStorage } from '@/stores/contract'
-import RightSideBar from './components/RightSideBar.vue'
+import RightSideBar from '@/components/RightSideBar.vue'
 var fileStore = useContractStorage()
 
 const workspaceRef = ref(null);

@@ -7,7 +7,7 @@
             <span>Back</span>
         </button>
 
-        <div ref="workspaceRef" class="flex flex-row h-full w-full">
+        <div ref="workspaceRef" class="flex flex-row h-full w-full" @dragover.prevent @drop="handleDrop">
             <v-stage ref="stageRef" :config="stageConfig">
                 <!-- Contract Layer -->
                 <v-layer>
@@ -97,6 +97,8 @@ const stageConfig = computed(() => ({
 }));
 
 onMounted(async () => {
+    const stage = stageRef.value?.getNode();
+
     await nextTick();
     const workspace = workspaceRef.value;
     if (workspace) {
@@ -111,6 +113,7 @@ onMounted(async () => {
             }
         });
     }
+
 });
 
 const targets = ref([]);
@@ -234,6 +237,113 @@ defineExpose({
         document.body.removeChild(link);
     }
 });
+// const handleDrop = (event) => {
+//     const raw = event.dataTransfer.getData('application/json');
+//     if (!raw) return;
+//     const item = JSON.parse(raw);
+
+//     const stage = stageRef.value.getNode();
+//     const pointerPosition = stage.getPointerPosition();
+
+//     const droppedX = pointerPosition.x;
+//     const droppedY = pointerPosition.y;
+
+//     // 🧠 Find target Struct node
+//     const layer = mainLayer.value?.getNode();
+//     const nodes = layer.getChildren();
+
+//     const targetStruct = nodes.find((node) => {
+//         return node.getClassName() === 'Group' &&
+//             node.attrs.type === 'Struct' &&
+//             node.getClientRect().x <= droppedX &&
+//             node.getClientRect().x + node.getClientRect().width >= droppedX &&
+//             node.getClientRect().y <= droppedY &&
+//             node.getClientRect().y + node.getClientRect().height >= droppedY;
+//     });
+
+//     if (targetStruct) {
+//         console.log("Dropped on struct:", targetStruct);
+//         // Now update the corresponding struct model in fileStore
+//         const structName = targetStruct.attrs.name;
+//         const struct = fileStore.contract.structs.find(s => s.name === structName);
+//         if (struct) {
+//             struct.literals.push({ name: item.label, type: "string" });
+//         }
+//     }
+// };
+
+const handleDrop = (event) => {
+    console.log("📦 Drop event fired");
+
+    const raw = event.dataTransfer.getData("application/json");
+    if (!raw) {
+        console.warn("❌ No dataTransfer payload found");
+        return;
+    }
+
+    const item = JSON.parse(raw);
+    console.log("🎯 Dropped item:", item);
+
+    const stage = stageRef.value.getNode();
+    const rect = stageRef.value.$el.getBoundingClientRect();
+    const pointerPosition = {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+    }; console.log("🧭 Pointer position:", pointerPosition);
+
+    const layer = mainLayer.value.getNode();
+    const nodes = layer.getChildren();
+
+    const structNode = nodes.find((node) => {
+        const rect = node.getClientRect();
+        return (
+            node.attrs.type === 'Struct' &&
+            pointerPosition.x >= rect.x &&
+            pointerPosition.x <= rect.x + rect.width &&
+            pointerPosition.y >= rect.y &&
+            pointerPosition.y <= rect.y + rect.height
+        );
+    });
+
+    if (structNode) {
+        const structName = structNode.attrs.name;
+        const struct = fileStore.contract.structs.find(s => s.name === structName);
+        if (struct) {
+            struct.literals.push({ name: item.label, type: { base: "string" } }); // Example
+            console.log(`Added literal "${item.label}" to struct ${structName}`);
+        }
+    }
+
+}
+
+// const handleDrop = (event) => {
+//     const item = JSON.parse(event.dataTransfer.getData("application/json"));
+//     const stage = stageRef.value.getNode();
+//     const pointerPosition = stage.getPointerPosition();
+
+//     const layer = mainLayer.value.getNode();
+//     const nodes = layer.getChildren();
+
+//     const structNode = nodes.find((node) => {
+//         const rect = node.getClientRect();
+//         return (
+//             node.attrs.type === 'Struct' &&
+//             pointerPosition.x >= rect.x &&
+//             pointerPosition.x <= rect.x + rect.width &&
+//             pointerPosition.y >= rect.y &&
+//             pointerPosition.y <= rect.y + rect.height
+//         );
+//     });
+
+//     if (structNode) {
+//         const structName = structNode.attrs.name;
+//         const struct = fileStore.contract.structs.find(s => s.name === structName);
+//         if (struct) {
+//             struct.literals.push({ name: item.label, type: { base: "string" } }); // Example
+//             console.log(`Added literal "${item.label}" to struct ${structName}`);
+//         }
+//     }
+// };
 </script>
 
 <style scoped>
