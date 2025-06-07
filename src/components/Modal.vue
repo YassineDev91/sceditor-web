@@ -1,5 +1,6 @@
 <template>
-    <TransitionRoot as="template" :show="localOpen" @after-leave="$emit('update:open', false)">
+    <TransitionRoot as="template" :show="localOpen" @after-leave="$emit('contract-created');
+    emit('update:open', false)">
         <Dialog class="relative z-10" @close="localOpen = false">
             <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
                 leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
@@ -49,7 +50,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, watch } from 'vue'
+import { ref, defineProps, defineEmits, watch, nextTick } from 'vue'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import { NewspaperIcon } from '@heroicons/vue/24/outline'
 import { useContractStorage } from '@/stores/contract'
@@ -64,10 +65,12 @@ const props = defineProps({
     title: {
         type: String,
         default: "NewSmartContract"
-    }
+    },
+    stageRef: Object // ref from Workspace.vue
+
 })
 
-const emit = defineEmits(['update:open'])
+const emit = defineEmits(['update:open', 'contract-created'])
 
 const localOpen = ref(props.open)
 
@@ -78,6 +81,7 @@ watch(() => props.open, (newVal) => {
 
 const closeModal = () => {
     localOpen.value = false
+    emit('contract-created');
     emit('update:open', false)
 }
 const newContract = () => {
@@ -89,8 +93,14 @@ const newContract = () => {
             createNewContract(contractName.value)
     }
     localOpen.value = false
+    emit('contract-created');
     emit('update:open', false)
     console.log("done", contractName.value);
+    nextTick(() => {
+        props.stageRef?.getNode()?.draw();
+        const stage = props.stageRef?.getNode();
+        console.log('🔍 Stage children:', stage?.getChildren());
+    });
 
 }
 const createNewContract = (name) => {

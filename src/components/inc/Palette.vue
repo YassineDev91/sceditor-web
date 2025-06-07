@@ -44,7 +44,7 @@ const elements = [
     { label: 'Literal', icon: 'three-point', type: 'star', stage: 'FD', action: () => createStatement('literal') },
 ]
 const startDrag = (event, item) => {
-  event.dataTransfer.setData('application/json', JSON.stringify(item));
+    event.dataTransfer.setData('application/json', JSON.stringify(item));
 };
 function getPaletteElements() {
 
@@ -91,9 +91,9 @@ function createFunction() {
 function createStatement(type) {
     switch (type) {
         case 'assignment':
-            console.log('creating assignment statement ...');
+            console.log(`creating ${type} statement ...`);
             fileStore.selectedFunction.body.statements.push({
-                type: "AssignmentStatement",
+                cmp_type: "AssignmentStatement",
                 expressions: [
                     {
                         "left": {
@@ -109,19 +109,37 @@ function createStatement(type) {
             })
             break;
         case "call":
-            console.log(`creating loop ${type} ...`);
-
+            console.log(`creating ${type} statement ...`);
+            fileStore.selectedFunction.body.statements.push({
+                cmp_type: "CallStatement",
+                object: "",
+                method: "",
+                params: [
+                    {
+                        "type": "BinaryOperation",
+                        "operator": "*",
+                        "left": {
+                            "type": "Literal",
+                            "value": 2
+                        },
+                        "right": {
+                            "type": "Identifier",
+                            "value": "value"
+                        }
+                    }
+                ]
+            })
             break;
         case "condition":
-            console.log(`creating loop ${type} ...`);
+            console.log(`creating ${type} statement ...`);
 
             break;
         case "emit":
-            console.log(`creating loop ${type} ...`);
+            console.log(`creating ${type} statement ...`);
 
             break;
         case 'loop':
-            console.log(`creating loop ${type} ...`);
+            console.log(`creating ${type} statement ...`);
 
             // fileStore.selectedFunction.body.statements.push({
             //     type: "LoopStatement",

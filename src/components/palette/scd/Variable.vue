@@ -1,5 +1,5 @@
 <template>
-    <v-group :config="{ draggable: true }" @mouseover="isHovered = true" @mouseout="isHovered = false">
+    <v-group :config="{ draggable: true }" @mousedown="handleClick">
         <v-rect v-if="isHovered" :config="hoverRectConfig" />
         <v-rect :config="rectConfig">
         </v-rect>
@@ -10,8 +10,12 @@
     </v-group>
 </template>
 <script setup>
+import { useContractStorage } from "@/stores/contract";
 import { computed, onMounted, ref } from "vue";
 import { useImage } from "vue-konva";
+
+const fileStore = useContractStorage();
+
 
 const nameMarginX = 40
 const nameMarginY = 13
@@ -27,7 +31,7 @@ const props = defineProps({
     data: Object,
     selected: Boolean
 });
-const rectConfig = ref({
+const rectConfig = computed(() =>({
     x: props.x,
     y: props.y,
     fill: '#DBF1ED',
@@ -37,8 +41,8 @@ const rectConfig = ref({
     cornerRadius: 5,
     strokeWidth: 1,
 
-})
-const selectionRectConfig = ref({
+}))
+const selectionRectConfig = computed(() =>({
     x: props.x,
     y: props.y,
     width: rectConfig.value.width,
@@ -46,8 +50,8 @@ const selectionRectConfig = ref({
     cornerRadius: 5,
     stroke: '#73C7C7',
     strokeWidth: 2,
-})
-const textConfig = ref({
+}))
+const textConfig = computed(() =>({
     // x: rectConfig.value.x - props.name.length * 2.5,
     // y: rectConfig.value.y - rectConfig.value.radiusY / 4,
 
@@ -56,15 +60,16 @@ const textConfig = ref({
     text: props.data.name,
     fontSize: 12,
     data: props.data
-})
-const typeTextConfig = ref({
+}))
+
+const typeTextConfig = computed(() =>({
     x: props.x + typeMarginX,
     y: props.y + typeMarginY,
     text: props.data.type.payable ? props.data.type.base + ' payable' : props.data.type.base,
     fill: 'gray',
     fontSize: 12,
     data: props.data.type.base
-})
+}))
 const [image] = useImage("src/assets/icons/variable_icon.png")
 const iconConfig = ref({
     x: props.x + 5,
@@ -89,6 +94,12 @@ const hoverRectConfig = computed(() => ({
 onMounted(() => {
     // console.log("Variable mounted", props.data.name.length)
 })
+
+function handleClick() {
+  console.log("✅ Clicked struct with data:", props.data);
+  console.log('🧪 props.data.type =', props.data?.cmp_type)
+  fileStore.showProperties(props.data);
+}
 
 
 </script>

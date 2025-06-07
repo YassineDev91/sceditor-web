@@ -31,7 +31,7 @@ const imageRef = ref({});
 const textRef = ref({});
 const textRectRef = ref({});
 const maxWidth = ref(0);
-const [image] = useImage("src/assets/icons/" + props.statement.type.toLowerCase() + 'Icon.png')
+const [image] = useImage("src/assets/icons/" + props.statement.cmp_type.toLowerCase() + 'Icon.png')
 const iconConfig = ref({
     x: props.x + 12,
     y: props.y + 12,
@@ -50,7 +50,7 @@ const statementTypeConfig = ref({
     x: props.x + 33,
     y: props.y + 12,
     fontSize: 12,
-    text: props.statement.type
+    text: props.statement.cmp_type
 })
 const textRectConfig = ref({
     x: props.x + 5,
@@ -60,6 +60,7 @@ const textRectConfig = ref({
     cornerRadius: 10,
     fill: '#F7F5FE',
     stroke: '#ADD8F6',
+    strokeWidth: 1,
 })
 const equalSignConfig = ref({
     x: iconConfig.value.x,

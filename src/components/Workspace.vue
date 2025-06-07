@@ -8,11 +8,12 @@
         </button>
 
         <div ref="workspaceRef" class="flex flex-row h-full w-full" @dragover.prevent @drop="handleDrop">
-            <v-stage ref="stageRef" :config="stageConfig">
+            <v-stage ref="stageRef" :key="fileStore.contract.name" :config="stageConfig">
                 <!-- Contract Layer -->
                 <v-layer>
-                    <contract :name="fileStore.contract.name" :x="fileStore.contract.x" :y="fileStore.contract.y"
-                        :dimensions="stageConfig" @click="fileStore.clearSelection" />
+                    <Contract v-if="fileStore.contract.name" :name="fileStore.contract.name" :x="fileStore.contract.x"
+                        :y="fileStore.contract.y" :dimensions="stageConfig" @click="fileStore.clearSelection">
+                    </Contract>
                 </v-layer>
 
                 <!-- Structural Layer -->
@@ -38,8 +39,14 @@
                 <!-- Function Layer -->
                 <v-layer ref="functionLayer" :visible="isFunctionLayerVisible" v-if="isFunctionLayerVisible"
                     @vue:mounted="loadFLayersNode">
-                    <StatementRenderer v-for="(stmt, index) in selectedFunction.body.statements" :key="stmt.id || index"
-                        :statement="stmt" :x="20" :y="80 * index" @dragmove="handleDragMove" />
+                    <StatementRenderer 
+                        v-for="(stmt, index) in selectedFunction.body.statements" 
+                        :key="stmt.id || index"
+                        :statement="stmt" 
+                        :x="20" 
+                        :y="80 * index" 
+                        @dragmove="handleDragMove" 
+                        @select="handleStatementSelect"/>
                     <v-arrow v-for="connector in connectors" :key="connector.id" :config="getArrowConfig(connector)" />
                 </v-layer>
             </v-stage>
@@ -55,7 +62,8 @@
     </div>
 
     <!-- Modal for Contract Creation -->
-    <Modal v-model:open="showModal" title="New Smart Contract Diagram">
+    <Modal v-model:open="showModal" @contract-created="onContractCreated" title="New Smart Contract Diagram"
+        :stageRef="stageRef">
         <div class="flex flex-col gap-2">
             <label for="contractName">Title</label>
             <input type="text" name="contractName" id="contractName"
@@ -68,7 +76,7 @@
 
 
 <script setup>
-import { computed, nextTick, onMounted, ref, watchEffect } from 'vue';
+import { computed, nextTick, onMounted, ref, watch, watchEffect } from 'vue';
 import Contract from '@/components/palette/scd/Contract.vue'
 import Variable from '@/components/palette/scd/Variable.vue'
 import Struct from '@/components/palette/scd/Struct.vue'
@@ -91,6 +99,8 @@ const workspaceRef = ref(null)
 const widthCanvaRef = ref(0);
 const heightCanvaRef = ref(0);
 
+const canvasReady = ref(false)
+
 const stageConfig = computed(() => ({
     width: widthCanvaRef.value,
     height: heightCanvaRef.value
@@ -105,15 +115,22 @@ onMounted(async () => {
         widthCanvaRef.value = workspace.offsetWidth;
         heightCanvaRef.value = window.innerHeight;
 
-        nextTick(() => {
-            const stage = stageRef.value?.getNode();
-            if (stage) {
-                stage.setSize({ width: widthCanvaRef.value, height: heightCanvaRef.value });
-                stage.draw();
-            }
-        });
-    }
+        await nextTick();
+        const workspace = workspaceRef.value;
+        if (workspace) {
+            widthCanvaRef.value = workspace.offsetWidth;
+            heightCanvaRef.value = window.innerHeight;
+            canvasReady.value = true;
 
+            nextTick(() => {
+                const stage = stageRef.value?.getNode();
+                if (stage) {
+                    stage.setSize({ width: widthCanvaRef.value, height: heightCanvaRef.value });
+                    stage.draw();
+                }
+            });
+        }
+    }
 });
 
 const targets = ref([]);
@@ -312,6 +329,44 @@ const handleDrop = (event) => {
             struct.literals.push({ name: item.label, type: { base: "string" } }); // Example
             console.log(`Added literal "${item.label}" to struct ${structName}`);
         }
+    } else {
+        if (item.label == "Struct") {
+            fileStore.contract.structs.push({
+                name: "new_struct",
+                cmp_type: "Struct",
+
+                x: pointerPosition.x,
+                y: pointerPosition.y,
+                literals: []
+            })
+        }
+        if (item.label == "Variable") {
+            fileStore.contract.variables.push({
+                name: "new_variable",
+                cmp_type: "Variable",
+                type: {
+                    base: "String"
+                },
+                x: pointerPosition.x,
+                y: pointerPosition.y,
+                visibility: "public",
+            })
+        }
+        if (item.label == "Function") {
+            fileStore.contract.functions.push({
+                name: "new_function",
+                cmp_type: "Function",
+                x: pointerPosition.x,
+                y: pointerPosition.y,
+                body: {
+                    "type": "Block",
+                    "statements": []
+                }
+            })
+        } if (item.label == "Assignment") {
+            console.log("creating assignment stmt!");
+
+        }
     }
 
 }
@@ -344,6 +399,42 @@ const handleDrop = (event) => {
 //         }
 //     }
 // };
+watch(
+    () => fileStore.contract.name,
+    async (newVal) => {
+        if (newVal) {
+            await nextTick(); // Wait for DOM
+            const workspace = workspaceRef.value;
+            if (workspace) {
+                widthCanvaRef.value = workspace.offsetWidth || 400;
+                heightCanvaRef.value = workspace.offsetHeight || 600;
+
+                nextTick(() => {
+                    const stage = stageRef.value?.getNode();
+                    if (stage) {
+                        stage.setSize({ width: widthCanvaRef.value, height: heightCanvaRef.value });
+                        stage.draw();
+                        console.log("✅ Stage resized after contract creation");
+                    }
+                });
+            }
+        }
+    }
+);
+
+const onContractCreated = async () => {
+    await nextTick();
+    const stage = stageRef.value?.getNode();
+    if (stage) {
+        stage.draw();
+        console.log("✅ Contract stage redrawn after creation");
+    }
+};
+
+function handleStatementSelect(statement) {
+  console.log('📍 Statement selected in Workspace:', statement)
+  fileStore.showProperties(statement)
+}
 </script>
 
 <style scoped>

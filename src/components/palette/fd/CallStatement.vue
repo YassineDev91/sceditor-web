@@ -8,7 +8,7 @@
       </span>
       );
     </div> -->
-    <v-group ref="groupRef" :config="groupConfig" @dragmove="e => $emit('dragmove', e)">
+  <v-group ref="groupRef" :config="groupConfig" @dragmove="e => $emit('dragmove', e)">
     <v-rect ref="rectRef" :config="rectConfig"></v-rect>
     <v-text :config="textConfig"></v-text>
     <v-image :config="iconConfig" />
@@ -63,16 +63,16 @@ const contentRectConfig = ref({
   y: textConfig.value.y + 30,
   height: 30,
   width: 130,
-  stroke:"#7CC9AE",
-  strokeWidth:0.5,
+  stroke: "#7CC9AE",
+  strokeWidth: 0.5,
   fill: "#FEFDF8",
   cornerRadius: 5
 })
 // textX = rectX + (rectWidth - textWidth) / 2;
 // textY = rectY + (rectHeight - textHeight) / 2;
 const contentConfig = ref({
-  x: contentRectConfig.value.x + (contentRectConfig.value.width - props.statement.method.length*7)/2 ,
-  y: contentRectConfig.value.y + (contentRectConfig.value.height - 15 )/2,
+  x: contentRectConfig.value.x + (contentRectConfig.value.width - props.statement.method.length * 7) / 2,
+  y: contentRectConfig.value.y + (contentRectConfig.value.height - 15) / 2,
   text: props.statement.method,
   fontSize: 15
 })
@@ -97,6 +97,6 @@ onMounted(() => {
   groupRef.value.getNode().width(rectRef.value.getNode().width())
   groupRef.value.getNode().height(rectRef.value.getNode().height())
   console.log(props.statement.method);
-  
+
 })
 </script>

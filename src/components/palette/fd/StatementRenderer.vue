@@ -1,27 +1,39 @@
-<!-- StatementRenderer.vue -->
-<template>
-  <component :is="getComponentType(statement.type)" :statement="statement" :x="statement.x" :y="statement.y"
-    @dragmove="$emit('dragmove', $event)" @click="$emit('click', $event)" />
-</template>
-
 <script setup>
-import ReturnStatement from './ReturnStatement.vue';
-import EmitStatement from './EmitStatement.vue';
-import CallStatement from './CallStatement.vue';
-import IfStatement from './IfStatement.vue';
-import AssignmentStatement from './AssignmentStatement.vue';
-import ForStatement from './ForStatement.vue';
-const emit = defineEmits(['dragmove']);
-const props = defineProps({ statement: Object });
+import { defineProps, defineEmits } from 'vue'
 
-const getComponentType = (type) => {
-  switch (type) {
-    case 'AssignmentStatement': return AssignmentStatement;
-    case 'ReturnStatement': return ReturnStatement;
-    case 'EmitStatement': return EmitStatement;
-    case 'CallStatement': return CallStatement;
-    case 'IfStatement': return IfStatement;
-    case 'ForStatement': return ForStatement;
-  }
-};
+import AssignmentStatement from './AssignmentStatement.vue'
+import ReturnStatement from './ReturnStatement.vue'
+import EmitStatement from './EmitStatement.vue'
+import CallStatement from './CallStatement.vue'
+import IfStatement from './IfStatement.vue'
+import ForStatement from './ForStatement.vue'
+
+const props = defineProps({
+  statement: Object,
+  x: Number,
+  y: Number
+})
+
+const emit = defineEmits(['dragmove', 'select'])
+
+const componentMap = {
+  AssignmentStatement,
+  ReturnStatement,
+  EmitStatement,
+  CallStatement,
+  IfStatement,
+  ForStatement
+}
+
+const Component = componentMap[props.statement.cmp_type]
 </script>
+<template>
+  <component
+    :is="Component"
+    :statement="props.statement"
+    :x="props.x"
+    :y="props.y"
+    @dragmove="(e) => emit('dragmove', e)"
+    @select="(stmt) => emit('select', stmt)"
+  />
+</template>

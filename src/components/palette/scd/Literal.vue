@@ -10,6 +10,8 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
+import { computed } from 'vue'
+
 var textRectRef = ref({})
 var literalTextRef = ref({})
 
@@ -20,28 +22,29 @@ const props = defineProps({
     data: Object,
     visibility: String
 })
-const textRectConfig = ref({
+const textRectConfig = computed(() =>({
     x: props.x,
     y: props.y,
-    width: 100,
+    width: 130,
     height: 20,
-    cornerRadius: 10,
+    cornerRadius: 7,
+    strokeWidth:1,
     fill: '#F7F5FE',
     stroke: '#CCC7F6',
-})
-const visibilityConfig = ref({
+}))
+const visibilityConfig = computed(() =>({
     x: props.x,
     y: props.y + 5,
     text: props.visibility,
     fontSize: 12,
-})
+}))
 
-const nameConfig = ref({
+const nameConfig = computed(() =>({
     x: textRectConfig.value.x + 30,
     y: textRectConfig.value.y + 5,
     text: props.name,
     fontSize: 12,
-})
+}))
 // const typeConfig = ref({
 //     x: nameConfig.value.x + nameConfig.value.fontSize*5,
 //     y: nameConfig.value.y,

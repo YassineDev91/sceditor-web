@@ -1,5 +1,5 @@
 <template>
-    <v-group :draggable="true">
+    <v-group :draggable="true" @mousedown="handleClick">
         <v-rect ref="rectRef" :config="rectConfig"></v-rect>
         <v-rect :config="paramsConfig"></v-rect>
         <v-rect :config="returnConfig"></v-rect>
@@ -26,6 +26,9 @@ import Parameter from "./Parameter.vue";
 import Return from './Return.vue';
 import Statement from '@/components/palette/scd/Statement.vue';
 import { useImage } from "vue-konva";
+import { useContractStorage } from "@/stores/contract";
+
+const fileStore =useContractStorage()
 
 const rectRef = ref(null);
 const maxWidth = ref(200);
@@ -125,4 +128,10 @@ onMounted(() => {
 
 
 })
+
+function handleClick() {
+  console.log("✅ Clicked struct with data:", props.data);
+  console.log('🧪 props.data.type =', props.data?.type)
+  fileStore.showProperties(props.data);
+}
 </script>
