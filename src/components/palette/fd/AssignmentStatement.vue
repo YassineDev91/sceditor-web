@@ -121,15 +121,6 @@ const iconConfig = ref({
     image: image
 })
 
-const fileStore = useContractStorage()
-
-
-const onMouseDown = (e) => {
-    // Prevent selection if drag just occurred (optional)
-    if (e.evt?.button === 0) {
-        fileStore.showProperties(props.statement)
-    }
-}
 
 function handleSelect() {
     console.log('✅ Statement clicked:', props.statement)

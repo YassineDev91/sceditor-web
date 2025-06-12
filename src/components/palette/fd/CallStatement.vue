@@ -1,14 +1,6 @@
 <!-- CallStatement.vue -->
 <template>
-  <!-- <div class="statement">
-      {{ statement.object }}.{{ statement.method }}(
-      <span v-for="(param, i) in statement.params" :key="i">
-        <ExpressionRenderer :expression="{ type: 'Identifier', value: param.value || param }" />
-        <span v-if="i < statement.params.length - 1">, </span>
-      </span>
-      );
-    </div> -->
-  <v-group ref="groupRef" :config="groupConfig" @dragmove="e => $emit('dragmove', e)">
+  <v-group ref="groupRef" :config="groupConfig" @dragmove="(e) => emit('dragmove', e)" @mousedown="handleSelect">
     <v-rect ref="rectRef" :config="rectConfig"></v-rect>
     <v-text :config="textConfig"></v-text>
     <v-image :config="iconConfig" />
@@ -21,7 +13,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useImage } from 'vue-konva';
 import AddStatement from './AddStatement.vue';
 
@@ -50,8 +42,7 @@ const textConfig = ref({
   x: rectConfig.value.x + 45,
   y: rectConfig.value.y + 17,
   fontSize: 15,
-  text: props.statement.type
-
+  text: props.statement.cmp_type || 'CallStatement',
 })
 
 
@@ -70,12 +61,12 @@ const contentRectConfig = ref({
 })
 // textX = rectX + (rectWidth - textWidth) / 2;
 // textY = rectY + (rectHeight - textHeight) / 2;
-const contentConfig = ref({
+const contentConfig = computed(() => ({
   x: contentRectConfig.value.x + (contentRectConfig.value.width - props.statement.method.length * 7) / 2,
   y: contentRectConfig.value.y + (contentRectConfig.value.height - 15) / 2,
-  text: props.statement.method,
+  text: props.statement.object + '.' +props.statement.method,
   fontSize: 15
-})
+}))
 const groupConfig = ref({
   x: props.x,
   y: props.y,
@@ -90,13 +81,16 @@ const iconConfig = ref({
   image: image
 })
 
+function handleSelect() {
+  console.log('✅ Statement clicked:', props.statement)
+  emit('select', props.statement)
+}
+
 onMounted(() => {
   const rectNode = rectRef.value.getNode()
   addStatementCmp.value.y = rectNode.y() + rectNode.height() + 100
-  console.log('rect', addStatementCmp.value.y);
   groupRef.value.getNode().width(rectRef.value.getNode().width())
   groupRef.value.getNode().height(rectRef.value.getNode().height())
-  console.log(props.statement.method);
 
 })
 </script>

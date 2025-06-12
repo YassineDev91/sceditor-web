@@ -10,14 +10,26 @@
       <input v-model="element.expressions[0].right.value" class="bg-slate-700 input" placeholder="Right" />
     </template>
 
-    <template v-if="element.method">
+    <template v-if="element.cmp_type == 'CallStatement'">
+      <label>Object:</label>
+      <input v-model="element.object" class="bg-slate-700 input" />
       <label>Method:</label>
       <input v-model="element.method" class="bg-slate-700 input" />
     </template>
 
-    <template v-if="element.condition">
-      <label>Condition:</label>
-      <input v-model="element.condition" class="bg-slate-700 input" />
+    <template v-if="element.cmp_type == 'EmitStatement'">
+      <label>Event:</label>
+      <input v-model="element.event" class="bg-slate-700 input" />
+
+    </template>
+
+    <template v-if="element.cmp_type == 'IfStatement'">
+      <label>Left:</label>
+      <input v-model="element.condition.left" class="bg-slate-700 input" placeholder="Left" />
+      <label>Right:</label>
+      <input v-model="element.condition.right" class="bg-slate-700 input" placeholder="Right" />
+      <label>Operator:</label>
+      <input v-model="element.condition.operator" class="bg-slate-700 input" placeholder="Operator" />
     </template>
   </div>
 </template>

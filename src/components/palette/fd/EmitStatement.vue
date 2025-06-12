@@ -1,7 +1,7 @@
 <!-- EmitStatement.vue -->
 <template>
 
-    <v-group ref="groupRef" :config="groupConfig" @dragmove="e => emit('dragmove', e)">
+    <v-group ref="groupRef" :config="groupConfig" @dragmove="(e) => emit('dragmove', e)" @mousedown="handleSelect">
         <v-rect ref="rectRef" :config="rectConfig"></v-rect>
         <v-text :config="textConfig"></v-text>
         <v-image :config="iconConfig"></v-image>
@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useImage } from 'vue-konva';
 import ContentRectangle from './ContentRectangle.vue';
 const emit = defineEmits(['dragmove']);
@@ -38,19 +38,19 @@ const textConfig = ref({
     x: rectConfig.value.x + 45,
     y: rectConfig.value.y + 17,
     fontSize: 15,
-    text:props.statement.type
+    text: props.statement.cmp_type || 'EmitStatement',
 })
 
-const contentRect = ref({
+const contentRect = computed(() => ({
     x: textConfig.value.x,
-    y: rectConfig.value.y+40,
+    y: rectConfig.value.y + 40,
     content: props.statement.event,
-    height:30,
-    width:140,
+    height: 30,
+    width: 140,
     fillColor: "#FEFDF8",
     borderColor: "#FA9580",
-    fontSize:14
-})
+    fontSize: 14
+}))
 const groupConfig = ref({
     x: props.x,
     y: props.y,
@@ -64,6 +64,12 @@ const iconConfig = ref({
     height: 30,
     image: image
 })
+
+function handleSelect() {
+    console.log('✅ Statement clicked:', props.statement)
+    emit('select', props.statement)
+}
+
 onMounted(() => {
     console.log("emit rect x,y", rectConfig.value.x, rectConfig.value.y)
     console.log("emit props x,y", props.x, props.y)

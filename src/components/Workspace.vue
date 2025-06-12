@@ -39,14 +39,9 @@
                 <!-- Function Layer -->
                 <v-layer ref="functionLayer" :visible="isFunctionLayerVisible" v-if="isFunctionLayerVisible"
                     @vue:mounted="loadFLayersNode">
-                    <StatementRenderer 
-                        v-for="(stmt, index) in selectedFunction.body.statements" 
-                        :key="stmt.id || index"
-                        :statement="stmt" 
-                        :x="20" 
-                        :y="80 * index" 
-                        @dragmove="handleDragMove" 
-                        @select="handleStatementSelect"/>
+                    <StatementRenderer v-for="(stmt, index) in selectedFunction.body.statements" :key="stmt.id || index"
+                        :statement="stmt" :x="20" :y="80 * index" @dragmove="handleDragMove"
+                        @select="handleStatementSelect" />
                     <v-arrow v-for="connector in connectors" :key="connector.id" :config="getArrowConfig(connector)" />
                 </v-layer>
             </v-stage>
@@ -326,11 +321,14 @@ const handleDrop = (event) => {
         const structName = structNode.attrs.name;
         const struct = fileStore.contract.structs.find(s => s.name === structName);
         if (struct) {
+            // if (!struct.literals)
+            //     struct.literals = []
             struct.literals.push({ name: item.label, type: { base: "string" } }); // Example
             console.log(`Added literal "${item.label}" to struct ${structName}`);
         }
     } else {
         if (item.label == "Struct") {
+            console.log("⚠️ struct created")
             fileStore.contract.structs.push({
                 name: "new_struct",
                 cmp_type: "Struct",
@@ -432,8 +430,8 @@ const onContractCreated = async () => {
 };
 
 function handleStatementSelect(statement) {
-  console.log('📍 Statement selected in Workspace:', statement)
-  fileStore.showProperties(statement)
+    console.log('📍 Statement selected in Workspace:', statement)
+    fileStore.showProperties(statement)
 }
 </script>
 

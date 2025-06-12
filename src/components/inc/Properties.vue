@@ -24,7 +24,7 @@ const activeComponent = computed(() => {
 
     console.log("📦 Properties element type:", type);
     if (!type) return null
-    if (["AssignmentStatement", "CallStatement", "LoopStatement", "EmitStatement", "ReturnStatement", "ConditionalStatement"].includes(type)) {
+    if (["AssignmentStatement", "CallStatement", "LoopStatement", "EmitStatement", "ReturnStatement", "IfStatement"].includes(type)) {
         return StatementProperties
     }
     return StructuralProperties

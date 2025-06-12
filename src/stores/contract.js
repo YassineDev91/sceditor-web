@@ -476,15 +476,6 @@ export const useContractStorage = defineStore("contract", {
       console.log("im calling from the store !");
     },
     showProperties(element) {
-      // this.clearSelection();
-
-      // if (element && typeof element === 'object' && element.name) {
-      //   this.selectedElement = element;
-      //   this.selectedElement.isSelected = true;
-      // } else {
-      //   console.warn("⚠️ Invalid selection!", element);
-      //   this.selectedElement = {};
-      // }
 
       this.clearSelection();
 

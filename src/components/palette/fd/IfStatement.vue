@@ -1,26 +1,182 @@
-<!-- IfStatement.vue -->
 <template>
-    <div class="statement">
-      <div>
-        if (<ExpressionRenderer :expression="statement.condition" />) {
-          <div class="block">
-            <StatementRenderer v-for="(stmt, index) in statement.then.statements" :key="index" :statement="stmt" />
-          </div>
-        }
-        <div v-if="statement.else">
-          else {
-            <div class="block">
-              <StatementRenderer v-for="(stmt, index) in statement.else.statements" :key="'else-' + index" :statement="stmt" />
-            </div>
-          }
-        </div>
-      </div>
-    </div>
-  </template>
-  
-  <script setup>
-  import ExpressionRenderer from './ExpressionRenderer.vue';
-  import StatementRenderer from './StatementRenderer.vue';
-  const props = defineProps({ statement: Object });
-  </script>
-  
+  <v-group ref="groupRef" :config="groupConfig" @dragmove="(e) => emit('dragmove', e)" @mousedown="handleSelect">
+    <v-rect ref="rectRef" :config="rectConfig">
+    </v-rect>
+    <v-text :config="textConfig" />
+    <v-image :config="iconConfig" />
+
+
+    <v-group :config="leftSideConfig">
+      <v-rect :config="contentRectConfig1"></v-rect>
+      <v-text :config="leftTextConfig" />
+    </v-group>
+
+
+    <v-group :config="rightSideConfig">
+      <v-rect :config="contentRectConfig2"></v-rect>
+      <v-text :config="rightTextConfig" />
+    </v-group>
+
+    <v-group :config="operatorConfig">
+      <v-rect :config="contentRectConfig3"></v-rect>
+      <v-text :config="operatorTextConfig" />
+    </v-group>
+
+  </v-group>
+</template>
+<script setup>
+import { onMounted, ref, computed } from "vue";
+import { useImage } from "vue-konva";
+import { useContractStorage } from "@/stores/contract";
+const emit = defineEmits(['dragmove', 'select'])
+
+const groupRef = ref({})
+const rectRef = ref({})
+const addStatementCmp = ref({})
+const props = defineProps({
+  x: Number,
+  y: Number,
+  statement: Object
+});
+const rectConfig = ref({
+  x: props.x,
+  y: props.y,
+  width: 200,
+  height: 130,
+  stroke: 'black',
+  cornerRadius: 5,
+  fill: "#FFECD1",
+  stroke: "#FABB81",
+  strokeWidth: 1
+})
+const textConfig = ref({
+  x: rectConfig.value.x + 45,
+  y: rectConfig.value.y + 17,
+  text: props.statement?.cmp_type,
+  fontSize: 12,
+})
+
+const groupConfig = computed(() => ({
+  x: props.x,
+  y: props.y,
+  draggable: true,
+  type: props.statement?.cmp_type || 'IfStatement',
+
+  name: props.statement?.name || 'IfStatement',
+  data: props.statement
+}))
+
+const operatorConfig = ref({
+  x: rectConfig.value.x + 100,
+  y: rectConfig.value.y + 40,
+  width: 40,
+  height: 40,
+  stroke: "#FABB81",
+  strokeWidth: 0.5,
+  fill: "#FEFDF8",
+  cornerRadius: 5
+})
+
+const contentRectConfig1 = ref({
+  x: rectConfig.value.x,
+  y: textConfig.value.y,
+  height: 30,
+  width: 140,
+  stroke: "#FABB81",
+  strokeWidth: 0.5,
+  fill: "#FEFDF8",
+  cornerRadius: 5
+})
+const contentRectConfig2 = ref({
+  x: contentRectConfig1.value.x,
+  y: contentRectConfig1.value.y + 35,
+  height: 30,
+  width: 140,
+  stroke: "#FABB81",
+  strokeWidth: 0.5,
+  fill: "#FEFDF8",
+  cornerRadius: 5
+})
+
+const contentRectConfig3 = ref({
+  x: contentRectConfig1.value.x,
+  y: contentRectConfig1.value.y,
+  height: 40,
+  width: 40,
+  stroke: "#FABB81",
+  strokeWidth: 0.5,
+  fill: "#FEFDF8",
+  cornerRadius: 5
+})
+
+const leftTextConfig = computed(() => ({
+  x: contentRectConfig1.value.x + 10,
+  y: contentRectConfig1.value.y + (contentRectConfig1.value.height - 15) / 2,
+  text: "left: " + props.statement.condition.left,
+  fontSize: 12,
+
+}))
+
+const operatorTextConfig = computed(() => ({
+  x: contentRectConfig1.value.x + 10,
+  y: contentRectConfig1.value.y + (contentRectConfig3.value.height - 15) / 2,
+  text: props.statement.condition.operator || "op",
+  fontSize: 12,
+  fontWeight: 'bold'
+}))
+
+const rightTextConfig = computed(() => ({
+  x: contentRectConfig2.value.x + 10,
+  y: contentRectConfig2.value.y + (contentRectConfig2.value.height - 15) / 2,
+  text: "right: " + props.statement.condition.right,
+  fontSize: 12
+}))
+
+const leftSideConfig = ref({
+  x: 10,
+  y: 30,
+})
+const rightSideConfig = ref({
+  x: leftSideConfig.value.x,
+  y: leftSideConfig.value.y,
+
+})
+// const addStatementCoordinates = computed(() => ({
+//     x: rectConfig.value.x + rectConfig.value.width/6 || 0,
+//     y: rectConfig.value.y+rectConfig.value.height-40  || 0
+// }))
+
+
+const [image] = useImage("src/assets/icons/git.png")
+const iconConfig = ref({
+  x: rectConfig.value.x + 10,
+  y: rectConfig.value.y + 10,
+  width: 25,
+  height: 25,
+  image: image
+})
+
+const fileStore = useContractStorage()
+
+
+const onMouseDown = (e) => {
+  // Prevent selection if drag just occurred (optional)
+  if (e.evt?.button === 0) {
+    fileStore.showProperties(props.statement)
+  }
+}
+
+function handleSelect() {
+  console.log('✅ Statement clicked:', props.statement)
+  emit('select', props.statement)
+}
+
+onMounted(() => {
+  groupRef.value.getNode().width(rectRef.value.getNode().width())
+  groupRef.value.getNode().height(rectRef.value.getNode().height())
+  // console.log("NODE HEIGHT:", 2 + contentRectConfig2.value.height);
+
+})
+</script>
+
+<style></style>

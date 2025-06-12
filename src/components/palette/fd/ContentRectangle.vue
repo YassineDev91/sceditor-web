@@ -11,7 +11,7 @@
 
 </template>
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 const props = defineProps({
     config: {
         x: Number,
@@ -35,13 +35,13 @@ const rectConfig = ref({
     strokeWidth: 0.5,
     cornerRadius: 5,
 })
-const textConfig = ref({
+const textConfig = computed(()=>({
     x: rectConfig.value.x + (rectConfig.value.width - props.config.content.length * 8) / 2,
     y: rectConfig.value.y + (rectConfig.value.height - 15) / 2,
     text: props.config.content,
     color: "black",
     fontSize:props.config.fontSize
-})
+}))
 onMounted(()=>{
     console.log(props.config.content.length);
     

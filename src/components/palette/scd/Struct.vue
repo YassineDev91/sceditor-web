@@ -83,7 +83,7 @@ const iconConfig = ref({
 
 function handleClick() {
   console.log("✅ Clicked struct with data:", props.data);
-  console.log('🧪 props.data.type =', props.data?.cmp_type)
+  console.log('🧪 props.data.type =', props.data?.type)
   fileStore.showProperties(props.data);
 }
 </script>

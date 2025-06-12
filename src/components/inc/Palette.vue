@@ -58,8 +58,10 @@ function getPaletteElements() {
 function createStruct() {
     fileStore.contract.structs.push({
         name: "new_struct",
+        cmp_type: "Struct",
+        literals: [],
         x: 100,
-        y: 100
+        y: 100,
     })
     console.log("creating struct ...", fileStore.contract.structs);
 }
@@ -132,11 +134,46 @@ function createStatement(type) {
             break;
         case "condition":
             console.log(`creating ${type} statement ...`);
-
+            fileStore.selectedFunction.body.statements.push({
+                cmp_type: "IfStatement",
+                condition: {
+                    type: "BinaryExpression",
+                    left: "",
+                    operator: "",
+                    right: ""
+                },
+                body: []
+            })
+            // {
+      //           "type": "IfStatement",
+      //           "condition": {
+      //             "type": "BinaryOperation",
+      //             "operator": "!=",
+      //             "left": {
+      //               "type": "BinaryOperation",
+      //               "operator": "*",
+      //               "left": {
+      //                 "type": "Literal",
+      //                 "value": 2
+      //               },
+      //               "right": {
+      //                 "type": "Identifier",
+      //                 "value": "value"
+      //               }
+      //             },
+      //             "right": {
+      //               "type": "Identifier",
+      //               "value": "transaction.value"
+      //             }
+      //           },
             break;
         case "emit":
             console.log(`creating ${type} statement ...`);
-
+            fileStore.selectedFunction.body.statements.push({
+                cmp_type: "EmitStatement",
+                event: "",
+                args: []
+            })
             break;
         case 'loop':
             console.log(`creating ${type} statement ...`);
