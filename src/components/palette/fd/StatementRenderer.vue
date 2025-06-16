@@ -6,7 +6,7 @@ import ReturnStatement from './ReturnStatement.vue'
 import EmitStatement from './EmitStatement.vue'
 import CallStatement from './CallStatement.vue'
 import IfStatement from './IfStatement.vue'
-import ForStatement from './ForStatement.vue'
+import LoopStatement from './LoopStatement.vue'
 
 const props = defineProps({
   statement: Object,
@@ -22,7 +22,7 @@ const componentMap = {
   EmitStatement,
   CallStatement,
   IfStatement,
-  ForStatement
+  LoopStatement
 }
 
 const Component = componentMap[props.statement.cmp_type]

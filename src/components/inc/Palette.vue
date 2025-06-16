@@ -178,16 +178,18 @@ function createStatement(type) {
         case 'loop':
             console.log(`creating ${type} statement ...`);
 
-            // fileStore.selectedFunction.body.statements.push({
-            //     type: "LoopStatement",
-            //     condition: {
-            //         type: "BinaryExpression",
-            //         left: "",
-            //         operator: "",
-            //         right: ""
-            //     },
-            //     body: []
-            // })
+            fileStore.selectedFunction.body.statements.push({
+                cmp_type: "LoopStatement",
+                init:{},
+                condition: {
+                    type: "BinaryExpression",
+                    left: "",
+                    operator: "",
+                    right: ""
+                },
+                post:{},
+                body: {}
+            })
             break;
 
         default:

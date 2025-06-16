@@ -32,12 +32,14 @@ const rectConfig = ref({
     cornerRadius: 5,
     fill: "#FFDBD4",
     stroke: "#FA9580",
+    strokeWidth: 1,
+
 })
 
 const textConfig = ref({
     x: rectConfig.value.x + 45,
     y: rectConfig.value.y + 17,
-    fontSize: 15,
+    fontSize: 13,
     text: props.statement.cmp_type || 'EmitStatement',
 })
 
@@ -49,7 +51,8 @@ const contentRect = computed(() => ({
     width: 140,
     fillColor: "#FEFDF8",
     borderColor: "#FA9580",
-    fontSize: 14
+    fontSize: 13,
+    strokeWidth: 1,
 }))
 const groupConfig = ref({
     x: props.x,
@@ -60,8 +63,8 @@ const [image] = useImage("src/assets/icons/emit_icon.png")
 const iconConfig = ref({
     x: rectConfig.value.x + 10,
     y: rectConfig.value.y + 10,
-    width: 30,
-    height: 30,
+    width: 25,
+    height: 25,
     image: image
 })
 

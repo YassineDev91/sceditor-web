@@ -45,7 +45,7 @@ const textConfig = ref({
     x: rectConfig.value.x + 45,
     y: rectConfig.value.y + 17,
     text: "AssignmentStatement",
-    fontSize: 12,
+    fontSize: 13,
 })
 
 const groupConfig = computed(() => ({
@@ -65,7 +65,7 @@ const contentRectConfig1 = ref({
     height: 30,
     width: 140,
     stroke: "#84B2E9",
-    strokeWidth: 0.5,
+    strokeWidth: 1,
     fill: "#FEFDF8",
     cornerRadius: 5
 })
@@ -75,7 +75,7 @@ const contentRectConfig2 = ref({
     height: 30,
     width: 140,
     stroke: "#84B2E9",
-    strokeWidth: 0.5,
+    strokeWidth: 1,
     fill: "#FEFDF8",
     cornerRadius: 5
 })

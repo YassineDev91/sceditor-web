@@ -34,14 +34,16 @@ const rectConfig = ref({
   height: 90,
   cornerRadius: 5,
   fill: "#E9F9EA",
-  stroke: "#7CC9AE"
+  stroke: "#7CC9AE",
+  strokeWidth: 1,
+
 
 })
 
 const textConfig = ref({
   x: rectConfig.value.x + 45,
   y: rectConfig.value.y + 17,
-  fontSize: 15,
+  fontSize: 13,
   text: props.statement.cmp_type || 'CallStatement',
 })
 
@@ -55,7 +57,7 @@ const contentRectConfig = ref({
   height: 30,
   width: 130,
   stroke: "#7CC9AE",
-  strokeWidth: 0.5,
+  strokeWidth: 1,
   fill: "#FEFDF8",
   cornerRadius: 5
 })
@@ -64,7 +66,7 @@ const contentRectConfig = ref({
 const contentConfig = computed(() => ({
   x: contentRectConfig.value.x + (contentRectConfig.value.width - props.statement.method.length * 7) / 2,
   y: contentRectConfig.value.y + (contentRectConfig.value.height - 15) / 2,
-  text: props.statement.object + '.' +props.statement.method,
+  text: props.statement.object + '.' + props.statement.method,
   fontSize: 15
 }))
 const groupConfig = ref({
@@ -76,8 +78,8 @@ const [image] = useImage("src/assets/icons/call_icon.png")
 const iconConfig = ref({
   x: rectConfig.value.x + 10,
   y: rectConfig.value.y + 10,
-  width: 30,
-  height: 30,
+  width: 25,
+  height: 25,
   image: image
 })
 

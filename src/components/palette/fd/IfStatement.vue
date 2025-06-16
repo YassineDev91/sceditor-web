@@ -53,7 +53,7 @@ const textConfig = ref({
   x: rectConfig.value.x + 45,
   y: rectConfig.value.y + 17,
   text: props.statement?.cmp_type,
-  fontSize: 12,
+  fontSize: 13,
 })
 
 const groupConfig = computed(() => ({
@@ -67,14 +67,8 @@ const groupConfig = computed(() => ({
 }))
 
 const operatorConfig = ref({
-  x: rectConfig.value.x + 100,
-  y: rectConfig.value.y + 40,
-  width: 40,
-  height: 40,
-  stroke: "#FABB81",
-  strokeWidth: 0.5,
-  fill: "#FEFDF8",
-  cornerRadius: 5
+  x:  140,
+  y:  40,
 })
 
 const contentRectConfig1 = ref({
@@ -83,7 +77,7 @@ const contentRectConfig1 = ref({
   height: 30,
   width: 140,
   stroke: "#FABB81",
-  strokeWidth: 0.5,
+  strokeWidth: 1,
   fill: "#FEFDF8",
   cornerRadius: 5
 })
@@ -93,7 +87,7 @@ const contentRectConfig2 = ref({
   height: 30,
   width: 140,
   stroke: "#FABB81",
-  strokeWidth: 0.5,
+  strokeWidth: 1,
   fill: "#FEFDF8",
   cornerRadius: 5
 })
@@ -104,7 +98,7 @@ const contentRectConfig3 = ref({
   height: 40,
   width: 40,
   stroke: "#FABB81",
-  strokeWidth: 0.5,
+  strokeWidth: 1,
   fill: "#FEFDF8",
   cornerRadius: 5
 })

@@ -12,10 +12,10 @@
             <option value="solana">Rust</option>
             <option value="vyper">Vyper</option>
         </select>
-        <textarea v-model="prompt"
+        <!-- <textarea v-model="prompt"
             class="border bg-slate-800 p-1 rounded outline-none border-slate-600 focus:border-blue-600 mb-3"
             placeholder="">
-        </textarea>
+        </textarea> -->
         <div class="flex flex-row space-x-2">
             <button @click="generate"
                 class="hover:bg-slate-700 w-full text-sm shadow-sm px-2 py-1 border border-slate-700 bg-slate-800/45 rounded-md">

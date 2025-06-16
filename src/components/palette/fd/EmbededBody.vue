@@ -61,7 +61,7 @@ const iconConfig = ref({
     image: image
 })
 onMounted(() => {
-    rectRef.value.getNode().height(rectRef.value.getNode().height() + props.statements.length * 30 + 20);
+    rectRef.value.getNode().height(rectRef.value.getNode().height() + props.statements?.length * 30 + 20);
 })
 </script>
 

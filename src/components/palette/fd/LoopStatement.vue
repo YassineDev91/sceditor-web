@@ -45,13 +45,13 @@ const rectConfig = ref({
     stroke: '#F6ECB2',
     fill: "#FFFDE4",
     cornerRadius: 5,
-    strokeWidth: 2,
+    strokeWidth: 1,
 })
 const textConfig = ref({
     x: rectConfig.value.x + 45,
     y: rectConfig.value.y + 17,
-    text: "ForStatement",
-    fontSize: 15,
+    text: "LoopStatement",
+    fontSize: 13,
 })
 
 const contentConfig = ref({
@@ -69,8 +69,8 @@ const [image] = useImage("src/assets/icons/forStatementIcon.png")
 const iconConfig = ref({
     x: rectConfig.value.x + 10,
     y: rectConfig.value.y + 10,
-    width: 30,
-    height: 30,
+    width: 25,
+    height: 25,
     image: image
 })
 

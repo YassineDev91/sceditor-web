@@ -32,7 +32,7 @@ const rectConfig = ref({
     width: props.config.width,
     fill: props.config.fillColor,
     stroke: props.config.borderColor,
-    strokeWidth: 0.5,
+    strokeWidth: 1,
     cornerRadius: 5,
 })
 const textConfig = computed(()=>({
