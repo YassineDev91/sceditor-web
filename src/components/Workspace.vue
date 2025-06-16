@@ -332,13 +332,14 @@ const handleDrop = (event) => {
             fileStore.contract.structs.push({
                 name: "new_struct",
                 cmp_type: "Struct",
-
                 x: pointerPosition.x,
                 y: pointerPosition.y,
-                literals: []
+                literals: [],
+                description: "",
             })
         }
         if (item.label == "Variable") {
+            console.log("⚠️ Var created")
             fileStore.contract.variables.push({
                 name: "new_variable",
                 cmp_type: "Variable",
@@ -348,6 +349,7 @@ const handleDrop = (event) => {
                 x: pointerPosition.x,
                 y: pointerPosition.y,
                 visibility: "public",
+                description: "",
             })
         }
         if (item.label == "Function") {
@@ -359,7 +361,8 @@ const handleDrop = (event) => {
                 body: {
                     "type": "Block",
                     "statements": []
-                }
+                },
+                description: "",
             })
         } if (item.label == "Assignment") {
             console.log("creating assignment stmt!");

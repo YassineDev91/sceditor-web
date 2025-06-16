@@ -62,6 +62,7 @@ function createStruct() {
         literals: [],
         x: 100,
         y: 100,
+        details:"sdetails"
     })
     console.log("creating struct ...", fileStore.contract.structs);
 }
@@ -74,7 +75,8 @@ function createVariable() {
         type: {
             base: "",
             payable: false
-        }
+        },
+        description:""
     })
 }
 
@@ -86,7 +88,8 @@ function createFunction() {
         body: {
             "type": "Block",
             "statements": []
-        }
+        },
+        description:""
     })
 }
 
@@ -107,7 +110,8 @@ function createStatement(type) {
                             "value": ""
                         }
                     }
-                ]
+                ],
+                description:""
             })
             break;
         case "call":
@@ -129,7 +133,8 @@ function createStatement(type) {
                             "value": "value"
                         }
                     }
-                ]
+                ],
+                description:""
             })
             break;
         case "condition":
@@ -142,7 +147,8 @@ function createStatement(type) {
                     operator: "",
                     right: ""
                 },
-                body: []
+                body: [],
+                description:""
             })
             // {
       //           "type": "IfStatement",
@@ -172,7 +178,8 @@ function createStatement(type) {
             fileStore.selectedFunction.body.statements.push({
                 cmp_type: "EmitStatement",
                 event: "",
-                args: []
+                args: [],
+                description:""
             })
             break;
         case 'loop':
@@ -188,7 +195,8 @@ function createStatement(type) {
                     right: ""
                 },
                 post:{},
-                body: {}
+                body: {},
+                description:""
             })
             break;
 

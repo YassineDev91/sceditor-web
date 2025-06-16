@@ -8,7 +8,7 @@
                 <label class="block text-xs font-semibold mb-1">Description:</label>
                 <textarea
                     class="border bg-slate-800 p-1 rounded outline-none border-slate-600 focus:border-blue-600 mb-3 w-full px-1 py-0.5  my-1 text-xs"
-                    placeholder="" :value="element.description" rows="7">
+                    placeholder="" v-model="element.description" rows="7">
                 </textarea>
             </div>
 
@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useContractStorage } from '@/stores/contract'
 import StructuralProperties from './StructuralProperties.vue'
 import StatementProperties from './StatementProperties.vue'
