@@ -28,6 +28,10 @@
                         Redo </span>
                 </button>
             </div>
+            <div class="flex flex-row space-x-2 px-3 py-1">
+                <button @click="zoomIn" class="border border-slate-500 bg-slate-800 p-1 w-7">+</button>
+                <button @click="zoomOut" class="border border-slate-500 bg-slate-800 p-1 w-7">-</button>
+            </div>
 
         </div>
     </div>
@@ -40,6 +44,7 @@ import Palette from './inc/Palette.vue';
 import Properties from './inc/Properties.vue';
 import { ref } from 'vue';
 import { BackwardIcon } from '@heroicons/vue/24/outline';
+import { useUIStore } from '@/stores/uiStore';
 
 const props = defineProps({
     currentStage: String
@@ -62,4 +67,27 @@ const menu = ref([
         title: "Functional Componenets"
     }
 ])
+
+// const zoomStage = (factor) => {
+//   const stage = stageRef.value?.getNode();
+//   const scale = stage.scaleX() * factor;
+//   stage.scale({ x: scale, y: scale });
+//   stage.batchDraw();
+// };
+
+// const zoomIn = () => zoomStage(1.1);
+// const zoomOut = () => zoomStage(0.9);
+
+const ui = useUIStore();
+
+const zoomIn = () => {
+    ui.setScale(ui.stageScale * 1.1); 
+    console.log("Zooming in", ui.stageScale);
+
+}
+
+const zoomOut = () => {
+    ui.setScale(ui.stageScale / 1.1); 
+    console.log("Zooming out", ui.stageScale);
+}
 </script>

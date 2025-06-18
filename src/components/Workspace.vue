@@ -80,6 +80,7 @@ import StatementRenderer from './palette/fd/StatementRenderer.vue';
 import Modal from './Modal.vue';
 import { useContractStorage } from '@/stores/contract'
 import { ArrowLeftCircleIcon } from '@heroicons/vue/24/outline';
+import { useUIStore } from '@/stores/uiStore';
 
 const fileStore = useContractStorage()
 
@@ -98,7 +99,8 @@ const canvasReady = ref(false)
 
 const stageConfig = computed(() => ({
     width: widthCanvaRef.value,
-    height: heightCanvaRef.value
+    height: heightCanvaRef.value,
+    // draggable: true,
 }));
 
 onMounted(async () => {
@@ -126,6 +128,37 @@ onMounted(async () => {
             });
         }
     }
+
+    // ------- implementing zoom and pan functionality -------
+
+    if (stage) {
+        stage.on("wheel", (e) => {
+            e.evt.preventDefault();
+
+            const oldScale = stage.scaleX();
+            const pointer = stage.getPointerPosition();
+
+            const scaleBy = 1.05;
+            const direction = e.evt.deltaY > 0 ? 1 : -1;
+            const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+            stage.scale({ x: newScale, y: newScale });
+
+            // To zoom centered at pointer
+            const mousePointTo = {
+                x: (pointer.x - stage.x()) / oldScale,
+                y: (pointer.y - stage.y()) / oldScale,
+            };
+
+            const newPos = {
+                x: pointer.x - mousePointTo.x * newScale,
+                y: pointer.y - mousePointTo.y * newScale,
+            };
+
+            stage.position(newPos);
+            stage.batchDraw();
+        });
+    }
 });
 
 const targets = ref([]);
@@ -144,6 +177,9 @@ const toggleLayer = () => {
     isFunctionLayerVisible.value = !isFunctionLayerVisible.value
     connectors.value = []
     targets.value = []
+    autoLayout(fileStore.contract.structs);
+    autoLayout(fileStore.contract.variables, 0, 200); // optional offset
+    autoLayout(fileStore.contract.functions, 0, 400);
 }
 
 const showFunctionLayer = (func) => {
@@ -153,26 +189,39 @@ const showFunctionLayer = (func) => {
 }
 
 const handleDragMove = () => {
-    const layer = functionLayer.value?.getNode();
-    if (!layer) return;
+  const layer = functionLayer.value?.getNode();
+  if (!layer) return;
 
-    //  Recompute based on current live children
-    const children = layer.getChildren().filter(node => node.getType() === 'Group');
-    connectors.value = generateConnectors(children);
+  const children = layer.getChildren().filter(node => node.getType() === 'Group');
 
-    layer.draw(); // optional, Konva usually handles this
-    functionLayer.value.getNode().getChildren().forEach((node) => {
-        const events = node._eventListeners;
-        if (events) {
-            Object.entries(events).forEach(([type, handlers]) => {
-                handlers.forEach((h, i) => {
-                    if (typeof h.handler !== 'function') {
-                        console.warn("💥 Faulty handler:", { node, type, handler: h.handler });
-                    }
-                });
-            });
-        }
-    });
+  // 💡 Enforce bounds for each draggable group
+  children.forEach((node) => {
+    if (!node.draggable()) return;
+
+    const width = node.width?.() || node.getClientRect().width;
+    const height = node.height?.() || node.getClientRect().height;
+
+    const { x, y } = keepWithinBounds(node.x(), node.y(), width, height);
+
+    node.position({ x, y });
+  });
+
+  connectors.value = generateConnectors(children);
+  layer.draw();
+
+  // 🕵️‍♂️ Debug handler issues
+  functionLayer.value.getNode().getChildren().forEach((node) => {
+    const events = node._eventListeners;
+    if (events) {
+      Object.entries(events).forEach(([type, handlers]) => {
+        handlers.forEach((h) => {
+          if (typeof h.handler !== 'function') {
+            console.warn("💥 Faulty handler:", { node, type, handler: h.handler });
+          }
+        });
+      });
+    }
+  });
 };
 
 const generateConnectors = (nodes) => {
@@ -224,16 +273,7 @@ const getArrowConfig = (connector) => {
         ],
         stroke: 'black',
         fill: 'black'
-        // return {
-        //     id: connector.id,
-        //     points: [
-        //         fromBox.x + fromBox.width / 2,
-        //         fromBox.y + fromBox.height,
-        //         toBox.x + toBox.width / 2,
-        //         toBox.y
-        //     ],
-        //     stroke: 'black',
-        //     fill: 'black'
+
     };
 
 };
@@ -249,40 +289,6 @@ defineExpose({
         document.body.removeChild(link);
     }
 });
-// const handleDrop = (event) => {
-//     const raw = event.dataTransfer.getData('application/json');
-//     if (!raw) return;
-//     const item = JSON.parse(raw);
-
-//     const stage = stageRef.value.getNode();
-//     const pointerPosition = stage.getPointerPosition();
-
-//     const droppedX = pointerPosition.x;
-//     const droppedY = pointerPosition.y;
-
-//     // 🧠 Find target Struct node
-//     const layer = mainLayer.value?.getNode();
-//     const nodes = layer.getChildren();
-
-//     const targetStruct = nodes.find((node) => {
-//         return node.getClassName() === 'Group' &&
-//             node.attrs.type === 'Struct' &&
-//             node.getClientRect().x <= droppedX &&
-//             node.getClientRect().x + node.getClientRect().width >= droppedX &&
-//             node.getClientRect().y <= droppedY &&
-//             node.getClientRect().y + node.getClientRect().height >= droppedY;
-//     });
-
-//     if (targetStruct) {
-//         console.log("Dropped on struct:", targetStruct);
-//         // Now update the corresponding struct model in fileStore
-//         const structName = targetStruct.attrs.name;
-//         const struct = fileStore.contract.structs.find(s => s.name === structName);
-//         if (struct) {
-//             struct.literals.push({ name: item.label, type: "string" });
-//         }
-//     }
-// };
 
 const handleDrop = (event) => {
     console.log("📦 Drop event fired");
@@ -372,34 +378,6 @@ const handleDrop = (event) => {
 
 }
 
-// const handleDrop = (event) => {
-//     const item = JSON.parse(event.dataTransfer.getData("application/json"));
-//     const stage = stageRef.value.getNode();
-//     const pointerPosition = stage.getPointerPosition();
-
-//     const layer = mainLayer.value.getNode();
-//     const nodes = layer.getChildren();
-
-//     const structNode = nodes.find((node) => {
-//         const rect = node.getClientRect();
-//         return (
-//             node.attrs.type === 'Struct' &&
-//             pointerPosition.x >= rect.x &&
-//             pointerPosition.x <= rect.x + rect.width &&
-//             pointerPosition.y >= rect.y &&
-//             pointerPosition.y <= rect.y + rect.height
-//         );
-//     });
-
-//     if (structNode) {
-//         const structName = structNode.attrs.name;
-//         const struct = fileStore.contract.structs.find(s => s.name === structName);
-//         if (struct) {
-//             struct.literals.push({ name: item.label, type: { base: "string" } }); // Example
-//             console.log(`Added literal "${item.label}" to struct ${structName}`);
-//         }
-//     }
-// };
 watch(
     () => fileStore.contract.name,
     async (newVal) => {
@@ -414,7 +392,7 @@ watch(
                     const stage = stageRef.value?.getNode();
                     if (stage) {
                         stage.setSize({ width: widthCanvaRef.value, height: heightCanvaRef.value });
-                        stage.draw();
+                        stage.batchDraw();
                         console.log("✅ Stage resized after contract creation");
                     }
                 });
@@ -422,6 +400,18 @@ watch(
         }
     }
 );
+
+const ui = useUIStore();
+
+// Watch for zoom changes
+watch(() => ui.stageScale, (newScale) => {
+    const stage = stageRef.value?.getNode();
+    if (stage) {
+        stage.scale({ x: newScale, y: newScale });
+        stage.batchDraw();
+        console.log("✅ Stage zoom updated to:", newScale);
+    }
+});
 
 const onContractCreated = async () => {
     await nextTick();
@@ -436,6 +426,50 @@ function handleStatementSelect(statement) {
     console.log('📍 Statement selected in Workspace:', statement)
     fileStore.showProperties(statement)
 }
+
+
+const padding = 20;
+const spacingX = 180;
+const spacingY = 120;
+const stageWidth = widthCanvaRef.value;
+const stageHeight = heightCanvaRef.value;
+
+function autoLayout(elements, startX = 0, startY = 0) {
+    let x = startX;
+    let y = startY;
+    let rowHeight = 0;
+
+    elements.forEach((element, index) => {
+        // Prevent overflow, go to new row if needed
+        if (x + spacingX > stageWidth - padding) {
+            x = startX;
+            y += rowHeight + spacingY;
+            rowHeight = 0;
+        }
+
+        // Assign new positions
+        element.x = x;
+        element.y = y;
+
+        // Track max height in row for next row offset
+        rowHeight = Math.max(rowHeight, spacingY);
+
+        x += spacingX;
+    });
+}
+
+// keep cmps within boundaries
+function keepWithinBounds(x, y, width, height) {
+  const maxX = widthCanvaRef.value - width;
+  const maxY = heightCanvaRef.value - height;
+
+  return {
+    x: Math.max(0, Math.min(x, maxX)),
+    y: Math.max(0, Math.min(y, maxY))
+  };
+}
+
+
 </script>
 
 <style scoped>

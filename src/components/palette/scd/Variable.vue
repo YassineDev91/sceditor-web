@@ -31,7 +31,7 @@ const props = defineProps({
     data: Object,
     selected: Boolean
 });
-const rectConfig = computed(() =>({
+const rectConfig = computed(() => ({
     x: props.x,
     y: props.y,
     fill: '#DBF1ED',
@@ -42,7 +42,7 @@ const rectConfig = computed(() =>({
     strokeWidth: 1,
 
 }))
-const selectionRectConfig = computed(() =>({
+const selectionRectConfig = computed(() => ({
     x: props.x,
     y: props.y,
     width: rectConfig.value.width,
@@ -51,7 +51,7 @@ const selectionRectConfig = computed(() =>({
     stroke: '#73C7C7',
     strokeWidth: 2,
 }))
-const textConfig = computed(() =>({
+const textConfig = computed(() => ({
     // x: rectConfig.value.x - props.name.length * 2.5,
     // y: rectConfig.value.y - rectConfig.value.radiusY / 4,
 
@@ -62,7 +62,7 @@ const textConfig = computed(() =>({
     data: props.data
 }))
 
-const typeTextConfig = computed(() =>({
+const typeTextConfig = computed(() => ({
     x: props.x + typeMarginX,
     y: props.y + typeMarginY,
     text: props.data.type.payable ? props.data.type.base + ' payable' : props.data.type.base,
@@ -80,15 +80,15 @@ const iconConfig = ref({
 })
 
 const hoverRectConfig = computed(() => ({
-    x: rectConfig.value.x-1,
-    y: rectConfig.value.y-1,
-    width: rectConfig.value.width +2,
+    x: rectConfig.value.x - 1,
+    y: rectConfig.value.y - 1,
+    width: rectConfig.value.width + 2,
     height: rectConfig.value.height + 2,
     stroke: '#3b82f6',
     strokeWidth: 2,
     dash: [4, 2],
     listening: false,  // prevent this rect from capturing mouse events
-    cornerRadius:5
+    cornerRadius: 5
 }));
 
 onMounted(() => {
@@ -96,9 +96,9 @@ onMounted(() => {
 })
 
 function handleClick() {
-  console.log("✅ Clicked struct with data:", props.data);
-  console.log('🧪 props.data.type =', props.data?.cmp_type)
-  fileStore.showProperties(props.data);
+    console.log("✅ Clicked struct with data:", props.data);
+    console.log('🧪 props.data.type =', props.data?.cmp_type)
+    fileStore.showProperties(props.data);
 }
 
 

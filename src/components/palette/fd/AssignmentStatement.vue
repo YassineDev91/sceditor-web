@@ -18,13 +18,12 @@
 <script setup>
 import { onMounted, ref, computed } from "vue";
 import { useImage } from "vue-konva";
-import AddStatement from "./AddStatement.vue";
-import { useContractStorage } from "@/stores/contract";
+
 const emit = defineEmits(['dragmove', 'select'])
 
 const groupRef = ref({})
 const rectRef = ref({})
-const addStatementCmp = ref({})
+
 const props = defineProps({
     x: Number,
     y: Number,
