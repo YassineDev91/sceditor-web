@@ -4,7 +4,8 @@ import { ref } from "vue";
 export const useContractStorage = defineStore("contract", {
   state: () => {
     return {
-      contract: {}
+      contract: {
+      }
       // {
       //   "name": "Purchase",
       //   "x": 10,

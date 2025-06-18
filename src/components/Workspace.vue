@@ -27,13 +27,22 @@
                         :selected="struct.isSelected" @click="fileStore.showProperties" />
 
                     <function v-for="_function in fileStore.contract.functions" :key="_function.name"
-                        :name="_function.name" :x="_function.x" :y="_function.y" :data="_function"
-                        :params="_function.params" :statements="_function.body.statements"
-                        :returnParams="_function.returnParams" :selected="_function.isSelected"
+                        :name="_function.name" :x="_function.x" :y="_function.y" 
+                        :data="_function"
+                        :params="_function.params" 
+                        :statements="_function.body.statements"
+                        :returnParams="_function.returnParams" 
+                        :selected="_function.isSelected"
                         @click="fileStore.showProperties" @dblclick="showFunctionLayer(_function)" />
 
-                    <function v-if="fileStore.contract.constructor" name="<<constructor>>"
-                        :x="fileStore.contract.constructor.x" :y="fileStore.contract.constructor.y" />
+                    <function v-if="fileStore.contract._constructor" name="<<constructor>>"
+                        :x="fileStore.contract._constructor.x" :y="fileStore.contract._constructor.y"
+                        :data="fileStore.contract._constructor"
+                        :params="fileStore.contract._constructor.params" 
+                        :statements="fileStore.contract._constructor.body.statements"
+                        :selected="fileStore.contract._constructor.isSelected"
+                        @click="fileStore.showProperties" 
+                        @dblclick="showFunctionLayer" />
                 </v-layer>
 
                 <!-- Function Layer -->
@@ -104,6 +113,9 @@ const stageConfig = computed(() => ({
 }));
 
 onMounted(async () => {
+
+    // showing constructor if it exists
+    console.log("Constructor:",fileStore.contract._constructor == null) 
     const stage = stageRef.value?.getNode();
 
     await nextTick();
@@ -189,39 +201,39 @@ const showFunctionLayer = (func) => {
 }
 
 const handleDragMove = () => {
-  const layer = functionLayer.value?.getNode();
-  if (!layer) return;
+    const layer = functionLayer.value?.getNode();
+    if (!layer) return;
 
-  const children = layer.getChildren().filter(node => node.getType() === 'Group');
+    const children = layer.getChildren().filter(node => node.getType() === 'Group');
 
-  // 💡 Enforce bounds for each draggable group
-  children.forEach((node) => {
-    if (!node.draggable()) return;
+    // 💡 Enforce bounds for each draggable group
+    children.forEach((node) => {
+        if (!node.draggable()) return;
 
-    const width = node.width?.() || node.getClientRect().width;
-    const height = node.height?.() || node.getClientRect().height;
+        const width = node.width?.() || node.getClientRect().width;
+        const height = node.height?.() || node.getClientRect().height;
 
-    const { x, y } = keepWithinBounds(node.x(), node.y(), width, height);
+        const { x, y } = keepWithinBounds(node.x(), node.y(), width, height);
 
-    node.position({ x, y });
-  });
+        node.position({ x, y });
+    });
 
-  connectors.value = generateConnectors(children);
-  layer.draw();
+    connectors.value = generateConnectors(children);
+    layer.draw();
 
-  // 🕵️‍♂️ Debug handler issues
-  functionLayer.value.getNode().getChildren().forEach((node) => {
-    const events = node._eventListeners;
-    if (events) {
-      Object.entries(events).forEach(([type, handlers]) => {
-        handlers.forEach((h) => {
-          if (typeof h.handler !== 'function') {
-            console.warn("💥 Faulty handler:", { node, type, handler: h.handler });
-          }
-        });
-      });
-    }
-  });
+    // 🕵️‍♂️ Debug handler issues
+    functionLayer.value.getNode().getChildren().forEach((node) => {
+        const events = node._eventListeners;
+        if (events) {
+            Object.entries(events).forEach(([type, handlers]) => {
+                handlers.forEach((h) => {
+                    if (typeof h.handler !== 'function') {
+                        console.warn("💥 Faulty handler:", { node, type, handler: h.handler });
+                    }
+                });
+            });
+        }
+    });
 };
 
 const generateConnectors = (nodes) => {
@@ -252,30 +264,37 @@ const generateConnectors = (nodes) => {
 };
 
 const getArrowConfig = (connector) => {
-    const from = targets.value.find(t => t._id == connector.from._id);
-    const to = targets.value.find(t => t._id == connector.to._id);
+    const from = targets.value.find(t => t._id === connector.from._id);
+    const to = targets.value.find(t => t._id === connector.to._id);
     if (!from || !to) return { points: [0, 0, 0, 0] };
 
-    // const stage = stageRef.value.getNode();
-    // const fromBox = from.getClientRect({ relativeTo: stage });
-    // const toBox = to.getClientRect({ relativeTo: stage });
     const stage = stageRef.value.getNode();
     const fromBox = from.getClientRect({ relativeTo: stage });
     const toBox = to.getClientRect({ relativeTo: stage });
 
+    const fromX = fromBox.x + fromBox.width / 2;
+    const fromY = fromBox.y + fromBox.height;
+    const toX = toBox.x + toBox.width / 2;
+    const toY = toBox.y;
+
+    const midY = (fromY + toY) / 2; // for a vertical step
+
     return {
         id: connector.id,
         points: [
-            fromBox.x + fromBox.width / 2,
-            fromBox.y + fromBox.height,
-            toBox.x + toBox.width / 2,
-            toBox.y
+            fromX, fromY, // start point (center bottom of source)
+            fromX, midY,  // vertical step
+            toX, midY,    // horizontal step
+            toX, toY      // down to top of target
         ],
         stroke: 'black',
-        fill: 'black'
-
+        fill: 'black',
+        pointerLength: 8,
+        pointerWidth: 8,
+        tension: 0,
+        lineCap: 'round',
+        lineJoin: 'round'
     };
-
 };
 
 defineExpose({
@@ -460,13 +479,13 @@ function autoLayout(elements, startX = 0, startY = 0) {
 
 // keep cmps within boundaries
 function keepWithinBounds(x, y, width, height) {
-  const maxX = widthCanvaRef.value - width;
-  const maxY = heightCanvaRef.value - height;
+    const maxX = widthCanvaRef.value - width;
+    const maxY = heightCanvaRef.value - height;
 
-  return {
-    x: Math.max(0, Math.min(x, maxX)),
-    y: Math.max(0, Math.min(y, maxY))
-  };
+    return {
+        x: Math.max(0, Math.min(x, maxX)),
+        y: Math.max(0, Math.min(y, maxY))
+    };
 }
 
 

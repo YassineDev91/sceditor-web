@@ -111,9 +111,15 @@ const createNewContract = (name) => {
         "y": 10,
         "variables": [],
         "structs": [],
-        "constructor": {
+        "_constructor": {
             "x": 100,
-            "y": 100
+            "y": 100,
+            "params": [],
+            "modifiers": [],
+            "body": {
+                "type": "Block",
+                "statements": []
+            }
         },
         "functions": [],
     }
