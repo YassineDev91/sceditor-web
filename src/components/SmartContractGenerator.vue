@@ -12,10 +12,7 @@
             <option value="solana">Rust</option>
             <option value="vyper">Vyper</option>
         </select>
-        <!-- <textarea v-model="prompt"
-            class="border bg-slate-800 p-1 rounded outline-none border-slate-600 focus:border-blue-600 mb-3"
-            placeholder="">
-        </textarea> -->
+
         <div class="flex flex-row space-x-2">
             <button @click="generate"
                 class="hover:bg-slate-700 w-full text-sm shadow-sm px-2 py-1 border border-slate-700 bg-slate-800/45 rounded-md">
@@ -31,7 +28,7 @@
     <Drawer v-model:open="showDrawer">
         <div class=" bg-slate-800 border-solid border-white outline-1 w-full h-full rounded-md ">
             <div class="text-white text-sm p-3">
-                <pre><code v-html="highlightedCode"></code></pre>
+                <code v-html="highlightedCode"></code>
             </div>
         </div>
     </Drawer>
@@ -46,17 +43,44 @@ import hljs from "highlight.js";
 import 'highlight.js/styles/github-dark-dimmed.css';   // Import the theme (optional)
 
 
-const prompt = ref("");
-const sc_language = ref("");
+
 const generatedCode = ref("empty");
 var showDrawer = ref(false)
 
 const fileStore = useContractStorage()
+
+const sc_language = ref("solidity"); // Default to Solidity
+
+
+const prompt = ref(`You are a professional smart contract developer. Based on the JSON specification below, generate a complete Solidity smart contract.
+
+The JSON contains:
+- Structural definitions (contract, variables, structs, functions, etc.).
+- Optional natural language descriptions that clarify developer intentions or behavior.
+
+Please follow these guidelines:
+- Implement all logic explicitly defined in the JSON structure.
+- Use the description field (when present) to enrich the contract, infer purpose, and write readable, semantically appropriate code.
+- Prioritize the description to resolve ambiguities.
+- Write clean, commented, deployable code.
+
+Here is the smart contract definition:
+<JSON>
+${fileStore.contract}
+</JSON>
+
+Now generate the ${sc_language} code. Output only the smart contract code. Do not include explanations.`)
+
+
+
 async function generate() {
+    if (sc_language.value === "") {
+        alert("Please select a smart contract language.");
+        return;
+    }
     showDrawer.value = true
-
-
-    const response = await fetch("http://localhost:3000/api/v1/generate", {  // Change to localhost:11434 if no backend
+    try {
+        const response = await fetch("http://localhost:3000/api/v1/generate", {  // Change to localhost:11434 if no backend
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -67,16 +91,17 @@ async function generate() {
     const data = await response.json();
     // generatedCode.value = extractCode(data.response);  // Extract Solidity, Rust, or Vyper code
     generatedCode.value = data.output;
+    } catch (error) {
+        console.error("Error generating code:", error);
+        generatedCode.value = "Error generating code. Please check the console for details.";
+    }
+    
 }
 
-function exportContract() {
-    alert("exporting...")
-}
 const highlightedCode = computed(() => {
     let highlighted = hljs.highlightAuto(generatedCode.value).value;
-    console.log(highlighted);
-    
-  return highlighted
+
+    return highlighted
 });
 // Function to extract Solidity, Rust, or Vyper code from response
 function extractCode(response) {
@@ -87,5 +112,7 @@ function extractCode(response) {
 
 <style>
 pre {
-  overflow-x: auto; /* Allow horizontal scrolling for <pre> itself */
-}</style>
+    overflow-x: auto;
+    /* Allow horizontal scrolling for <pre> itself */
+}
+</style>

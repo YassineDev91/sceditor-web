@@ -18,22 +18,22 @@
 
                 <!-- Structural Layer -->
                 <v-layer ref="mainLayer" :visible="isMainLayerVisible">
-                    <variable v-for="variable in fileStore.contract.variables" :key="variable.name" :data="variable"
+                    <variable v-for="variable in fileStore.contract.variables" :key="variable.id" :data="variable"
                         :x="variable.x" :y="variable.y" :selected="variable.isSelected"
-                        @click="fileStore.showProperties" />
+                        @click="fileStore.showProperties" @dragend="handleScdDragMove" />
 
                     <struct v-for="struct in fileStore.contract.structs" :key="struct.name" :name="struct.name"
                         :data="struct" :literals="struct.literals" :x="struct.x" :y="struct.y"
                         :selected="struct.isSelected" @click="fileStore.showProperties" />
 
-                    <function v-for="_function in fileStore.contract.functions" :key="_function.name"
+                    <function v-for="_function in fileStore.contract.functions" :key="_function.id"
                         :name="_function.name" :x="_function.x" :y="_function.y" 
                         :data="_function"
                         :params="_function.params" 
                         :statements="_function.body.statements"
                         :returnParams="_function.returnParams" 
                         :selected="_function.isSelected"
-                        @click="fileStore.showProperties" @dblclick="showFunctionLayer(_function)" />
+                        @click="fileStore.showProperties" @dblclick="showFunctionLayer(_function)" @dragend="handleScdDragMove"/>
 
                     <function v-if="fileStore.contract._constructor" name="<<constructor>>"
                         :x="fileStore.contract._constructor.x" :y="fileStore.contract._constructor.y"
@@ -42,7 +42,23 @@
                         :statements="fileStore.contract._constructor.body.statements"
                         :selected="fileStore.contract._constructor.isSelected"
                         @click="fileStore.showProperties" 
-                        @dblclick="showFunctionLayer" />
+                        @dblclick="showFunctionLayer(fileStore.contract._constructor)" />
+                    
+                    <Enum v-for="enumItem in fileStore.contract.enums" :key="enumItem.name"
+                        :name="enumItem.name" :data="enumItem" :x="enumItem.x" :y="enumItem.y"
+                        :values="enumItem.values" :selected="enumItem.isSelected"
+
+                        @click="fileStore.showProperties" />
+
+                    <Modifier v-for="modifier in fileStore.contract.modifiers" :key="modifier.name"
+                        :name="modifier.name" :data="modifier" :x="modifier.x" :y="modifier.y"
+                        :params="modifier.params" :statements="modifier.body.statements"
+                        :selected="modifier.isSelected" @click="fileStore.showProperties" @dblclick="showFunctionLayer(modifier)"/>
+
+                    <ErrorDeclaration v-for="_error in fileStore.contract.errorDeclarations" :key="_error.name"
+                        :name="_error.name" :data="_error" :x="_error.x" :y="_error.y"
+                        :literals="_error.literals" :selected="_error.isSelected"
+                        @click="fileStore.showProperties" />    
                 </v-layer>
 
                 <!-- Function Layer -->
@@ -90,6 +106,9 @@ import Modal from './Modal.vue';
 import { useContractStorage } from '@/stores/contract'
 import { ArrowLeftCircleIcon } from '@heroicons/vue/24/outline';
 import { useUIStore } from '@/stores/uiStore';
+import Enum from './palette/scd/Enum.vue';
+import Modifier from './palette/scd/Modifier.vue';
+import ErrorDeclaration from './palette/scd/ErrorDeclaration.vue';
 
 const fileStore = useContractStorage()
 
@@ -189,16 +208,32 @@ const toggleLayer = () => {
     isFunctionLayerVisible.value = !isFunctionLayerVisible.value
     connectors.value = []
     targets.value = []
-    autoLayout(fileStore.contract.structs);
-    autoLayout(fileStore.contract.variables, 0, 200); // optional offset
-    autoLayout(fileStore.contract.functions, 0, 400);
+    
+    // autoLayout(fileStore.contract.structs);
+    // autoLayout(fileStore.contract.variables, 0, 200); // optional offset
+    // autoLayout(fileStore.contract.functions, 0, 400);
 }
 
 const showFunctionLayer = (func) => {
     fileStore.selectedFunction = func
     selectedFunction.value = func
+    console.log("🔍 Selected function:", func);
     toggleLayer()
 }
+
+// handle SCD positions
+const handleScdDragMove = (e) => {
+  const node = e.target;
+  const data = node.attrs.data;
+  if (!data?.id) {
+    console.warn("⚠️ SCD element missing data.id:", node);
+    return;
+  }
+
+  const { x, y } = node.position();
+  fileStore.updatePosition(data.id, x, y); // must exist in your Pinia store
+  console.log(`📦 SCD updated: ${data.type} (${data.id}) at (${x}, ${y})`);
+};
 
 const handleDragMove = () => {
     const layer = functionLayer.value?.getNode();
@@ -235,6 +270,7 @@ const handleDragMove = () => {
         }
     });
 };
+
 
 const generateConnectors = (nodes) => {
     const results = [];
@@ -334,7 +370,7 @@ const handleDrop = (event) => {
     const structNode = nodes.find((node) => {
         const rect = node.getClientRect();
         return (
-            node.attrs.type === 'Struct' &&
+            (node.attrs.type === 'Struct') &&
             pointerPosition.x >= rect.x &&
             pointerPosition.x <= rect.x + rect.width &&
             pointerPosition.y >= rect.y &&

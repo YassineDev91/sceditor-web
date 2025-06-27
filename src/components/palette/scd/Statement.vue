@@ -19,6 +19,14 @@ const props = defineProps({
     x: Number,
     y: Number,
     statement: Object,
+    fill: {
+        type: String,
+        default: '#F7F5FE',
+    },
+    stroke: {
+        type: String,
+        default: '#ADD8F6',
+    },
 });
 
 const emit = defineEmits(["max-width"]);
@@ -48,7 +56,7 @@ const leftConfig = ref({
 });
 const statementTypeConfig = ref({
     x: props.x + 33,
-    y: props.y + 12,
+    y: props.y + 13,
     fontSize: 12,
     text: props.statement.cmp_type
 })
@@ -57,9 +65,9 @@ const textRectConfig = ref({
     y: props.y + 6,
     width: 160,
     height: 25,
-    cornerRadius: 10,
-    fill: '#F7F5FE',
-    stroke: '#ADD8F6',
+    cornerRadius: 5,
+    fill: props.fill,
+    stroke: props.stroke,
     strokeWidth: 1,
 })
 const equalSignConfig = ref({

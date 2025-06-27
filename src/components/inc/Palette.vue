@@ -13,7 +13,7 @@
                 class="flex p-1.5 cursor-pointer rounded-md border bg-slate-800/25 border-slate-700 hover:dark:bg-slate-300/20 dark:text-white space-x-2 items-center">
                 <div class="bg-slate-200 rounded-sm shadow-md">
                     <img :src="'src/assets/icons/' + element.icon + '.png'"
-                        class="w-5 h-5 p-1 shadow-sm object-contain">
+                        class="w-6 h-6 p-1 shadow-sm object-contain">
                 </div>
                 <span class="text-xs">{{ element.label }}</span>
             </div>
@@ -31,6 +31,9 @@ const elements = [
     { label: 'Struct', type: 'struct', icon: 'struct', stage: 'SCD', action: () => { createStruct() } },
     { label: 'Variable', type: 'variable', icon: 'variable', stage: 'SCD', action: () => { createVariable() } },
     { label: 'Function', type: 'function', icon: 'function', stage: 'SCD', action: () => { createFunction() } },
+    { label: 'Enum', type: 'enum', icon: 'enum', stage: 'SCD', action: () => { createEnum() }},
+    { label: 'Modifier', type: 'modifier', icon: 'modifier', stage: 'SCD', action: () => { createModifier() }},
+    { label: 'ErrorDeclaration', type: 'error', icon: 'error', stage: 'SCD', action: () => { createErrorDeclaration() }},
     { label: 'Literal', type: 'literal', icon: 'three-point', stage: 'SCD', },
     // {  label: 'Return', type: 'return', icon: '' },
     // {  label: 'Parameter', type: 'parameter', icon: '' },
@@ -62,6 +65,7 @@ function createStruct() {
         literals: [],
         x: 100,
         y: 100,
+        cmp_type: "Struct",
         details:"sdetails"
     })
     console.log("creating struct ...", fileStore.contract.structs);
@@ -72,6 +76,7 @@ function createVariable() {
         name: "new_variable",
         x: 100,
         y: 100,
+        cmp_type: "Variable",
         type: {
             base: "",
             payable: false
@@ -85,10 +90,47 @@ function createFunction() {
         name: "new_function",
         x: 100,
         y: 100,
+        cmp_type: "Function",
         body: {
             "type": "Block",
             "statements": []
         },
+        description:""
+    })
+}
+
+function createEnum() {
+    fileStore.contract.enums.push({
+        name: "new_enum",
+        x: 100,
+        y: 100,
+        cmp_type: "Enum",
+        values: [],
+        description:""
+    })
+}
+
+function createModifier() {
+    fileStore.contract.modifiers.push({
+        name: "new_modifier",
+        x: 100,
+        y: 100,
+        cmp_type: "Modifier",
+        body: {
+            "type": "Block",
+            "statements": []
+        },
+        values: [],
+        parameters: [], 
+        description:""
+    })
+}
+function createErrorDeclaration() {
+    fileStore.contract.errorDeclarations.push({
+        name: "new_error",
+        x: 100,
+        y: 100,
+        cmp_type: "ErrorDeclaration",
         description:""
     })
 }

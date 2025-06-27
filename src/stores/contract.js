@@ -483,22 +483,12 @@ export const useContractStorage = defineStore("contract", {
       if (element && typeof element === 'object') {
         this.selectedElement = element;
         this.selectedElement.isSelected = true;
+        console.log("Selected Element:", this.selectedElement);
       } else {
         console.warn("⚠️ Invalid selection!", element);
         this.selectedElement = {};
       }
     },
-    // showProperties(element) {
-    //   this.clearSelection()
-
-    //   if (element?.target?.attrs?.data) {
-    //     this.selectedElement = element.target.attrs.data;
-    //     this.selectedElement.isSelected = true
-    //   } else {
-    //     console.log("selection error !");
-    //     this.selectedElement = {}
-    //   }
-    // },
     clearSelection() {
       if (this.selectedElement) {
         this.selectedElement.isSelected = false;
@@ -512,8 +502,24 @@ export const useContractStorage = defineStore("contract", {
     },
     selector(element) {
 
-    }
+    },
+  updatePosition(id, x, y) {
+  const all = [
+    ...this.contract.variables,
+    ...this.contract.structs,
+    ...this.contract.functions,
+    this.contract.constructor
+  ];
 
+  const target = all.find(el => el?.id === id);
+  if (target) {
+    target.x = x;
+    target.y = y;
+    console.log(`✅ Updated position of ${target.type} (${target.name})`);
+  } else {
+    console.warn("⚠️ Couldn't find node to update by id:", id);
+  }
+}
   },
   getters: {
 

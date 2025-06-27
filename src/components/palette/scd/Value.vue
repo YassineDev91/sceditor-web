@@ -4,33 +4,39 @@
         <v-text :config="textConfig"></v-text>
     </v-group>
 </template>
-
 <script setup>
-import { ref } from "vue";
+import { ref } from 'vue';
+
+
 const props = defineProps({
+    value: String,
     x: Number,
     y: Number,
-    name: String
 })
 
 const groupConfig = ref({
-    x: 100,
-    y: -10,
+    x: props.x,
+    y: props.y,
 })
-const rectConfig = ref({
-    width: 70,
-    height: 20,
-    stroke: 'black',
-    strokeWidth: 1,
-    cornerRadius: 5,
-    fill: '#1dd1a1'
-})
-const textConfig = ref({
-    x:3,
-    y:3,
-    fontSize: 12,
-    text: props.name
-})
-</script>
 
-<style></style>
+const rectConfig = ref({
+    x: 5,
+    y: 3,
+    width: 140,
+    height: 20,
+    // fill color lighter than #FFF8E1
+    fill: '#DBF1ED',
+    stroke: '#9FD6CF',
+    cornerRadius: 5,
+    strokeWidth: 1,
+})
+
+const textConfig = ref({
+    x: 15,
+    y: 8,
+    text: props.value.name,
+    fontSize: 12,
+    fill: '#000',
+})
+
+</script>

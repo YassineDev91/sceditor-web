@@ -1,5 +1,5 @@
 <template>
-    <v-group :config="{ draggable: true }" @mousedown="handleClick">
+    <v-group :config="{ draggable: true,  data: props.data }" @mousedown="handleClick">
         <v-rect v-if="isHovered" :config="hoverRectConfig" />
         <v-rect :config="rectConfig">
         </v-rect>
@@ -32,8 +32,8 @@ const props = defineProps({
     selected: Boolean
 });
 const rectConfig = computed(() => ({
-    x: props.x,
-    y: props.y,
+    x: props.data.x,
+    y: props.data.y,
     fill: '#DBF1ED',
     stroke: '#9FD6CF',
     width: variableRectWidth,

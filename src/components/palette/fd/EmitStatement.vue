@@ -37,8 +37,8 @@ const rectConfig = ref({
 })
 
 const textConfig = ref({
-    x: rectConfig.value.x + 45,
-    y: rectConfig.value.y + 17,
+    x: 10,
+    y: 10,
     fontSize: 13,
     text: props.statement.cmp_type || 'EmitStatement',
 })
