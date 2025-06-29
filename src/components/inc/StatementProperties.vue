@@ -23,7 +23,7 @@
 
     </template>
 
-    <template v-if="element.cmp_type == 'IfStatement'">
+    <template v-if="element.cmp_type == 'ConditionStatement'">
       <h1 class="my-1">Condition</h1>
       <div class="grid grid-cols-3 gap-1">
         <div>

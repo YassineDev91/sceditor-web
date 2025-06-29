@@ -1,5 +1,6 @@
 <template>
-    <v-group :config="{ draggable: true,  data: props.data }" @mousedown="handleClick">
+    <v-group :config="{ draggable: true,  data: props.data }"  @click="e => emit('click', e)"
+  @dragend="e => emit('dragend', e)">
         <v-rect v-if="isHovered" :config="hoverRectConfig" />
         <v-rect :config="rectConfig">
         </v-rect>
@@ -13,6 +14,8 @@
 import { useContractStorage } from "@/stores/contract";
 import { computed, onMounted, ref } from "vue";
 import { useImage } from "vue-konva";
+
+const emit = defineEmits(['click', 'dragend']);
 
 const fileStore = useContractStorage();
 

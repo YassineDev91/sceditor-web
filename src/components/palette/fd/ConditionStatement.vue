@@ -60,9 +60,9 @@ const groupConfig = computed(() => ({
   x: props.x,
   y: props.y,
   draggable: true,
-  type: props.statement?.cmp_type || 'IfStatement',
+  type: props.statement?.cmp_type || 'ConditionStatement',
 
-  name: props.statement?.name || 'IfStatement',
+  name: props.statement?.name || 'ConditionStatement',
   data: props.statement
 }))
 

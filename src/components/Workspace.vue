@@ -20,11 +20,11 @@
                 <v-layer ref="mainLayer" :visible="isMainLayerVisible">
                     <variable v-for="variable in fileStore.contract.variables" :key="variable.id" :data="variable"
                         :x="variable.x" :y="variable.y" :selected="variable.isSelected"
-                        @click="fileStore.showProperties" @dragend="handleScdDragMove" />
+                        @click="fileStore.showProperties(variable)" @dragend="handleScdDragMove" />
 
                     <struct v-for="struct in fileStore.contract.structs" :key="struct.name" :name="struct.name"
                         :data="struct" :literals="struct.literals" :x="struct.x" :y="struct.y"
-                        :selected="struct.isSelected" @click="fileStore.showProperties" />
+                        :selected="struct.isSelected" @click="fileStore.showProperties(struct)" />
 
                     <function v-for="_function in fileStore.contract.functions" :key="_function.id"
                         :name="_function.name" :x="_function.x" :y="_function.y" 
@@ -33,7 +33,7 @@
                         :statements="_function.body.statements"
                         :returnParams="_function.returnParams" 
                         :selected="_function.isSelected"
-                        @click="fileStore.showProperties" @dblclick="showFunctionLayer(_function)" @dragend="handleScdDragMove"/>
+                        @click="fileStore.showProperties(_function)" @dblclick="showFunctionLayer(_function)" @dragend="handleScdDragMove"/>
 
                     <function v-if="fileStore.contract._constructor" name="<<constructor>>"
                         :x="fileStore.contract._constructor.x" :y="fileStore.contract._constructor.y"
@@ -41,24 +41,24 @@
                         :params="fileStore.contract._constructor.params" 
                         :statements="fileStore.contract._constructor.body.statements"
                         :selected="fileStore.contract._constructor.isSelected"
-                        @click="fileStore.showProperties" 
+                        @click="fileStore.showProperties(fileStore.contract._constructor)" 
                         @dblclick="showFunctionLayer(fileStore.contract._constructor)" />
                     
                     <Enum v-for="enumItem in fileStore.contract.enums" :key="enumItem.name"
                         :name="enumItem.name" :data="enumItem" :x="enumItem.x" :y="enumItem.y"
                         :values="enumItem.values" :selected="enumItem.isSelected"
 
-                        @click="fileStore.showProperties" />
+                        @click="fileStore.showProperties(enumItem)" />
 
                     <Modifier v-for="modifier in fileStore.contract.modifiers" :key="modifier.name"
                         :name="modifier.name" :data="modifier" :x="modifier.x" :y="modifier.y"
                         :params="modifier.params" :statements="modifier.body.statements"
-                        :selected="modifier.isSelected" @click="fileStore.showProperties" @dblclick="showFunctionLayer(modifier)"/>
+                        :selected="modifier.isSelected" @click="fileStore.showProperties(modifier)" @dblclick="showFunctionLayer(modifier)"/>
 
                     <ErrorDeclaration v-for="_error in fileStore.contract.errorDeclarations" :key="_error.name"
                         :name="_error.name" :data="_error" :x="_error.x" :y="_error.y"
                         :literals="_error.literals" :selected="_error.isSelected"
-                        @click="fileStore.showProperties" />    
+                        @click="fileStore.showProperties(_error)" @dragend="handleScdDragMove"/>    
                 </v-layer>
 
                 <!-- Function Layer -->

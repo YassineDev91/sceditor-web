@@ -54,15 +54,15 @@ const rectConfig = computed(() => ({
   strokeWidth: 1,
 }))
 
-const selectionRectConfig = ref({
+const selectionRectConfig = computed(() => ({
   x: 0,
   y: 0,
   width: rectConfig.value.width,
-  height: rectConfig.value.height,
+  height: dynamicHeight.value,
   stroke: '#3498db',
   strokeWidth: 2,
   cornerRadius: 5,
-})
+}))
 
 const titleConfig = ref({
   x: 30,

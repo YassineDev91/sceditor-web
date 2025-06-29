@@ -5,8 +5,9 @@ import AssignmentStatement from './AssignmentStatement.vue'
 import ReturnStatement from './ReturnStatement.vue'
 import EmitStatement from './EmitStatement.vue'
 import CallStatement from './CallStatement.vue'
-import IfStatement from './IfStatement.vue'
+
 import LoopStatement from './LoopStatement.vue'
+import ConditionStatement from './ConditionStatement.vue'
 
 const props = defineProps({
   statement: Object,
@@ -21,7 +22,7 @@ const componentMap = {
   ReturnStatement,
   EmitStatement,
   CallStatement,
-  IfStatement,
+  ConditionStatement,
   LoopStatement
 }
 

@@ -37,15 +37,16 @@ const rectConfig = ref({
 })
 
 const textConfig = ref({
-    x: 10,
-    y: 10,
+    x: rectConfig.value.x + 45,
+    y: rectConfig.value.y + 17,
+
     fontSize: 13,
     text: props.statement.cmp_type || 'EmitStatement',
 })
 
 const contentRect = computed(() => ({
-    x: textConfig.value.x,
-    y: rectConfig.value.y + 40,
+    x: props.x + 10,
+    y: props.y + 40,
     content: props.statement.event,
     height: 30,
     width: 140,

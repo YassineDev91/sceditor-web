@@ -1,5 +1,6 @@
 <template>
-    <v-group :config="{ draggable: true, data: props.data }" @mousedown="handleClick">
+    <v-group :config="{ draggable: true, data: props.data }" @click="e => emit('click', e)"
+  @dragend="e => emit('dragend', e)" @dblclick="e=> emit('dblclick', e)">
         <v-rect ref="rectRef" :config="rectConfig"></v-rect>
         <v-rect :config="paramsConfig"></v-rect>
         <v-rect :config="returnConfig"></v-rect>
@@ -27,6 +28,8 @@ import Return from './Return.vue';
 import Statement from '@/components/palette/scd/Statement.vue';
 import { useImage } from "vue-konva";
 import { useContractStorage } from "@/stores/contract";
+
+const emit = defineEmits(['click', 'dragend','dblclick']);
 
 const fileStore = useContractStorage()
 

@@ -52,8 +52,8 @@ const groupConfig = ref({
 
 const [image] = useImage("src/assets/icons/git.png")
 const iconConfig = ref({
-    x: rectConfig.value.x + 5,
-    y: rectConfig.value.y + 5,
+    x:  5,
+    y:  5,
     width: 20,
     height: 20,
     image: image

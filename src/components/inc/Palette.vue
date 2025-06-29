@@ -182,7 +182,7 @@ function createStatement(type) {
         case "condition":
             console.log(`creating ${type} statement ...`);
             fileStore.selectedFunction.body.statements.push({
-                cmp_type: "IfStatement",
+                cmp_type: "ConditionStatement",
                 condition: {
                     type: "BinaryExpression",
                     left: "",
@@ -192,28 +192,6 @@ function createStatement(type) {
                 body: [],
                 description:""
             })
-            // {
-      //           "type": "IfStatement",
-      //           "condition": {
-      //             "type": "BinaryOperation",
-      //             "operator": "!=",
-      //             "left": {
-      //               "type": "BinaryOperation",
-      //               "operator": "*",
-      //               "left": {
-      //                 "type": "Literal",
-      //                 "value": 2
-      //               },
-      //               "right": {
-      //                 "type": "Identifier",
-      //                 "value": "value"
-      //               }
-      //             },
-      //             "right": {
-      //               "type": "Identifier",
-      //               "value": "transaction.value"
-      //             }
-      //           },
             break;
         case "emit":
             console.log(`creating ${type} statement ...`);

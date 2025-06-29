@@ -2,7 +2,7 @@
   <v-group :config="groupConfig" @mousedown="handleClick">
     <v-rect :config="rectConfig" />
     <v-text :config="titleConfig" />
-    <Value v-for="(value, index) in props.values" :key="index" :x="rectConfig.x" :y="rectConfig.y + (index * 25) + 30"
+    <Value v-for="(value, index) in props.values" :key="index" :x="rectConfig.x" :y="rectConfig.y + (index * 25) + 27"
       :value="value" />
     <v-rect v-if="selected" :config="selectionRectConfig" />
     <v-image :config="iconConfig" />
