@@ -1,10 +1,9 @@
 <template>
     <v-group :config="{ draggable: true, data: props.data }" @click="e => emit('click', e)"
-  @dragend="e => emit('dragend', e)" @dblclick="e=> emit('dblclick', e)">
+        @dragend="e => emit('dragend', e)" @dblclick="e => emit('dblclick', e)">
         <v-rect ref="rectRef" :config="rectConfig"></v-rect>
         <v-rect :config="paramsConfig"></v-rect>
         <v-rect :config="returnConfig"></v-rect>
-        <!-- <v-line :config="nameUnderLineConfig"></v-line> -->
         <v-rect :config="selectionConfig" v-if="selected"></v-rect>
         <v-image :config="iconConfig" />
         <!-- Parameters -->
@@ -13,8 +12,6 @@
         <!-- Statements -->
         <Statement v-for="(stmt, index) in statements" :key="stmt.id" :statement="stmt" :x="rectConfig.x"
             :y="rectConfig.y + (index * 30) + 30" />
-        <!-- <v-text v-for="(stmt,index) in statements" :key="stmt.id" :value="statements.type" config="statementsConfig"/> -->
-        <!-- Return Statement -->
         <Return v-if="returnParams" :name="returnParams.name" :x="props.x" :y="props.y + rectConfig.height" />
 
         <v-text :config="nameConfig"></v-text>
@@ -29,7 +26,7 @@ import Statement from '@/components/palette/scd/Statement.vue';
 import { useImage } from "vue-konva";
 import { useContractStorage } from "@/stores/contract";
 
-const emit = defineEmits(['click', 'dragend','dblclick']);
+const emit = defineEmits(['click', 'dragend', 'dblclick']);
 
 const fileStore = useContractStorage()
 
@@ -67,36 +64,24 @@ const rectConfig = computed(() => ({
     // dash: [3, 2],
 }));
 
-const nameConfig = ref({
+const nameConfig = computed(() => ({
     x: props.x + 35,
     y: props.y + 10,
     fontSize: 12,
     text: props.name,
     data: props.data
-});
+}));
 
-// const nameUnderLineConfig = ref({
-//     points: [
-//         rectConfig.value.x,
-//         rectConfig.value.y + nameConfig.value.fontSize + 10,
-//         rectConfig.value.x + rectConfig.value.width,
-//         rectConfig.value.y + nameConfig.value.fontSize + 10
-//     ],
-//     stroke: 'black',
-//     strokeWidth: 1,
-//     lineJoin: 'round',
-//     dash: [3, 2],
-// });
 
-const returnConfig = ref({
+const returnConfig = computed(() => ({
     x: props.x,
     y: props.y + rectConfig.value.height
-});
+}));
 
-const paramsConfig = ref({
+const paramsConfig = computed(() => ({
     x: props.x,
     y: props.y,
-});
+}));
 
 const selectionConfig = computed(() => ({
     x: props.x,
@@ -108,13 +93,13 @@ const selectionConfig = computed(() => ({
     strokeWidth: 1.5,
 }));
 
-const imageAddress = props.name == '<<constructor>>' ? 'src/assets/icons/constructor_icon.png' : "src/assets/icons/function_icon.png"
+const imageAddress = props.name == '<<constructor>>' ? 'src/assets/icons/constructor_icon.png' : "src/assets/icons/function.png"
 const [image] = useImage(imageAddress)
 const iconConfig = ref({
-    x: props.x + 5,
-    y: props.y + 5,
-    width: 25,
-    height: 25,
+    x: props.x + 7,
+    y: props.y + 7,
+    width: 20,
+    height: 20,
     image: image
 })
 

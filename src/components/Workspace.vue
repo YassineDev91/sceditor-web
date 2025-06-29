@@ -7,7 +7,7 @@
             <span>Back</span>
         </button>
 
-        <div ref="workspaceRef" class="flex flex-row h-full w-full" @dragover.prevent @drop="handleDrop">
+        <div ref="workspaceRef" class="flex flex-row h-full w-full" @dragover.prevent>
             <v-stage ref="stageRef" :key="fileStore.contract.name" :config="stageConfig">
                 <!-- Contract Layer -->
                 <v-layer>
@@ -126,8 +126,8 @@ const heightCanvaRef = ref(0);
 const canvasReady = ref(false)
 
 const stageConfig = computed(() => ({
-    width: widthCanvaRef.value,
-    height: heightCanvaRef.value,
+    width: widthCanvaRef.value - widthCanvaRef.value* 0.1, // 10% padding
+    height: heightCanvaRef.value - heightCanvaRef.value * 0.1, // 10% padding
     // draggable: true,
 }));
 
@@ -440,15 +440,16 @@ watch(
             await nextTick(); // Wait for DOM
             const workspace = workspaceRef.value;
             if (workspace) {
-                widthCanvaRef.value = workspace.offsetWidth || 400;
-                heightCanvaRef.value = workspace.offsetHeight || 600;
+                widthCanvaRef.value = workspace.offsetWidth ;
+                heightCanvaRef.value = workspace.offsetHeight;
 
                 nextTick(() => {
                     const stage = stageRef.value?.getNode();
                     if (stage) {
                         stage.setSize({ width: widthCanvaRef.value, height: heightCanvaRef.value });
                         stage.batchDraw();
-                        console.log("✅ Stage resized after contract creation");
+                        console.log("✅ Stage resized after contract creation",
+                            widthCanvaRef.value, heightCanvaRef.value);
                     }
                 });
             }

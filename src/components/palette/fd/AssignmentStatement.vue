@@ -33,7 +33,7 @@ const rectConfig = ref({
     x: props.x,
     y: props.y,
     width: 200,
-    height: 130,
+    height: 120,
     stroke: 'black',
     cornerRadius: 5,
     fill: "#E7F4FE",
@@ -62,7 +62,7 @@ const contentRectConfig1 = ref({
     x: rectConfig.value.x,
     y: textConfig.value.y,
     height: 30,
-    width: 140,
+    width: 180,
     stroke: "#84B2E9",
     strokeWidth: 1,
     fill: "#FEFDF8",
@@ -72,7 +72,7 @@ const contentRectConfig2 = ref({
     x: contentRectConfig1.value.x,
     y: contentRectConfig1.value.y + 35,
     height: 30,
-    width: 140,
+    width: 180,
     stroke: "#84B2E9",
     strokeWidth: 1,
     fill: "#FEFDF8",
@@ -97,7 +97,7 @@ const rightTextConfig = computed(() => ({
 }))
 
 const leftSideConfig = ref({
-    x: 40,
+    x: 10,
     y: 30,
 })
 const rightSideConfig = ref({

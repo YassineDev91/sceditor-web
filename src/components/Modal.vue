@@ -112,8 +112,8 @@ const createNewContract = (name) => {
         "variables": [],
         "structs": [],
         "_constructor": {
-            "x": 30,
-            "y": 50,
+            "x": 50,
+            "y": 120,
             "params": [],
             "modifiers": [],
             "body": {

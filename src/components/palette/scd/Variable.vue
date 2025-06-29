@@ -1,6 +1,5 @@
 <template>
-    <v-group :config="{ draggable: true,  data: props.data }"  @click="e => emit('click', e)"
-  @dragend="e => emit('dragend', e)">
+    <v-group :config="groupConfig" @click="e => emit('click', e)" @dragend="e => emit('dragend', e)">
         <v-rect v-if="isHovered" :config="hoverRectConfig" />
         <v-rect :config="rectConfig">
         </v-rect>
@@ -12,6 +11,7 @@
 </template>
 <script setup>
 import { useContractStorage } from "@/stores/contract";
+import { data } from "autoprefixer";
 import { computed, onMounted, ref } from "vue";
 import { useImage } from "vue-konva";
 
@@ -20,13 +20,21 @@ const emit = defineEmits(['click', 'dragend']);
 const fileStore = useContractStorage();
 
 
-const nameMarginX = 40
-const nameMarginY = 13
+const nameMarginX = 35
+const nameMarginY = 5
 const typeMarginX = nameMarginX
-const typeMarginY = 27
-const variableRectWidth = 160
-const variableRectheight = 50
+const typeMarginY = 20
+const variableRectWidth = 120
+const variableRectheight = 35
 const isHovered = ref(false)
+
+
+const groupConfig = computed(() => ({
+    x: props.x,
+    y: props.y,
+    data: props.data,
+    draggable: true,
+}));
 
 const props = defineProps({
     x: Number,
@@ -35,8 +43,6 @@ const props = defineProps({
     selected: Boolean
 });
 const rectConfig = computed(() => ({
-    x: props.data.x,
-    y: props.data.y,
     fill: '#DBF1ED',
     stroke: '#9FD6CF',
     width: variableRectWidth,
@@ -46,40 +52,37 @@ const rectConfig = computed(() => ({
 
 }))
 const selectionRectConfig = computed(() => ({
-    x: props.x,
-    y: props.y,
     width: rectConfig.value.width,
     height: rectConfig.value.height,
     cornerRadius: 5,
-    stroke: '#73C7C7',
+    stroke: '#3498db',
     strokeWidth: 2,
 }))
 const textConfig = computed(() => ({
-    // x: rectConfig.value.x - props.name.length * 2.5,
-    // y: rectConfig.value.y - rectConfig.value.radiusY / 4,
 
-    x: props.x + nameMarginX,
-    y: props.y + nameMarginY,
+    x: nameMarginX,
+    y: nameMarginY,
+
     text: props.data.name,
     fontSize: 12,
     data: props.data
 }))
 
 const typeTextConfig = computed(() => ({
-    x: props.x + typeMarginX,
-    y: props.y + typeMarginY,
+    x: typeMarginX,
+    y: typeMarginY,
     text: props.data.type.payable ? props.data.type.base + ' payable' : props.data.type.base,
     fill: 'gray',
     fontSize: 12,
     data: props.data.type.base
 }))
-const [image] = useImage("src/assets/icons/variable_icon.png")
+const [image] = useImage("src/assets/icons/variable.svg")
 const iconConfig = ref({
-    x: props.x + 5,
-    y: props.y + 10,
+    x: 5,
+    y: 5,
     image: image,
-    width: 30,
-    height: 30
+    width: 25,
+    height: 25
 })
 
 const hoverRectConfig = computed(() => ({

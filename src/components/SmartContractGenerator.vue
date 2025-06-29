@@ -49,10 +49,12 @@ var showDrawer = ref(false)
 
 const fileStore = useContractStorage()
 
-const sc_language = ref("solidity"); // Default to Solidity
+const sc_language = ref(""); // Default to Solidity
 
+const API_KEY = import.meta.env.VITE_AI_API_KEY;
 
-const prompt = ref(`You are a professional smart contract developer. Based on the JSON specification below, generate a complete Solidity smart contract.
+const prompt = computed(() => {
+    return `You are a professional smart contract developer. Based on the JSON specification below, generate a complete ${sc_language.value} smart contract.
 
 The JSON contains:
 - Structural definitions (contract, variables, structs, functions, etc.).
@@ -66,10 +68,11 @@ Please follow these guidelines:
 
 Here is the smart contract definition:
 <JSON>
-${fileStore.contract}
+${JSON.stringify(fileStore.contract, null, 2)}
 </JSON>
 
-Now generate the ${sc_language} code. Output only the smart contract code. Do not include explanations.`)
+Now generate the ${sc_language.value} code. Output only the smart contract code. Do not include explanations.`
+});
 
 
 
@@ -79,23 +82,39 @@ async function generate() {
         return;
     }
     showDrawer.value = true
-    try {
-        const response = await fetch("http://localhost:3000/api/v1/generate", {  // Change to localhost:11434 if no backend
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt: prompt.value })
-    });
 
-    const data = await response.json();
-    // generatedCode.value = extractCode(data.response);  // Extract Solidity, Rust, or Vyper code
-    generatedCode.value = data.output;
+    generatedCode.value = "Generating code... Please wait.";
+
+    console.log("Generating code for:", prompt.value);
+
+
+    try {
+
+        if (!API_KEY) {
+            console.warn("⚠️ AI API key is missing! Check your .env file.");
+
+            return
+        }
+        const response = await fetch(
+            `...?key=${API_KEY}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt.value }] }]
+                })
+            }
+        );
+
+        const data = await response.json();
+        generatedCode.value = data.output;
+
+
     } catch (error) {
         console.error("Error generating code:", error);
         generatedCode.value = "Error generating code. Please check the console for details.";
     }
-    
+
 }
 
 const highlightedCode = computed(() => {

@@ -23,6 +23,8 @@ const props = defineProps({
   data: Object,
 })
 
+const contentWidth = props.name.length*9 + 60
+
 const groupConfig = computed(() => ({
   x: props.x,
   y: props.y,
@@ -34,7 +36,7 @@ const groupConfig = computed(() => ({
 const rectConfig = ref({
   x: 0,
   y: 0,
-  width: 140,
+  width: contentWidth,
   height: 40,
   fill: '#FDECEA',
   stroke: '#E57373',
@@ -67,7 +69,4 @@ const iconConfig = ref({
   height: 30
 })
 
-function handleClick() {
-  fileStore.showProperties(props.data)
-}
 </script>

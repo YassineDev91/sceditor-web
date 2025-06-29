@@ -28,7 +28,7 @@ const rectConfig = ref({
     x: props.x,
     y: props.y,
     width: 200,
-    height: 100,
+    height: 80,
     cornerRadius: 5,
     fill: "#FFDBD4",
     stroke: "#FA9580",
@@ -46,10 +46,10 @@ const textConfig = ref({
 
 const contentRect = computed(() => ({
     x: props.x + 10,
-    y: props.y + 40,
+    y: props.y + 30,
     content: props.statement.event,
     height: 30,
-    width: 140,
+    width: 180,
     fillColor: "#FEFDF8",
     borderColor: "#FA9580",
     fontSize: 13,

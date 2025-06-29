@@ -7,42 +7,39 @@
     </v-group>
 </template>
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 
 const props = defineProps({
     x: Number,
     y: Number,
-    dimensions:Object,
+    dimensions: Object,
     name: String,
 });
-const groupConfig = ref({
+
+const groupConfig = computed(() => ({
     x: props.x,
     y: props.y,
     draggable: false,
-});
-const rectConfig = ref({
+}));
+const rectConfig =computed(() => ({
     x: props.x,
     y: props.y,
-    width: 700 ,
-    height: props.dimensions.height || 500,
+    width: props.dimensions.width || 800,
+    height: props.dimensions.height || 600,
     stroke: 'black',
     strokeWidth: 1.3,
-    cornerRadius:5
-})
-const textConfig = ref({
+    cornerRadius: 5
+}))
+const textConfig = computed(() => ({
     x: rectConfig.value.x + 3,
     y: rectConfig.value.y + 3,
     text: props.name,
-    fontSize: 12,
-})
+    fontSize: 20,
+}))
 
-onMounted(()=>{
-    console.log(`x: ${props.dimensions.width}, y:${props.dimensions.height}`)
-    console.log("🧩 Contract mounted!");
-  console.log("📍 Group config:", groupConfig.value);
-  console.log("📐 Rect config:", rectConfig.value);
-  console.log("📝 Text config:", textConfig.value);
+onMounted(() => {
+
 })
 
 

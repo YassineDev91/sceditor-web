@@ -40,34 +40,34 @@ const rectConfig = ref({
 
 })
 
-const textConfig = ref({
+const textConfig = computed(() => ({
   x: rectConfig.value.x + 45,
   y: rectConfig.value.y + 17,
   fontSize: 13,
   text: props.statement.cmp_type || 'CallStatement',
-})
+}))
 
 
 
 
 
-const contentRectConfig = ref({
-  x: rectConfig.value.x + 35,
+const contentRectConfig = computed(() => ({
+  x: rectConfig.value.x + 10,
   y: textConfig.value.y + 30,
   height: 30,
-  width: 130,
+  width: 180,
   stroke: "#7CC9AE",
   strokeWidth: 1,
   fill: "#FEFDF8",
   cornerRadius: 5
-})
+}))
 // textX = rectX + (rectWidth - textWidth) / 2;
 // textY = rectY + (rectHeight - textHeight) / 2;
 const contentConfig = computed(() => ({
   x: contentRectConfig.value.x + (contentRectConfig.value.width - props.statement.method.length * 7) / 2,
   y: contentRectConfig.value.y + (contentRectConfig.value.height - 15) / 2,
   text: props.statement.object + '.' + props.statement.method,
-  fontSize: 15
+  fontSize: 12
 }))
 const groupConfig = ref({
   x: props.x,

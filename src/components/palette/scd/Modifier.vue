@@ -48,8 +48,8 @@ const rectConfig = computed(() => ({
   y: 0,
   width: 170,
   height: dynamicHeight.value,
-  fill: '#FFF8E1',
-  stroke: '#FFC107',
+  fill: '#FFECD1',
+  stroke: '#FABB81',
   cornerRadius: 5,
   strokeWidth: 1,
 }))

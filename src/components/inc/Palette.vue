@@ -39,8 +39,8 @@ const elements = [
     // {  label: 'Parameter', type: 'parameter', icon: '' },
 
     // FD
-    { label: 'Assignment', icon: 'assignment', type: 'image', stage: 'FD', action: () => createStatement('assignment') },
-    { label: 'Call', icon: 'event', type: 'arrow', stage: 'FD', action: () => createStatement('call') },
+    { label: 'Assignment', icon: 'assignmentStatementIcon', type: 'image', stage: 'FD', action: () => createStatement('assignment') },
+    { label: 'Call', icon: 'callStatementIcon', type: 'call', stage: 'FD', action: () => createStatement('call') },
     { label: 'Condition', icon: 'git', type: 'star', stage: 'FD', action: () => createStatement('condition') },
     { label: 'Emit', icon: 'emit', type: 'arrow', stage: 'FD', action: () => createStatement('emit') },
     { label: 'Loop', icon: 'loop', type: 'star', stage: 'FD', action: () => createStatement('loop') },

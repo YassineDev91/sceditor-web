@@ -43,7 +43,7 @@ const rectConfig = computed(() => ({
   fill: '#E7F7F0',
   stroke: '#26A69A',
   cornerRadius: 5,
-  strokeWidth: 1,
+  strokeWidth: 0.5,
 }))
 
 const selectionRectConfig = ref({
