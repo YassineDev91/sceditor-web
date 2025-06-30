@@ -20,45 +20,42 @@
                 <v-layer ref="mainLayer" :visible="isMainLayerVisible">
                     <variable v-for="variable in fileStore.contract.variables" :key="variable.id" :data="variable"
                         :x="variable.x" :y="variable.y" :selected="variable.isSelected"
-                        @click="fileStore.showProperties(variable)" @dragend="handleScdDragMove" />
+                        @click="fileStore.showProperties(variable)" @dragend="(e)=>handleScdDragMove(e,variable)" />
 
                     <struct v-for="struct in fileStore.contract.structs" :key="struct.name" :name="struct.name"
                         :data="struct" :literals="struct.literals" :x="struct.x" :y="struct.y"
                         :selected="struct.isSelected" @click="fileStore.showProperties(struct)" />
 
                     <function v-for="_function in fileStore.contract.functions" :key="_function.id"
-                        :name="_function.name" :x="_function.x" :y="_function.y" 
-                        :data="_function"
-                        :params="_function.params" 
-                        :statements="_function.body.statements"
-                        :returnParams="_function.returnParams" 
-                        :selected="_function.isSelected"
-                        @click="fileStore.showProperties(_function)" @dblclick="showFunctionLayer(_function)" @dragend="handleScdDragMove"/>
+                        :name="_function.name" :x="_function.x" :y="_function.y" :data="_function"
+                        :params="_function.params" :statements="_function.body.statements"
+                        :returnParams="_function.returnParams" :selected="_function.isSelected"
+                        @click="fileStore.showProperties(_function)" @dblclick="showFunctionLayer(_function)"
+                        @dragend="(e)=>handleScdDragMove(e,_function)" />
 
                     <function v-if="fileStore.contract._constructor" name="<<constructor>>"
                         :x="fileStore.contract._constructor.x" :y="fileStore.contract._constructor.y"
-                        :data="fileStore.contract._constructor"
-                        :params="fileStore.contract._constructor.params" 
+                        :data="fileStore.contract._constructor" :params="fileStore.contract._constructor.params"
                         :statements="fileStore.contract._constructor.body.statements"
                         :selected="fileStore.contract._constructor.isSelected"
-                        @click="fileStore.showProperties(fileStore.contract._constructor)" 
+                        @click="fileStore.showProperties(fileStore.contract._constructor)"
                         @dblclick="showFunctionLayer(fileStore.contract._constructor)" />
-                    
-                    <Enum v-for="enumItem in fileStore.contract.enums" :key="enumItem.name"
-                        :name="enumItem.name" :data="enumItem" :x="enumItem.x" :y="enumItem.y"
-                        :values="enumItem.values" :selected="enumItem.isSelected"
 
-                        @click="fileStore.showProperties(enumItem)" />
+                    <Enum v-for="enumItem in fileStore.contract.enums" :key="enumItem.name" :name="enumItem.name"
+                        :data="enumItem" :x="enumItem.x" :y="enumItem.y" :values="enumItem.values"
+                        :selected="enumItem.isSelected" @click="fileStore.showProperties(enumItem)" 
+                        @dragend="(e)=>handleScdDragMove(e,enumItem)"/>
 
                     <Modifier v-for="modifier in fileStore.contract.modifiers" :key="modifier.name"
-                        :name="modifier.name" :data="modifier" :x="modifier.x" :y="modifier.y"
-                        :params="modifier.params" :statements="modifier.body.statements"
-                        :selected="modifier.isSelected" @click="fileStore.showProperties(modifier)" @dblclick="showFunctionLayer(modifier)"/>
+                        :name="modifier.name" :data="modifier" :x="modifier.x" :y="modifier.y" :params="modifier.params"
+                        :statements="modifier.body.statements" :selected="modifier.isSelected"
+                        @click="fileStore.showProperties(modifier)" @dblclick="showFunctionLayer(modifier)" 
+                        @dragend="(e)=>handleScdDragMove(e,modifier)"/>
 
                     <ErrorDeclaration v-for="_error in fileStore.contract.errorDeclarations" :key="_error.name"
-                        :name="_error.name" :data="_error" :x="_error.x" :y="_error.y"
-                        :literals="_error.literals" :selected="_error.isSelected"
-                        @click="fileStore.showProperties(_error)" @dragend="handleScdDragMove"/>    
+                        :name="_error.name" :data="_error" :x="_error.x" :y="_error.y" :literals="_error.literals"
+                        :selected="_error.isSelected" @click="fileStore.showProperties(_error)"
+                        @dragend="(e) => handleScdDragMove(e, _error)" />
                 </v-layer>
 
                 <!-- Function Layer -->
@@ -126,7 +123,7 @@ const heightCanvaRef = ref(0);
 const canvasReady = ref(false)
 
 const stageConfig = computed(() => ({
-    width: widthCanvaRef.value - widthCanvaRef.value* 0.1, // 10% padding
+    width: widthCanvaRef.value - widthCanvaRef.value * 0.1, // 10% padding
     height: heightCanvaRef.value - heightCanvaRef.value * 0.1, // 10% padding
     // draggable: true,
 }));
@@ -134,7 +131,7 @@ const stageConfig = computed(() => ({
 onMounted(async () => {
 
     // showing constructor if it exists
-    console.log("Constructor:",fileStore.contract._constructor == null) 
+    console.log("Constructor:", fileStore.contract._constructor == null)
     const stage = stageRef.value?.getNode();
 
     await nextTick();
@@ -208,7 +205,7 @@ const toggleLayer = () => {
     isFunctionLayerVisible.value = !isFunctionLayerVisible.value
     connectors.value = []
     targets.value = []
-    
+
     // autoLayout(fileStore.contract.structs);
     // autoLayout(fileStore.contract.variables, 0, 200); // optional offset
     // autoLayout(fileStore.contract.functions, 0, 400);
@@ -222,17 +219,20 @@ const showFunctionLayer = (func) => {
 }
 
 // handle SCD positions
-const handleScdDragMove = (e) => {
-  const node = e.target;
-  const data = node.attrs.data;
-  if (!data?.id) {
-    console.warn("⚠️ SCD element missing data.id:", node);
-    return;
-  }
+const handleScdDragMove = (e, cmp) => {
+    const node = e.target;
 
-  const { x, y } = node.position();
-  fileStore.updatePosition(data.id, x, y); // must exist in your Pinia store
-  console.log(`📦 SCD updated: ${data.type} (${data.id}) at (${x}, ${y})`);
+
+    if (!node?.id) {
+        console.warn("⚠️ SCD element missing data.id:", node);
+        return;
+    }
+
+    const { x, y } = node.position();
+
+    cmp.x = x
+    cmp.y = y
+
 };
 
 const handleDragMove = () => {
@@ -440,7 +440,7 @@ watch(
             await nextTick(); // Wait for DOM
             const workspace = workspaceRef.value;
             if (workspace) {
-                widthCanvaRef.value = workspace.offsetWidth ;
+                widthCanvaRef.value = workspace.offsetWidth;
                 heightCanvaRef.value = workspace.offsetHeight;
 
                 nextTick(() => {
