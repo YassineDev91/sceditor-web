@@ -1,5 +1,5 @@
 <template>
-    <v-group :config="{ draggable: true, data: props.data }" @click="e => emit('click', e)"
+    <v-group :config="groupConfig" @click="e => emit('click', e)"
         @dragend="e => emit('dragend', e)" @dblclick="e => emit('dblclick', e)">
         <v-rect ref="rectRef" :config="rectConfig"></v-rect>
         <v-rect :config="paramsConfig"></v-rect>
@@ -25,10 +25,18 @@ import Return from './Return.vue';
 import Statement from '@/components/palette/scd/Statement.vue';
 import { useImage } from "vue-konva";
 import { useContractStorage } from "@/stores/contract";
+import { data } from "autoprefixer";
 
 const emit = defineEmits(['click', 'dragend', 'dblclick']);
 
 const fileStore = useContractStorage()
+
+const groupConfig = computed(() => ({
+    x: props.x,
+    y: props.y,
+    data: props.data,
+    draggable: true,
+}));    
 
 const rectRef = ref(null);
 const maxWidth = ref(170);
@@ -53,8 +61,8 @@ const props = defineProps({
 
 
 const rectConfig = computed(() => ({
-    x: props.x,
-    y: props.y,
+    x: 0,
+    y: 0,
     width: maxWidth.value, // Bind to dynamic maxWidth
     height: dynamicHeight.value,
     stroke: props.name == '<<constructor>>' ? '#D6B656' : '#ADD8F6',
@@ -65,8 +73,8 @@ const rectConfig = computed(() => ({
 }));
 
 const nameConfig = computed(() => ({
-    x: props.x + 35,
-    y: props.y + 10,
+    x:  35,
+    y:  10,
     fontSize: 12,
     text: props.name,
     data: props.data
@@ -74,8 +82,8 @@ const nameConfig = computed(() => ({
 
 
 const returnConfig = computed(() => ({
-    x: props.x,
-    y: props.y + rectConfig.value.height
+
+    y:  rectConfig.value.height
 }));
 
 const paramsConfig = computed(() => ({
@@ -84,8 +92,6 @@ const paramsConfig = computed(() => ({
 }));
 
 const selectionConfig = computed(() => ({
-    x: props.x,
-    y: props.y,
     width: rectConfig.value.width, // Bind to dynamic maxWidth
     height: rectConfig.value.height,
     stroke: '#3498db',
@@ -96,8 +102,8 @@ const selectionConfig = computed(() => ({
 const imageAddress = props.name == '<<constructor>>' ? 'src/assets/icons/constructor_icon.png' : "src/assets/icons/function.png"
 const [image] = useImage(imageAddress)
 const iconConfig = ref({
-    x: props.x + 7,
-    y: props.y + 7,
+    x: 7,
+    y:  7,
     width: 20,
     height: 20,
     image: image
