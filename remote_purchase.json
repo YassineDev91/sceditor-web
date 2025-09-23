@@ -1,0 +1,486 @@
+{
+  "name": "Purchase",
+  "x": 10,
+  "y": 10,
+  "variables": [
+    {
+      "name": "state",
+      "cmp_type": "Variable",
+      "type": {
+        "base": "State"
+      },
+      "x": 381.54046630859375,
+      "y": 138.01470947265625,
+      "visibility": "public",
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "value",
+      "cmp_type": "Variable",
+      "type": {
+        "base": "uint"
+      },
+      "x": 380.40625,
+      "y": 53,
+      "visibility": "public",
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "seller",
+      "cmp_type": "Variable",
+      "type": {
+        "base": "address"
+      },
+      "x": 381.40625,
+      "y": 94,
+      "visibility": "public",
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "buyer",
+      "cmp_type": "Variable",
+      "type": {
+        "base": "address"
+      },
+      "x": 382.40625,
+      "y": 179,
+      "visibility": "public",
+      "description": "",
+      "isSelected": false
+    }
+  ],
+  "structs": [],
+  "_constructor": {
+    "x": 25,
+    "y": 59,
+    "params": [],
+    "modifiers": [],
+    "body": {
+      "type": "Block",
+      "statements": [
+        {
+          "cmp_type": "AssignmentStatement",
+          "expressions": [
+            {
+              "left": {
+                "type": "",
+                "name": "seller"
+              },
+              "right": {
+                "type": "",
+                "value": "payable(msg.sender)"
+              }
+            }
+          ],
+          "description": "",
+          "isSelected": false
+        },
+        {
+          "cmp_type": "AssignmentStatement",
+          "expressions": [
+            {
+              "left": {
+                "type": "",
+                "name": "value"
+              },
+              "right": {
+                "type": "",
+                "value": "msg.value / 2"
+              }
+            }
+          ],
+          "description": "",
+          "isSelected": false
+        },
+        {
+          "cmp_type": "ConditionStatement",
+          "condition": {
+            "type": "BinaryExpression",
+            "left": "2 * value",
+            "operator": "!=",
+            "right": "msg.value"
+          },
+          "body": [],
+          "description": "",
+          "isSelected": false
+        }
+      ]
+    },
+    "isSelected": false
+  },
+  "functions": [
+    {
+      "name": "abort",
+      "cmp_type": "Function",
+      "x": 245.40625,
+      "y": 238,
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "EmitStatement",
+            "event": "Aborted()",
+            "args": [],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "AssignmentStatement",
+            "expressions": [
+              {
+                "left": {
+                  "type": "",
+                  "name": "state"
+                },
+                "right": {
+                  "type": "",
+                  "value": "State.Inactive"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "CallStatement",
+            "object": "seller",
+            "method": "transfer(address(this).balance)",
+            "params": [
+              {
+                "type": "BinaryOperation",
+                "operator": "*",
+                "left": {
+                  "type": "Literal",
+                  "value": 2
+                },
+                "right": {
+                  "type": "Identifier",
+                  "value": "value"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "confirmReceived",
+      "cmp_type": "Function",
+      "x": 250.40625,
+      "y": 389,
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "EmitStatement",
+            "event": "ItemReceived",
+            "args": [],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "AssignmentStatement",
+            "expressions": [
+              {
+                "left": {
+                  "type": "",
+                  "name": "state"
+                },
+                "right": {
+                  "type": "",
+                  "value": "State.Release"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "CallStatement",
+            "object": "buyer",
+            "method": "transfer(value)",
+            "params": [
+              {
+                "type": "BinaryOperation",
+                "operator": "*",
+                "left": {
+                  "type": "Literal",
+                  "value": 2
+                },
+                "right": {
+                  "type": "Identifier",
+                  "value": "value"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "confirmPurchase",
+      "cmp_type": "Function",
+      "x": 432.40625,
+      "y": 265,
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "EmitStatement",
+            "event": "PurchaseConfirmed",
+            "args": [],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "AssignmentStatement",
+            "expressions": [
+              {
+                "left": {
+                  "type": "",
+                  "name": "buyer"
+                },
+                "right": {
+                  "type": "",
+                  "value": "payable(msg.sender)"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "AssignmentStatement",
+            "expressions": [
+              {
+                "left": {
+                  "type": "",
+                  "name": "state"
+                },
+                "right": {
+                  "type": "",
+                  "value": "State.Locked"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "refundSeller",
+      "cmp_type": "Function",
+      "x": 62.40625,
+      "y": 239,
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "EmitStatement",
+            "event": "SellerRefunded",
+            "args": [],
+            "description": "",
+            "isSelected": true
+          },
+          {
+            "cmp_type": "AssignmentStatement",
+            "expressions": [
+              {
+                "left": {
+                  "type": "",
+                  "name": "state"
+                },
+                "right": {
+                  "type": "",
+                  "value": "State.Inactive"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "CallStatement",
+            "object": "seller",
+            "method": "transfer(3 * value)",
+            "params": [
+              {
+                "type": "BinaryOperation",
+                "operator": "*",
+                "left": {
+                  "type": "Literal",
+                  "value": 2
+                },
+                "right": {
+                  "type": "Identifier",
+                  "value": "value"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "description": "",
+      "isSelected": false
+    }
+  ],
+  "enums": [
+    {
+      "name": "State",
+      "x": 206,
+      "y": 56,
+      "cmp_type": "Enum",
+      "values": [
+        {
+          "name": "Created"
+        },
+        {
+          "name": "Locked"
+        },
+        {
+          "name": "Release"
+        },
+        {
+          "name": "Inactive"
+        }
+      ],
+      "description": "",
+      "isSelected": false
+    }
+  ],
+  "modifiers": [
+    {
+      "name": "OnlyBuyer",
+      "x": 525,
+      "y": 189,
+      "cmp_type": "Modifier",
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "ConditionStatement",
+            "condition": {
+              "type": "BinaryExpression",
+              "left": "msg.sender",
+              "operator": "!=",
+              "right": "buyer"
+            },
+            "body": [],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "values": [],
+      "parameters": [],
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "InState",
+      "x": 522,
+      "y": 115,
+      "cmp_type": "Modifier",
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "ConditionStatement",
+            "condition": {
+              "type": "BinaryExpression",
+              "left": "state",
+              "operator": "!=",
+              "right": "state_"
+            },
+            "body": [],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "values": [],
+      "parameters": [],
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "OnlySeller",
+      "x": 524,
+      "y": 39,
+      "cmp_type": "Modifier",
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "ConditionStatement",
+            "condition": {
+              "type": "BinaryExpression",
+              "left": "msg.sender",
+              "operator": "!=",
+              "right": "seller"
+            },
+            "body": [],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "values": [],
+      "parameters": [],
+      "description": "",
+      "isSelected": false
+    }
+  ],
+  "errorDeclarations": [
+    {
+      "name": "OnlyBuyer",
+      "x": 46,
+      "y": 418,
+      "cmp_type": "ErrorDeclaration",
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "OnlySeller",
+      "x": 45,
+      "y": 517,
+      "cmp_type": "ErrorDeclaration",
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "InvalidState",
+      "x": 45,
+      "y": 467,
+      "cmp_type": "ErrorDeclaration",
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "ValueNotEven",
+      "x": 45,
+      "y": 564,
+      "cmp_type": "ErrorDeclaration",
+      "description": "",
+      "isSelected": false
+    }
+  ],
+  "description": ""
+}

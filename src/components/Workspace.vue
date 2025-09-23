@@ -39,7 +39,7 @@
                         :statements="fileStore.contract._constructor.body.statements"
                         :selected="fileStore.contract._constructor.isSelected"
                         @click="fileStore.showProperties(fileStore.contract._constructor)"
-                        @dblclick="showFunctionLayer(fileStore.contract._constructor)" />
+                        @dblclick="showFunctionLayer(fileStore.contract._constructor)" @dragend="(e)=>handleScdDragMove(e,fileStore.contract._constructor)"/>
 
                     <Enum v-for="enumItem in fileStore.contract.enums" :key="enumItem.name" :name="enumItem.name"
                         :data="enumItem" :x="enumItem.x" :y="enumItem.y" :values="enumItem.values"

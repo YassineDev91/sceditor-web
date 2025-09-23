@@ -8,9 +8,10 @@
 
             >
             <option value="">Choose SC language</option>
-            <option value="solidity">Solidity</option>
-            <option value="solana">Rust</option>
-            <option value="vyper">Vyper</option>
+            <option value="ink">ink! for Polkadot</option>
+            <option value="solana">Rust for Solana</option>
+            <option value="solidity">Solidity for Ethereum</option>
+            <option value="vyper">Vyper for Ethereum</option>
         </select>
 
         <div class="flex flex-row space-x-2">
@@ -51,7 +52,9 @@ const fileStore = useContractStorage()
 
 const sc_language = ref(""); // Default to Solidity
 
-const API_KEY = import.meta.env.VITE_AI_API_KEY;
+const API_KEY = import.meta.env.AI_API_KEY;
+const API_URL = import.meta.env.AI_API_URL;
+
 
 const prompt = computed(() => {
     return `You are a professional smart contract developer. Based on the JSON specification below, generate a complete ${sc_language.value} smart contract.
@@ -96,7 +99,7 @@ async function generate() {
             return
         }
         const response = await fetch(
-            `...?key=${API_KEY}`,
+            `${API_URL}`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

@@ -7,7 +7,7 @@
 
 This tool was developed in support of the research paper:
 
-> _"A Web-Based Graphical Editor for Smart Contract Modeling and AI-Powered Code Generation"_  
+> _"SCEditor-Web: Bridging Model-Driven Engineering and Generative AI for Smart Contract Development"_  
 
 ---
 
@@ -17,7 +17,7 @@ Smart contract development remains technically challenging due to platform-speci
 
 - A platform-independent modeling interface
 - JSON representation aligned with a generic smart contract metamodel
-- Zero-shot code generation via prompt-based interaction with LLMs (e.g., Claude 3.7 DeepSeek-V3, Gemini 2.5 Pro, GPT-4o)
+- Zero-shot code generation via prompt-based interaction with LLMs (e.g., Claude 3.7, DeepSeek-V3, Gemini 2.5 Pro, GPT-4o)
 
 This repository contains only the **editor source code**, not evaluation scripts or LLM outputs.
 
@@ -50,6 +50,43 @@ To build for production:
 ```bash
 npm run build
 ```
+---
+
+## 🔧 API Configuration
+
+To enable code generation using your preferred LLM (e.g., Claude, OpenAI, etc.):
+
+1. Rename the `.env.example` file to `.env`.
+2. Open `.env` and replace the placeholder with your actual API key and endpoint.
+
+Example `.env`:
+
+```env
+AI_API_URL=https://api.example.com/v1/generate?key=your_api_key_here
+```
+
+---
+
+## 📄 Example Contract File
+
+A ready-to-use example model is provided: `remote_purchase.json` (located in the project root).
+
+### 🧪 What it contains
+
+This file defines a **complete smart contract structure** including:
+- Contract metadata
+- Variables, Structs, and Constructor
+- Functions and Statements
+- Descriptions and design intent for each element
+
+### 🧭 How to use it
+
+1. Launch the editor.
+2. Click the **Import** button.
+3. Select the `remote_purchase.json` file from your system.
+4. The contract will be loaded into the editor.
+
+> 💡 This example mirrors the canonical "Remote Purchase" smart contract used throughout the paper for validation and testing.
 
 ---
 
@@ -64,13 +101,13 @@ npm run build
 | `public/`     | Static files and UI assets |
 | `SmartContractGenerator.vue` | Interface for LLM communication (prompt-to-code) |
 
----
+<!-- ---
 
 ## 📷 Screenshots
 
 | MainLayer (structural) | FunctionLayer (behavioral logic) |
 |------------------------|----------------------------------|
-| ![](figures/mainlayer_example.png) | ![](figures/functionlayer_example.png) |
+| ![](figures/mainlayer_example.png) | ![](figures/functionlayer_example.png) | -->
 
 ---
 
@@ -78,30 +115,20 @@ npm run build
 
 - **Version:** v0.3-alpha
 - **Status:** Academic prototype (research only)
-- **Last updated:** May 2025
-- **Live demo:** (optional GitHub Pages or localhost)
+- **Last updated:** September 2025
+<!-- - **Live demo:** (optional GitHub Pages or localhost) -->
 
 ---
 
 ## 📚 Citation
 
-If you use this tool in academic work, please cite:
-
-```bibtex
-@article{Your2025Paper,
-  title={SCEditor-web: A Web-Based Graphical Editor for Smart Contract Modeling and AI-Powered Code Generation},
-  author={Y Ait Hsain, N Laaz, S Mbarki},
-  journal={Journal},
-  year={2025},
-  note={Under Review}
-}
-```
+(Coming soon – paper currently under review)
 
 ---
 
 ## 🚫 Limitations
 
-- No runtime validation or unit testing
+- No unit testing
 - Does not include AI pipeline (evaluation hosted separately)
 - Functional view support is partially implemented
 
@@ -110,7 +137,8 @@ If you use this tool in academic work, please cite:
 ## 🧪 Reproducibility
 
 This repo reflects only the **editor front-end** described in the paper.  
-Evaluation data, LLM prompts, and code generation metrics are available upon request or in a companion repository.
+Evaluation data, LLM prompts, and code generation metrics are available in the following repository :
+👉 [smart-contract-eval](https://github.com/YassineDev91/smart-contract-eval)
 
 ---
 
