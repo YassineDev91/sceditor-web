@@ -122,7 +122,20 @@ This file defines a **complete smart contract structure** including:
 
 ## 📚 Citation
 
-(Coming soon – paper currently under review)
+```bibtex
+@Article{info16100870,
+  AUTHOR = {Ait Hsain, Yassine and Laaz, Naziha and Mbarki, Samir},
+  TITLE = {SCEditor-Web: Bridging Model-Driven Engineering and Generative AI for Smart Contract Development},
+  JOURNAL = {Information},
+  VOLUME = {16},
+  YEAR = {2025},
+  NUMBER = {10},
+  ARTICLE-NUMBER = {870},
+  URL = {https://www.mdpi.com/2078-2489/16/10/870},
+  ISSN = {2078-2489},
+  DOI = {10.3390/info16100870}
+}
+```
 
 ---
 

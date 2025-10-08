@@ -503,23 +503,27 @@ export const useContractStorage = defineStore("contract", {
     selector(element) {
 
     },
-  updatePosition(id, x, y) {
-  const all = [
-    ...this.contract.variables,
-    ...this.contract.structs,
-    ...this.contract.functions,
-    this.contract.constructor
-  ];
+    updatePosition(id, x, y) {
+      const all = [
+        ...this.contract.variables,
+        ...this.contract.structs,
+        ...this.contract.functions,
+        this.contract.constructor
+      ];
 
-  const target = all.find(el => el?.id === id);
-  if (target) {
-    target.x = x;
-    target.y = y;
-    console.log(`✅ Updated position of ${target.type} (${target.name})`);
-  } else {
-    console.warn("⚠️ Couldn't find node to update by id:", id);
-  }
-}
+      const target = all.find(el => el?.id === id);
+      if (target) {
+        target.x = x;
+        target.y = y;
+        console.log(`✅ Updated position of ${target.type} (${target.name})`);
+      } else {
+        console.warn("⚠️ Couldn't find node to update by id:", id);
+      }
+    },
+    deleteElement(elm){
+      const confirm = confirm("Are you sure you want to delete", elm)
+      
+    }
   },
   getters: {
 

@@ -20,7 +20,7 @@
                 <v-layer ref="mainLayer" :visible="isMainLayerVisible">
                     <variable v-for="variable in fileStore.contract.variables" :key="variable.id" :data="variable"
                         :x="variable.x" :y="variable.y" :selected="variable.isSelected"
-                        @click="fileStore.showProperties(variable)" @dragend="(e)=>handleScdDragMove(e,variable)" />
+                        @click="fileStore.showProperties(variable)" @dragend="(e) => handleScdDragMove(e, variable)" />
 
                     <struct v-for="struct in fileStore.contract.structs" :key="struct.name" :name="struct.name"
                         :data="struct" :literals="struct.literals" :x="struct.x" :y="struct.y"
@@ -31,7 +31,7 @@
                         :params="_function.params" :statements="_function.body.statements"
                         :returnParams="_function.returnParams" :selected="_function.isSelected"
                         @click="fileStore.showProperties(_function)" @dblclick="showFunctionLayer(_function)"
-                        @dragend="(e)=>handleScdDragMove(e,_function)" />
+                        @dragend="(e) => handleScdDragMove(e, _function)" />
 
                     <function v-if="fileStore.contract._constructor" name="<<constructor>>"
                         :x="fileStore.contract._constructor.x" :y="fileStore.contract._constructor.y"
@@ -39,18 +39,19 @@
                         :statements="fileStore.contract._constructor.body.statements"
                         :selected="fileStore.contract._constructor.isSelected"
                         @click="fileStore.showProperties(fileStore.contract._constructor)"
-                        @dblclick="showFunctionLayer(fileStore.contract._constructor)" @dragend="(e)=>handleScdDragMove(e,fileStore.contract._constructor)"/>
+                        @dblclick="showFunctionLayer(fileStore.contract._constructor)"
+                        @dragend="(e) => handleScdDragMove(e, fileStore.contract._constructor)" />
 
                     <Enum v-for="enumItem in fileStore.contract.enums" :key="enumItem.name" :name="enumItem.name"
                         :data="enumItem" :x="enumItem.x" :y="enumItem.y" :values="enumItem.values"
-                        :selected="enumItem.isSelected" @click="fileStore.showProperties(enumItem)" 
-                        @dragend="(e)=>handleScdDragMove(e,enumItem)"/>
+                        :selected="enumItem.isSelected" @click="fileStore.showProperties(enumItem)"
+                        @dragend="(e) => handleScdDragMove(e, enumItem)" />
 
                     <Modifier v-for="modifier in fileStore.contract.modifiers" :key="modifier.name"
                         :name="modifier.name" :data="modifier" :x="modifier.x" :y="modifier.y" :params="modifier.params"
                         :statements="modifier.body.statements" :selected="modifier.isSelected"
-                        @click="fileStore.showProperties(modifier)" @dblclick="showFunctionLayer(modifier)" 
-                        @dragend="(e)=>handleScdDragMove(e,modifier)"/>
+                        @click="fileStore.showProperties(modifier)" @dblclick="showFunctionLayer(modifier)"
+                        @dragend="(e) => handleScdDragMove(e, modifier)" />
 
                     <ErrorDeclaration v-for="_error in fileStore.contract.errorDeclarations" :key="_error.name"
                         :name="_error.name" :data="_error" :x="_error.x" :y="_error.y" :literals="_error.literals"
@@ -187,6 +188,23 @@ onMounted(async () => {
             stage.batchDraw();
         });
     }
+
+    // restore contract
+    const saved_contract = localStorage.getItem('saved_contract')
+    if (saved_contract) {
+        try {
+            const parsed_contract = JSON.parse(saved_contract)
+            fileStore.contract = parsed_contract
+            console.log("✅ Restored contract from localStorage");
+
+        } catch (error) {
+            console.warn("⚠️ Failed to parse saved contract", e);
+
+        }
+    }
+
+    // handle delete event 
+    window.addEventListener('keyup', handleListKeyPress)
 });
 
 const targets = ref([]);
@@ -469,6 +487,12 @@ watch(() => ui.stageScale, (newScale) => {
     }
 });
 
+// Watch diagram state to save it
+watch(() => fileStore.contract, (newVal) => {
+    localStorage.setItem('saved_contract', JSON.stringify(fileStore.contract))
+})
+
+
 const onContractCreated = async () => {
     await nextTick();
     const stage = stageRef.value?.getNode();
@@ -524,8 +548,18 @@ function keepWithinBounds(x, y, width, height) {
         y: Math.max(0, Math.min(y, maxY))
     };
 }
+// Manual save
+const manualSave = () => {
+    localStorage.setItem('saved_contract', JSON.stringify(fileStore.contract))
+}
+// handle element delete
+const handleListKeyPress = (event) => {
+    if (event.key === 'Delete') {
+        const confirm = confirm("Are you sure you want to delete")
+    }
+    console.log(event.key);
 
-
+}
 </script>
 
 <style scoped>
