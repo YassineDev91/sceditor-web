@@ -8,28 +8,41 @@
         </button>
 
         <div ref="workspaceRef" class="flex flex-row h-full w-full" @dragover.prevent @drop="handleDrop">
-            <v-stage ref="stageRef" :key="fileStore.contract.name" :config="stageConfig">
+            <v-stage ref="stageRef" :key="fileStore.contract.name" :config="stageConfig"
+                @mousedown="handleMouseDown" @mousemove="handleMouseMove" @mouseup="handleMouseUp">
                 <!-- Contract Layer -->
                 <v-layer>
                     <Contract v-if="fileStore.contract.name" :name="fileStore.contract.name" :x="fileStore.contract.x"
-                        :y="fileStore.contract.y" :dimensions="stageConfig" @click="fileStore.clearSelection">
+                        :y="fileStore.contract.y" :dimensions="stageConfig" @click="handleContractClick">
                     </Contract>
                 </v-layer>
 
                 <!-- Structural Layer -->
                 <v-layer ref="mainLayer" :visible="isMainLayerVisible">
+                    <!-- Selection rectangle -->
+                    <v-rect v-if="selectionBox.visible" :config="{
+                        x: selectionBox.x,
+                        y: selectionBox.y,
+                        width: selectionBox.width,
+                        height: selectionBox.height,
+                        fill: 'rgba(0, 123, 255, 0.1)',
+                        stroke: '#007bff',
+                        strokeWidth: 1,
+                        dash: [4, 4],
+                        listening: false
+                    }" />
                     <variable v-for="variable in fileStore.contract.variables" :key="variable.id" :data="variable"
-                        :x="variable.x" :y="variable.y" :selected="variable.isSelected"
+                        :x="variable.x" :y="variable.y" :selected="isElementSelected(variable)"
                         @click="fileStore.showProperties(variable)" @dragend="(e) => handleScdDragMove(e, variable)" />
 
                     <struct v-for="struct in fileStore.contract.structs" :key="struct.name" :name="struct.name"
                         :data="struct" :literals="struct.literals" :x="struct.x" :y="struct.y"
-                        :selected="struct.isSelected" @click="fileStore.showProperties(struct)" />
+                        :selected="isElementSelected(struct)" @click="fileStore.showProperties(struct)" />
 
                     <function v-for="_function in fileStore.contract.functions" :key="_function.id"
                         :name="_function.name" :x="_function.x" :y="_function.y" :data="_function"
                         :params="_function.params" :statements="_function.body.statements"
-                        :returnParams="_function.returnParams" :selected="_function.isSelected"
+                        :returnParams="_function.returnParams" :selected="isElementSelected(_function)"
                         @click="fileStore.showProperties(_function)" @dblclick="showFunctionLayer(_function)"
                         @dragend="(e) => handleScdDragMove(e, _function)" />
 
@@ -37,25 +50,25 @@
                         :x="fileStore.contract._constructor.x" :y="fileStore.contract._constructor.y"
                         :data="fileStore.contract._constructor" :params="fileStore.contract._constructor.params"
                         :statements="fileStore.contract._constructor.body.statements"
-                        :selected="fileStore.contract._constructor.isSelected"
+                        :selected="isElementSelected(fileStore.contract._constructor)"
                         @click="fileStore.showProperties(fileStore.contract._constructor)"
                         @dblclick="showFunctionLayer(fileStore.contract._constructor)"
                         @dragend="(e) => handleScdDragMove(e, fileStore.contract._constructor)" />
 
                     <Enum v-for="enumItem in fileStore.contract.enums" :key="enumItem.name" :name="enumItem.name"
                         :data="enumItem" :x="enumItem.x" :y="enumItem.y" :values="enumItem.values"
-                        :selected="enumItem.isSelected" @click="fileStore.showProperties(enumItem)"
+                        :selected="isElementSelected(enumItem)" @click="fileStore.showProperties(enumItem)"
                         @dragend="(e) => handleScdDragMove(e, enumItem)" />
 
                     <Modifier v-for="modifier in fileStore.contract.modifiers" :key="modifier.name"
                         :name="modifier.name" :data="modifier" :x="modifier.x" :y="modifier.y" :params="modifier.params"
-                        :statements="modifier.body.statements" :selected="modifier.isSelected"
+                        :statements="modifier.body.statements" :selected="isElementSelected(modifier)"
                         @click="fileStore.showProperties(modifier)" @dblclick="showFunctionLayer(modifier)"
                         @dragend="(e) => handleScdDragMove(e, modifier)" />
 
                     <ErrorDeclaration v-for="_error in fileStore.contract.errorDeclarations" :key="_error.name"
                         :name="_error.name" :data="_error" :x="_error.x" :y="_error.y" :literals="_error.literals"
-                        :selected="_error.isSelected" @click="fileStore.showProperties(_error)"
+                        :selected="isElementSelected(_error)" @click="fileStore.showProperties(_error)"
                         @dragend="(e) => handleScdDragMove(e, _error)" />
                 </v-layer>
 
@@ -207,12 +220,36 @@ onMounted(async () => {
         }
     }
 
-    // handle delete event 
-    window.addEventListener('keyup', handleListKeyPress)
+    // handle keyboard shortcuts
+    window.addEventListener('keyup', handleListKeyPress);
+    window.addEventListener('keydown', handleKeyDown);
 });
 
 const targets = ref([]);
 const connectors = ref([]);
+
+// Selection box state
+const selectionBox = ref({
+    visible: false,
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+    startX: 0,
+    startY: 0
+});
+
+// Track if we just completed a drag operation
+const justDragged = ref(false);
+
+// Helper function to check if element is selected
+const isElementSelected = (element) => {
+    const selected = fileStore.selectedElements.includes(element);
+    if (selected) {
+        console.log(`✨ isElementSelected(${element.name}): ${selected}`);
+    }
+    return selected;
+};
 
 const loadFLayersNode = () => {
     const layer = functionLayer.value?.getNode();
@@ -524,6 +561,25 @@ watch(
     { deep: true } // Watch nested properties
 )
 
+// Watch selections and force Konva redraw
+watch(
+    () => fileStore.selectedElements,
+    () => {
+        nextTick(() => {
+            const stage = stageRef.value?.getNode();
+            const layer = mainLayer.value?.getNode();
+            if (stage) {
+                if (layer) {
+                    layer.batchDraw();
+                }
+                stage.batchDraw();
+                console.log("🔄 Forced redraw after selection change");
+            }
+        });
+    },
+    { deep: true }
+)
+
 
 const onContractCreated = async () => {
     await nextTick();
@@ -584,6 +640,162 @@ function keepWithinBounds(x, y, width, height) {
 const manualSave = () => {
     localStorage.setItem('saved_contract', JSON.stringify(fileStore.contract))
 }
+// Mouse drag selection handlers
+const handleMouseDown = (e) => {
+    const stage = stageRef.value?.getNode();
+    if (!stage) return;
+
+    const target = e.target;
+    console.log("🖱️ MouseDown on:", target.getType?.(), target.attrs?.name || target.parent?.attrs?.name);
+
+    // Check if we clicked on a draggable element (our components have draggable: true)
+    // If the target or its parent is draggable, it's a component - don't start selection
+    const isTargetDraggable = target.draggable && target.draggable();
+    const isParentDraggable = target.parent && target.parent.draggable && target.parent.draggable();
+
+    // Don't start selection if we clicked on a draggable component
+    if (isTargetDraggable || isParentDraggable) {
+        return;
+    }
+
+    const pos = stage.getPointerPosition();
+    const scale = stage.scaleX();
+
+    selectionBox.value.visible = true;
+    selectionBox.value.startX = (pos.x - stage.x()) / scale;
+    selectionBox.value.startY = (pos.y - stage.y()) / scale;
+    selectionBox.value.x = selectionBox.value.startX;
+    selectionBox.value.y = selectionBox.value.startY;
+    selectionBox.value.width = 0;
+    selectionBox.value.height = 0;
+
+    console.log("📍 Selection start:", { startX: selectionBox.value.startX, startY: selectionBox.value.startY });
+};
+
+const handleMouseMove = (e) => {
+    if (!selectionBox.value.visible) return;
+
+    const stage = stageRef.value?.getNode();
+    if (!stage) return;
+
+    const pos = stage.getPointerPosition();
+    const scale = stage.scaleX();
+
+    const currentX = (pos.x - stage.x()) / scale;
+    const currentY = (pos.y - stage.y()) / scale;
+
+    // Calculate rectangle dimensions
+    const x = Math.min(selectionBox.value.startX, currentX);
+    const y = Math.min(selectionBox.value.startY, currentY);
+    const width = Math.abs(currentX - selectionBox.value.startX);
+    const height = Math.abs(currentY - selectionBox.value.startY);
+
+    selectionBox.value.x = x;
+    selectionBox.value.y = y;
+    selectionBox.value.width = width;
+    selectionBox.value.height = height;
+};
+
+const handleMouseUp = () => {
+    console.log("⬆️ MouseUp - selectionBox.visible:", selectionBox.value.visible);
+    if (!selectionBox.value.visible) return;
+
+    // Check if we actually dragged (moved more than 5 pixels)
+    const wasDrag = selectionBox.value.width > 5 || selectionBox.value.height > 5;
+
+    if (wasDrag) {
+        // Select elements within the selection box
+        selectElementsInBox();
+
+        // Set flag to prevent click event from clearing selection
+        justDragged.value = true;
+        setTimeout(() => {
+            justDragged.value = false;
+        }, 100); // Reset after 100ms
+    }
+
+    // Hide selection box
+    selectionBox.value.visible = false;
+    console.log("🔲 Selection box hidden");
+};
+
+const selectElementsInBox = () => {
+    if (selectionBox.value.width < 5 && selectionBox.value.height < 5) {
+        // If box is too small, treat as click - clear selection
+        fileStore.clearSelection();
+        return;
+    }
+
+    const box = selectionBox.value;
+    console.log("📦 Selection box:", {
+        x: box.x.toFixed(2),
+        y: box.y.toFixed(2),
+        width: box.width.toFixed(2),
+        height: box.height.toFixed(2)
+    });
+
+    const allElements = [
+        ...fileStore.contract.variables || [],
+        ...fileStore.contract.structs || [],
+        ...fileStore.contract.functions || [],
+        ...fileStore.contract.enums || [],
+        ...fileStore.contract.modifiers || [],
+        ...fileStore.contract.errorDeclarations || [],
+    ];
+
+    if (fileStore.contract._constructor) {
+        allElements.push(fileStore.contract._constructor);
+    }
+
+    fileStore.clearSelection();
+
+    // Check each element for intersection with selection box
+    allElements.forEach(element => {
+        if (element.x !== undefined && element.y !== undefined) {
+            // Simple bounding box intersection
+            // Assume element width ~150-200, height ~50-150
+            const elemWidth = 160;
+            const elemHeight = 100;
+
+            const intersects = !(
+                element.x > box.x + box.width ||
+                element.x + elemWidth < box.x ||
+                element.y > box.y + box.height ||
+                element.y + elemHeight < box.y
+            );
+
+            console.log(`🔍 Element "${element.name}" at (${element.x}, ${element.y}): ${intersects ? '✅ SELECTED' : '❌ not selected'}`);
+
+            if (intersects) {
+                fileStore.addToSelection(element);
+            }
+        }
+    });
+
+    console.log(`✅ Selected ${fileStore.selectedElements.length} element(s)`);
+};
+
+// handle keyboard shortcuts
+const handleKeyDown = (event) => {
+    // CTRL+A or CMD+A to select all
+    if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
+        event.preventDefault(); // Prevent browser's default select all
+        if (isMainLayerVisible.value) {
+            fileStore.selectAll();
+        }
+    }
+};
+
+// Handle Contract click - only clear selection if we didn't just drag
+const handleContractClick = () => {
+    if (!justDragged.value) {
+        console.log("📋 Contract clicked - clearing selection");
+        fileStore.clearSelection();
+    } else {
+        console.log("🚫 Contract clicked but drag just happened - keeping selection");
+    }
+};
+
 // handle element delete
 const handleListKeyPress = (event) => {
     if (event.key === 'Delete') {

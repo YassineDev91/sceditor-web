@@ -468,7 +468,8 @@ export const useContractStorage = defineStore("contract", {
       // },
       ,
       selectedFunction: {},
-      selectedElement: {},
+      selectedElement: {}, // Keep for backward compatibility
+      selectedElements: [], // Array for multi-selection
       scdStage: true,
     };
   },
@@ -476,23 +477,89 @@ export const useContractStorage = defineStore("contract", {
     logSomthing() {
       console.log("im calling from the store !");
     },
-    showProperties(element) {
+    showProperties(element, multiSelect = false) {
 
-      this.clearSelection();
+      // If not multi-selecting, clear previous selections
+      if (!multiSelect) {
+        this.clearSelection();
+      }
 
       if (element && typeof element === 'object') {
-        this.selectedElement = element;
-        this.selectedElement.isSelected = true;
-        console.log("Selected Element:", this.selectedElement);
+        // Toggle selection if already selected in multi-select mode
+        if (multiSelect && element.isSelected) {
+          this.removeFromSelection(element);
+        } else {
+          this.selectedElement = element;
+          this.selectedElement.isSelected = true;
+
+          // Add to selectedElements array if not already there
+          if (!this.selectedElements.includes(element)) {
+            this.selectedElements.push(element);
+          }
+
+          console.log("Selected Element:", this.selectedElement);
+          console.log("Total selected:", this.selectedElements.length);
+        }
       } else {
         console.warn("⚠️ Invalid selection!", element);
         this.selectedElement = {};
       }
     },
     clearSelection() {
+      console.log("🧹 clearSelection() called - stack trace:");
+      console.trace();
+
+      // Clear all selected elements
+      this.selectedElements.forEach(el => {
+        if (el) el.isSelected = false;
+      });
+      // Create NEW array reference to trigger reactivity
+      this.selectedElements = [];
+
+      // Clear single selection for backward compatibility
       if (this.selectedElement) {
         this.selectedElement.isSelected = false;
       }
+      this.selectedElement = {};
+    },
+    addToSelection(element) {
+      if (element && !this.selectedElements.includes(element)) {
+        element.isSelected = true;
+        // Create NEW array reference instead of mutating
+        this.selectedElements = [...this.selectedElements, element];
+      }
+    },
+    removeFromSelection(element) {
+      if (element) {
+        element.isSelected = false;
+        // Create NEW array reference instead of mutating
+        this.selectedElements = this.selectedElements.filter(el => el !== element);
+      }
+    },
+    selectAll() {
+      // Select all elements on the current stage
+      const allElements = [
+        ...this.contract.variables || [],
+        ...this.contract.structs || [],
+        ...this.contract.functions || [],
+        ...this.contract.enums || [],
+        ...this.contract.modifiers || [],
+        ...this.contract.errorDeclarations || [],
+      ];
+
+      // Add constructor if it exists
+      if (this.contract._constructor) {
+        allElements.push(this.contract._constructor);
+      }
+
+      allElements.forEach(el => {
+        el.isSelected = true;
+      });
+
+      // Set entire array at once with NEW reference
+      this.selectedElements = allElements;
+
+      console.log(`✅ Selected all ${this.selectedElements.length} elements`);
     },
     showFunctionalDiagram(element) {
 
@@ -521,44 +588,55 @@ export const useContractStorage = defineStore("contract", {
       }
     },
     deleteElement() {
-      if (!this.selectedElement || !this.selectedElement.cmp_type) {
+      // Check if we have multiple selections or single selection
+      const elementsToDelete = this.selectedElements.length > 0
+        ? this.selectedElements
+        : (this.selectedElement && this.selectedElement.cmp_type ? [this.selectedElement] : []);
+
+      if (elementsToDelete.length === 0) {
         console.warn("⚠️ No element selected for deletion");
         return;
       }
 
-      const userConfirmed = confirm(`Are you sure you want to delete this ${this.selectedElement.cmp_type}?`);
+      const count = elementsToDelete.length;
+      const message = count === 1
+        ? `Are you sure you want to delete this ${elementsToDelete[0].cmp_type}?`
+        : `Are you sure you want to delete ${count} selected elements?`;
+
+      const userConfirmed = confirm(message);
       if (!userConfirmed) return;
 
-      const element = this.selectedElement;
-      const type = element.cmp_type;
+      // Delete each selected element
+      elementsToDelete.forEach(element => {
+        const type = element.cmp_type;
 
-      // Delete based on component type
-      switch (type) {
-        case "Variable":
-          this.contract.variables = this.contract.variables.filter(v => v !== element);
-          break;
-        case "Struct":
-          this.contract.structs = this.contract.structs.filter(s => s !== element);
-          break;
-        case "Function":
-          this.contract.functions = this.contract.functions.filter(f => f !== element);
-          break;
-        case "Enum":
-          this.contract.enums = this.contract.enums.filter(e => e !== element);
-          break;
-        case "Modifier":
-          this.contract.modifiers = this.contract.modifiers.filter(m => m !== element);
-          break;
-        case "ErrorDeclaration":
-          this.contract.errorDeclarations = this.contract.errorDeclarations.filter(err => err !== element);
-          break;
-        default:
-          console.warn("⚠️ Unknown element type:", type);
-          return;
-      }
+        // Delete based on component type
+        switch (type) {
+          case "Variable":
+            this.contract.variables = this.contract.variables.filter(v => v !== element);
+            break;
+          case "Struct":
+            this.contract.structs = this.contract.structs.filter(s => s !== element);
+            break;
+          case "Function":
+            this.contract.functions = this.contract.functions.filter(f => f !== element);
+            break;
+          case "Enum":
+            this.contract.enums = this.contract.enums.filter(e => e !== element);
+            break;
+          case "Modifier":
+            this.contract.modifiers = this.contract.modifiers.filter(m => m !== element);
+            break;
+          case "ErrorDeclaration":
+            this.contract.errorDeclarations = this.contract.errorDeclarations.filter(err => err !== element);
+            break;
+          default:
+            console.warn("⚠️ Unknown element type:", type);
+        }
+      });
 
-      console.log(`✅ Deleted ${type}: ${element.name}`);
-      this.selectedElement = {};
+      console.log(`✅ Deleted ${count} element(s)`);
+      this.clearSelection();
     }
   },
   getters: {

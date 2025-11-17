@@ -1,7 +1,12 @@
 <template>
     <div class="h-full w-full overflow-y-auto text-xs">
-        <h3 class="text-center font-bold my-2">Edit Panel</h3>
-        <div v-if="element?.cmp_type">
+        <div class="flex items-center justify-between my-2 px-2">
+            <h3 class="font-bold">Edit Panel</h3>
+            <span v-if="selectedCount > 1" class="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">
+                {{ selectedCount }} selected
+            </span>
+        </div>
+        <div v-if="element?.cmp_type && selectedCount === 1">
             <component :is="activeComponent" :element="element" />
 
             <div>
@@ -14,7 +19,14 @@
 
 
         </div>
-        <div v-else class="text-center text-gray-500">No element selected</div>
+        <div v-else-if="selectedCount > 1" class="text-center text-gray-500 mt-4">
+            <p class="mb-2">{{ selectedCount }} elements selected</p>
+            <p class="text-xs">Press Delete to remove all selected elements</p>
+        </div>
+        <div v-else class="text-center text-gray-500 mt-4">
+            <p>No element selected</p>
+            <p class="text-xs mt-2">Press Ctrl+A to select all</p>
+        </div>
     </div>
 </template>
 
@@ -27,6 +39,7 @@ import StatementProperties from './StatementProperties.vue'
 const fileStore = useContractStorage()
 
 const element = computed(() => fileStore.selectedElement)
+const selectedCount = computed(() => fileStore.selectedElements.length)
 
 const activeComponent = computed(() => {
 

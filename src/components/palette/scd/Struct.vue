@@ -54,7 +54,7 @@ const rectConfig = ref({
   strokeWidth: 1
 });
 
-const selectionRectConfig = ref({
+const selectionRectConfig = computed(() => ({
   x: 0,
   y: 0,
   width: rectConfig.value.width,
@@ -62,7 +62,7 @@ const selectionRectConfig = ref({
   stroke: '#3498db',
   cornerRadius: 5,
   strokeWidth: 2
-});
+}));
 
 const textConfig = ref({
   x: 60,

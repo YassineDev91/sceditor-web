@@ -23,8 +23,8 @@ const groupConfig = computed(() => ({
     draggable: false,
 }));
 const rectConfig =computed(() => ({
-    x: props.x,
-    y: props.y,
+    x: 0,  // Relative to group, not absolute
+    y: 0,  // Relative to group, not absolute
     width: props.dimensions.width || 800,
     height: props.dimensions.height || 600,
     stroke: 'black',
@@ -32,8 +32,8 @@ const rectConfig =computed(() => ({
     cornerRadius: 5
 }))
 const textConfig = computed(() => ({
-    x: rectConfig.value.x + 3,
-    y: rectConfig.value.y + 3,
+    x: 3,  // Relative to group
+    y: 3,  // Relative to group
     text: props.name,
     fontSize: 20,
 }))
