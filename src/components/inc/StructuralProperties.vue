@@ -8,9 +8,14 @@
             class="bg-slate-700 input border  p-1 rounded outline-none border-slate-600 focus:border-blue-600 mb-3"
             placeholder="Type" />
 
-        <template v-if="element.literals">
+        <template v-if="element.cmp_type == 'Struct' && element.literals !== undefined">
             <hr class="my-2 border-slate-600 border-2 rounded" />
-            <h4 class="font-bold mb-1">Literals</h4>
+            <div class="flex row gap-2">
+                <h4 class="font-bold mb-1">Literals</h4>
+                <button @click="addLiteralToStruct(element)">
+                    <PlusIcon class="w-5"></PlusIcon>
+                </button>
+            </div>
             <div v-for="(lit, index) in element.literals" :key="index"
                 class="border rounded p-2 mb-2 border-slate-600 focus:border-blue-600">
                 <input v-model="lit.name"
@@ -87,6 +92,18 @@ const props = defineProps({
 function addValueToEnum(element) {
     element.values.push({name:""})
     console.log("added",element)
+}
+
+function addLiteralToStruct(element) {
+    if (!element.literals) {
+        element.literals = [];
+    }
+    element.literals.push({
+        name: "new_literal",
+        type: { base: "string" },
+        visibility: "public"
+    });
+    console.log("✅ Added literal to struct", element);
 }
 </script>
 

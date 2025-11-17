@@ -25,13 +25,20 @@ const props = defineProps({
   data: Object,
 })
 
+// Calculate consistent height: header (30px) + values (25px each) + padding (5px)
+const calculateHeight = computed(() => {
+  return props.values && props.values.length > 0
+    ? 30 + (props.values.length * 25) + 5
+    : 35; // minimum height when no values
+});
+
 const groupConfig = computed(() => ({
   x: props.x,
   y: props.y,
   name: props.name,
   type: 'Enum',
   width: 160,
-  height: 40 + props.values.length * 20,
+  height: calculateHeight.value,
   draggable: true,
 }))
 
@@ -39,22 +46,22 @@ const rectConfig = computed(() => ({
   x: 0,
   y: 0,
   width: groupConfig.value.width,
-  height: props.values.length * 33 || 30,
+  height: calculateHeight.value,
   fill: '#E7F7F0',
   stroke: '#26A69A',
   cornerRadius: 5,
   strokeWidth: 0.5,
 }))
 
-const selectionRectConfig = ref({
+const selectionRectConfig = computed(() => ({
   x: 0,
   y: 0,
   width: groupConfig.value.width,
-  height: props.values.length * 33,
+  height: calculateHeight.value,
   stroke: '#3498db',
   strokeWidth: 2,
   cornerRadius: 5,
-})
+}))
 
 const titleConfig = ref({
   x: 30,

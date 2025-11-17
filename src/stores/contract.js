@@ -520,9 +520,45 @@ export const useContractStorage = defineStore("contract", {
         console.warn("⚠️ Couldn't find node to update by id:", id);
       }
     },
-    deleteElement(elm){
-      const confirm = confirm("Are you sure you want to delete", elm)
-      
+    deleteElement() {
+      if (!this.selectedElement || !this.selectedElement.cmp_type) {
+        console.warn("⚠️ No element selected for deletion");
+        return;
+      }
+
+      const userConfirmed = confirm(`Are you sure you want to delete this ${this.selectedElement.cmp_type}?`);
+      if (!userConfirmed) return;
+
+      const element = this.selectedElement;
+      const type = element.cmp_type;
+
+      // Delete based on component type
+      switch (type) {
+        case "Variable":
+          this.contract.variables = this.contract.variables.filter(v => v !== element);
+          break;
+        case "Struct":
+          this.contract.structs = this.contract.structs.filter(s => s !== element);
+          break;
+        case "Function":
+          this.contract.functions = this.contract.functions.filter(f => f !== element);
+          break;
+        case "Enum":
+          this.contract.enums = this.contract.enums.filter(e => e !== element);
+          break;
+        case "Modifier":
+          this.contract.modifiers = this.contract.modifiers.filter(m => m !== element);
+          break;
+        case "ErrorDeclaration":
+          this.contract.errorDeclarations = this.contract.errorDeclarations.filter(err => err !== element);
+          break;
+        default:
+          console.warn("⚠️ Unknown element type:", type);
+          return;
+      }
+
+      console.log(`✅ Deleted ${type}: ${element.name}`);
+      this.selectedElement = {};
     }
   },
   getters: {

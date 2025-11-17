@@ -7,7 +7,7 @@
             <span>Back</span>
         </button>
 
-        <div ref="workspaceRef" class="flex flex-row h-full w-full" @dragover.prevent>
+        <div ref="workspaceRef" class="flex flex-row h-full w-full" @dragover.prevent @drop="handleDrop">
             <v-stage ref="stageRef" :key="fileStore.contract.name" :config="stageConfig">
                 <!-- Contract Layer -->
                 <v-layer>
@@ -399,11 +399,16 @@ const handleDrop = (event) => {
     if (structNode) {
         const structName = structNode.attrs.name;
         const struct = fileStore.contract.structs.find(s => s.name === structName);
-        if (struct) {
-            // if (!struct.literals)
-            //     struct.literals = []
-            struct.literals.push({ name: item.label, type: { base: "string" } }); // Example
-            console.log(`Added literal "${item.label}" to struct ${structName}`);
+        if (struct && item.label === "Literal") {
+            if (!struct.literals) {
+                struct.literals = [];
+            }
+            struct.literals.push({
+                name: "new_literal",
+                type: { base: "string" },
+                visibility: "public"
+            });
+            console.log(`✅ Added literal to struct ${structName}`);
         }
     } else {
         if (item.label == "Struct") {
@@ -555,10 +560,8 @@ const manualSave = () => {
 // handle element delete
 const handleListKeyPress = (event) => {
     if (event.key === 'Delete') {
-        const confirm = confirm("Are you sure you want to delete")
+        fileStore.deleteElement();
     }
-    console.log(event.key);
-
 }
 </script>
 
