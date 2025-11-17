@@ -7,6 +7,17 @@ export const useUIStore = defineStore('ui', () => {
         stageScale.value = scale;
     };
 
+    // Autosave state
+    const lastSavedTime = ref(null);
+    const isSaving = ref(false);
 
-    return { stageScale, setScale };
+    const setLastSavedTime = (time) => {
+        lastSavedTime.value = time;
+    };
+
+    const setSaving = (saving) => {
+        isSaving.value = saving;
+    };
+
+    return { stageScale, setScale, lastSavedTime, isSaving, setLastSavedTime, setSaving };
 });

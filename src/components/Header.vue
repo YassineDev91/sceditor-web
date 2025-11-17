@@ -40,7 +40,24 @@
 
     </div>
 
-    <div class="ml-auto right-0">
+    <!-- Autosave indicator -->
+    <div class="ml-auto mr-4 text-xs text-gray-500 dark:text-gray-400">
+      <span v-if="uiStore.isSaving" class="flex items-center gap-1">
+        <svg class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Saving...
+      </span>
+      <span v-else-if="uiStore.lastSavedTime" class="flex items-center gap-1">
+        <svg class="h-3 w-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        {{ getTimeSince(uiStore.lastSavedTime) }}
+      </span>
+    </div>
+
+    <div class="right-0">
       <!-- <img src="#" alt="profile"> -->
       <UserCircleIcon class="mx-3 w-10 h-10"></UserCircleIcon>
     </div>
@@ -55,17 +72,36 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import Modal from './Modal.vue';
 import { useContractStorage } from '@/stores/contract';
+import { useUIStore } from '@/stores/uiStore';
 import { CircleStackIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { ChevronDownIcon, CodeBracketIcon, PhotoIcon, TrashIcon } from '@heroicons/vue/20/solid'
 import IconDocumentation from './icons/IconDocumentation.vue';
 
 var fileStore = useContractStorage()
+const uiStore = useUIStore()
 const showModal = ref(false)
 const isExportButtonPressed = ref(false)
+
+// Helper function to get "time since" text
+const getTimeSince = (timestamp) => {
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+
+  if (seconds < 10) return 'Saved just now';
+  if (seconds < 60) return `Saved ${seconds}s ago`;
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `Saved ${minutes}m ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `Saved ${hours}h ago`;
+
+  const days = Math.floor(hours / 24);
+  return `Saved ${days}d ago`;
+}
 const props = defineProps({
   sctitle: {
     type: String,

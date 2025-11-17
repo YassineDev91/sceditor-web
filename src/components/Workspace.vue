@@ -196,10 +196,14 @@ onMounted(async () => {
             const parsed_contract = JSON.parse(saved_contract)
             fileStore.contract = parsed_contract
             console.log("✅ Restored contract from localStorage");
-
+            const savedTime = localStorage.getItem('saved_contract_time');
+            if (savedTime) {
+                const timestamp = parseInt(savedTime);
+                ui.setLastSavedTime(timestamp);
+                console.log(`📅 Last saved: ${new Date(timestamp).toLocaleString()}`);
+            }
         } catch (error) {
-            console.warn("⚠️ Failed to parse saved contract", e);
-
+            console.warn("⚠️ Failed to parse saved contract", error);
         }
     }
 
@@ -492,10 +496,33 @@ watch(() => ui.stageScale, (newScale) => {
     }
 });
 
-// Watch diagram state to save it
-watch(() => fileStore.contract, (newVal) => {
-    localStorage.setItem('saved_contract', JSON.stringify(fileStore.contract))
-})
+// Debounced autosave function
+let saveTimeout = null;
+const saveContract = () => {
+    try {
+        ui.setSaving(true);
+        localStorage.setItem('saved_contract', JSON.stringify(fileStore.contract));
+        const now = Date.now();
+        localStorage.setItem('saved_contract_time', now.toString());
+        ui.setLastSavedTime(now);
+        console.log("💾 Contract autosaved");
+        setTimeout(() => ui.setSaving(false), 500); // Show saving indicator briefly
+    } catch (error) {
+        console.error("❌ Failed to save contract:", error);
+        ui.setSaving(false);
+    }
+};
+
+// Watch diagram state to save it (deep watch with debouncing)
+watch(
+    () => fileStore.contract,
+    () => {
+        // Debounce saves to avoid excessive writes
+        if (saveTimeout) clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(saveContract, 1000); // Save 1 second after last change
+    },
+    { deep: true } // Watch nested properties
+)
 
 
 const onContractCreated = async () => {

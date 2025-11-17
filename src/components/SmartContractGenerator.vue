@@ -52,8 +52,8 @@ const fileStore = useContractStorage()
 
 const sc_language = ref(""); // Default to Solidity
 
-const API_KEY = import.meta.env.AI_API_KEY;
-const API_URL = import.meta.env.AI_API_URL;
+const API_KEY = import.meta.env.VITE_AI_API_KEY;
+const API_URL = import.meta.env.VITE_AI_API_URL;
 
 
 const prompt = computed(() => {
@@ -93,11 +93,12 @@ async function generate() {
 
     try {
 
-        if (!API_KEY) {
-            console.warn("⚠️ AI API key is missing! Check your .env file.");
-
+        if (!API_URL) {
+            console.warn("⚠️ AI API URL is missing! Check your .env file.");
+            generatedCode.value = "Error: API URL not configured. Please add VITE_AI_API_URL to your .env file.";
             return
         }
+
         const response = await fetch(
             `${API_URL}`,
             {
@@ -109,13 +110,32 @@ async function generate() {
             }
         );
 
+        if (!response.ok) {
+            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        }
+
         const data = await response.json();
-        generatedCode.value = data.output;
+        console.log("📦 API Response:", data);
+
+        // Parse Gemini API response structure
+        let rawCode = "";
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+            rawCode = data.candidates[0].content.parts[0].text;
+        } else if (data.output) {
+            // Fallback for other API structures
+            rawCode = data.output;
+        } else {
+            throw new Error("Unexpected API response structure");
+        }
+
+        // Extract code from markdown blocks if present
+        generatedCode.value = extractCode(rawCode);
+        console.log("✅ Code generated successfully");
 
 
     } catch (error) {
-        console.error("Error generating code:", error);
-        generatedCode.value = "Error generating code. Please check the console for details.";
+        console.error("❌ Error generating code:", error);
+        generatedCode.value = `Error generating code: ${error.message}\n\nPlease check:\n- Your API URL is correct\n- Your API key is valid\n- The API endpoint is accessible`;
     }
 
 }
@@ -127,8 +147,14 @@ const highlightedCode = computed(() => {
 });
 // Function to extract Solidity, Rust, or Vyper code from response
 function extractCode(response) {
-    const match = response.match(/```(solidity|rust|vyper)?\n([\s\S]+?)\n```/);
-    return match ? match[2] : "No valid code found.";
+    // Try to extract code from markdown code blocks
+    const match = response.match(/```(?:solidity|rust|vyper|sol|rs)?\n?([\s\S]+?)\n?```/);
+    if (match) {
+        return match[1].trim();
+    }
+
+    // If no markdown blocks found, return the raw response (it might already be clean code)
+    return response.trim();
 }
 </script>
 
