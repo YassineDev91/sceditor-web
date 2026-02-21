@@ -51,6 +51,7 @@
 
 <script setup>
 import { useContractStorage } from "@/stores/contract";
+import { useSettingsStore } from "@/stores/settings";
 import { InboxIcon } from "@heroicons/vue/24/outline";
 import { computed, ref, watch } from "vue";
 import Drawer from "./Drawer.vue";
@@ -60,11 +61,25 @@ import 'highlight.js/styles/github-dark-dimmed.css';
 const generatedCode = ref("empty");
 var showDrawer = ref(false)
 const fileStore = useContractStorage()
+const settingsStore = useSettingsStore()
 const sc_language = ref("");
 
-// Provider and model selection
-const selectedProvider = ref(import.meta.env.VITE_AI_PROVIDER || "");
-const selectedModel = ref("");
+// Provider and model selection from settings store
+const selectedProvider = computed({
+    get: () => settingsStore.llm.provider,
+    set: (value) => settingsStore.setLLMProvider(value)
+});
+
+const selectedModel = computed({
+    get: () => {
+        const provider = settingsStore.llm.provider;
+        return settingsStore.llm[provider]?.model || "";
+    },
+    set: (value) => {
+        const provider = settingsStore.llm.provider;
+        settingsStore.updateLLMConfig(provider, { model: value });
+    }
+});
 
 // Model configurations for each provider
 const providerModels = {
@@ -98,19 +113,6 @@ const availableModels = computed(() => {
     return providerModels[selectedProvider.value] || [];
 });
 
-// Auto-select model from env when provider changes
-watch(selectedProvider, (newProvider) => {
-    if (newProvider === "ollama") {
-        selectedModel.value = import.meta.env.VITE_OLLAMA_MODEL || "llama3";
-    } else if (newProvider === "gemini") {
-        selectedModel.value = import.meta.env.VITE_GEMINI_MODEL || "gemini-pro";
-    } else if (newProvider === "openai") {
-        selectedModel.value = import.meta.env.VITE_OPENAI_MODEL || "gpt-4";
-    } else if (newProvider === "anthropic") {
-        selectedModel.value = import.meta.env.VITE_ANTHROPIC_MODEL || "claude-3-5-sonnet-20241022";
-    }
-});
-
 
 const prompt = computed(() => {
     return `You are a professional smart contract developer. Based on the JSON specification below, generate a complete ${sc_language.value} smart contract.
@@ -135,7 +137,7 @@ Now generate the ${sc_language.value} code. Output only the smart contract code.
 
 // Provider-specific API call handlers
 async function callOllama(prompt) {
-    const ollamaUrl = import.meta.env.VITE_OLLAMA_URL || "http://localhost:11434";
+    const ollamaUrl = settingsStore.llm.ollama.url;
     const response = await fetch(`${ollamaUrl}/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -155,9 +157,9 @@ async function callOllama(prompt) {
 }
 
 async function callGemini(prompt) {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    const apiKey = settingsStore.llm.gemini.apiKey;
     if (!apiKey) {
-        throw new Error("Gemini API key not configured. Please add VITE_GEMINI_API_KEY to your .env file.");
+        throw new Error("Gemini API key not configured. Please configure it in Settings.");
     }
 
     const response = await fetch(
@@ -180,9 +182,9 @@ async function callGemini(prompt) {
 }
 
 async function callOpenAI(prompt) {
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    const apiKey = settingsStore.llm.openai.apiKey;
     if (!apiKey) {
-        throw new Error("OpenAI API key not configured. Please add VITE_OPENAI_API_KEY to your .env file.");
+        throw new Error("OpenAI API key not configured. Please configure it in Settings.");
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -206,9 +208,9 @@ async function callOpenAI(prompt) {
 }
 
 async function callAnthropic(prompt) {
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    const apiKey = settingsStore.llm.anthropic.apiKey;
     if (!apiKey) {
-        throw new Error("Anthropic API key not configured. Please add VITE_ANTHROPIC_API_KEY to your .env file.");
+        throw new Error("Anthropic API key not configured. Please configure it in Settings.");
     }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -281,7 +283,7 @@ async function generate() {
 
     } catch (error) {
         console.error("❌ Error generating code:", error);
-        generatedCode.value = `Error generating code: ${error.message}\n\nPlease check:\n- Your provider configuration in .env\n- Your API key is valid (for cloud providers)\n- Ollama is running (for local provider)\n- The API endpoint is accessible`;
+        generatedCode.value = `Error generating code: ${error.message}\n\nPlease check:\n- Your provider configuration in Settings\n- Your API key is valid (for cloud providers)\n- Ollama is running (for local provider)\n- The API endpoint is accessible`;
     }
 }
 

@@ -57,9 +57,15 @@
       </span>
     </div>
 
-    <div class="right-0">
+    <div class="right-0 flex items-center gap-2">
+      <!-- Settings Icon -->
+      <button @click="showSettingsModal = true"
+        class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        title="Settings">
+        <Cog6ToothIcon class="w-6 h-6 text-gray-600 dark:text-gray-300" />
+      </button>
       <!-- <img src="#" alt="profile"> -->
-      <UserCircleIcon class="mx-3 w-10 h-10"></UserCircleIcon>
+      <UserCircleIcon class="w-10 h-10"></UserCircleIcon>
     </div>
   </div>
   <Modal v-model:open="showModal" title="New Smart Contract Diagram">
@@ -69,14 +75,18 @@
         class="p-1 outline-none border border-1 rounded focus:border-blue-600">
     </div>
   </Modal>
+
+  <!-- Settings Modal -->
+  <SettingsModal v-model:open="showSettingsModal" />
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
 import Modal from './Modal.vue';
+import SettingsModal from './SettingsModal.vue';
 import { useContractStorage } from '@/stores/contract';
 import { useUIStore } from '@/stores/uiStore';
-import { CircleStackIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
+import { CircleStackIcon, UserCircleIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { ChevronDownIcon, CodeBracketIcon, PhotoIcon, TrashIcon } from '@heroicons/vue/20/solid'
 import IconDocumentation from './icons/IconDocumentation.vue';
@@ -84,6 +94,7 @@ import IconDocumentation from './icons/IconDocumentation.vue';
 var fileStore = useContractStorage()
 const uiStore = useUIStore()
 const showModal = ref(false)
+const showSettingsModal = ref(false)
 const isExportButtonPressed = ref(false)
 
 // Helper function to get "time since" text
