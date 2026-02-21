@@ -30,3 +30,11 @@ coverage
 *.tsbuildinfo
 .env
 .claude/
+
+# Archive/backup files
+*.zip
+
+# Notes and temp files
+notes.txt
+notes*.txt
+tmpclaude-*
