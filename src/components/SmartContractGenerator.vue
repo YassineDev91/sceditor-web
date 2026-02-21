@@ -4,24 +4,17 @@
             Code generation
         </h1>
 
-        <!-- LLM Provider Selection -->
-        <select name="ai_provider" id="ai_provider" v-model="selectedProvider"
-            class="hover:bg-slate-700 bg-slate-700 outline-none w-full shadow-sm px-2 py-1 rounded-md">
-            <option value="">Choose LLM Provider</option>
-            <option value="ollama">Ollama (Local)</option>
-            <option value="gemini">Google Gemini</option>
-            <option value="openai">OpenAI</option>
-            <option value="anthropic">Anthropic Claude</option>
-        </select>
-
-        <!-- Model Selection (dynamic based on provider) -->
-        <select v-if="selectedProvider" name="ai_model" id="ai_model" v-model="selectedModel"
-            class="hover:bg-slate-700 bg-slate-700 outline-none w-full shadow-sm px-2 py-1 rounded-md">
-            <option value="">Choose Model</option>
-            <option v-for="model in availableModels" :key="model.value" :value="model.value">
-                {{ model.label }}
-            </option>
-        </select>
+        <!-- Current Provider/Model Display -->
+        <div class="text-xs text-gray-500 dark:text-gray-400 mb-2 p-2 bg-gray-100 dark:bg-gray-700/50 rounded-md">
+            <div class="flex items-center justify-between">
+                <span>Provider:</span>
+                <span class="font-medium">{{ getProviderLabel(settingsStore.llm.provider) }}</span>
+            </div>
+            <div class="flex items-center justify-between mt-1">
+                <span>Model:</span>
+                <span class="font-medium">{{ getModelLabel(settingsStore.llm.provider) }}</span>
+            </div>
+        </div>
 
         <!-- Smart Contract Language Selection -->
         <select name="sc_language" id="sc_language" v-model="sc_language"
@@ -39,6 +32,10 @@
                 Generate Code
             </button>
         </div>
+
+        <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
+            Configure LLM in Settings ⚙️
+        </p>
     </div>
     <Drawer v-model:open="showDrawer">
         <div class=" bg-slate-800 border-solid border-white outline-1 w-full h-full rounded-md ">
@@ -65,53 +62,47 @@ const settingsStore = useSettingsStore()
 const sc_language = ref("");
 
 // Provider and model selection from settings store
-const selectedProvider = computed({
-    get: () => settingsStore.llm.provider,
-    set: (value) => settingsStore.setLLMProvider(value)
+const selectedProvider = computed(() => settingsStore.llm.provider);
+const selectedModel = computed(() => {
+    const provider = settingsStore.llm.provider;
+    return settingsStore.llm[provider]?.model || "";
 });
 
-const selectedModel = computed({
-    get: () => {
-        const provider = settingsStore.llm.provider;
-        return settingsStore.llm[provider]?.model || "";
-    },
-    set: (value) => {
-        const provider = settingsStore.llm.provider;
-        settingsStore.updateLLMConfig(provider, { model: value });
-    }
-});
-
-// Model configurations for each provider
-const providerModels = {
-    ollama: [
-        { label: "Llama 3", value: "llama3" },
-        { label: "CodeLlama", value: "codellama" },
-        { label: "Mistral", value: "mistral" },
-        { label: "DeepSeek Coder", value: "deepseek-coder" },
-        { label: "Qwen 2.5 Coder", value: "qwen2.5-coder" },
-        { label: "Custom Model", value: "custom" }
-    ],
-    gemini: [
-        { label: "Gemini Pro", value: "gemini-pro" },
-        { label: "Gemini 1.5 Pro", value: "gemini-1.5-pro" },
-        { label: "Gemini 1.5 Flash", value: "gemini-1.5-flash" }
-    ],
-    openai: [
-        { label: "GPT-4", value: "gpt-4" },
-        { label: "GPT-4 Turbo", value: "gpt-4-turbo" },
-        { label: "GPT-3.5 Turbo", value: "gpt-3.5-turbo" }
-    ],
-    anthropic: [
-        { label: "Claude 3.5 Sonnet", value: "claude-3-5-sonnet-20241022" },
-        { label: "Claude 3 Opus", value: "claude-3-opus-20240229" },
-        { label: "Claude 3 Sonnet", value: "claude-3-sonnet-20240229" }
-    ]
+// Helper functions to display provider and model labels
+const getProviderLabel = (provider) => {
+    const labels = {
+        'ollama': 'Ollama (Local)',
+        'gemini': 'Google Gemini',
+        'openai': 'OpenAI',
+        'anthropic': 'Anthropic Claude'
+    };
+    return labels[provider] || 'Not configured';
 };
 
-// Compute available models based on selected provider
-const availableModels = computed(() => {
-    return providerModels[selectedProvider.value] || [];
-});
+const getModelLabel = (provider) => {
+    const model = settingsStore.llm[provider]?.model;
+    if (!model) return 'Not configured';
+
+    // Return model name in a user-friendly format
+    const modelLabels = {
+        'llama3': 'Llama 3',
+        'codellama': 'CodeLlama',
+        'mistral': 'Mistral',
+        'deepseek-coder': 'DeepSeek Coder',
+        'qwen2.5-coder': 'Qwen 2.5 Coder',
+        'gemini-pro': 'Gemini Pro',
+        'gemini-1.5-pro': 'Gemini 1.5 Pro',
+        'gemini-1.5-flash': 'Gemini 1.5 Flash',
+        'gpt-4': 'GPT-4',
+        'gpt-4-turbo': 'GPT-4 Turbo',
+        'gpt-3.5-turbo': 'GPT-3.5 Turbo',
+        'claude-3-5-sonnet-20241022': 'Claude 3.5 Sonnet',
+        'claude-3-opus-20240229': 'Claude 3 Opus',
+        'claude-3-sonnet-20240229': 'Claude 3 Sonnet'
+    };
+
+    return modelLabels[model] || model;
+};
 
 
 const prompt = computed(() => {
@@ -237,12 +228,12 @@ async function callAnthropic(prompt) {
 
 async function generate() {
     if (!selectedProvider.value) {
-        alert("Please select an LLM provider.");
+        alert("Please configure an LLM provider in Settings.");
         return;
     }
 
     if (!selectedModel.value) {
-        alert("Please select a model.");
+        alert("Please configure a model in Settings.");
         return;
     }
 
