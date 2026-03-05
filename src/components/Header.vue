@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-row my-4 w-full gap-4 items-center">
     <h1 class="col-auto w-1/3">
-      <span class="text-blue-500">Contract:</span> {{ props.sctitle }}
+      <span class="text-blue-500 ml-3">Contract:</span> {{ props.sctitle }}
     </h1>
 
     <div class="flex flex-row">

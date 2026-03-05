@@ -31,8 +31,8 @@
             <div class="flex flex-row space-x-2 px-3 py-1 mt-10">
             <p class="text-gray-500 font-semibold px-3 py-1">Zoom</p>
 
-                <button @click="zoomIn" class="border border-slate-500 bg-slate-900 p-1 w-7 rounded-xl">+</button>
-                <button @click="zoomOut" class="border border-slate-500 bg-slate-900 p-1 w-7 rounded-xl">-</button>
+                <button @click="zoomIn" class="border border-slate-500 bg-slate-900  w-7 rounded">+</button>
+                <button @click="zoomOut" class="border border-slate-500 bg-slate-900 w-7 rounded">-</button>
             </div>
 
         </div>
