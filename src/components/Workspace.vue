@@ -1,11 +1,19 @@
 <template>
-    <div v-if="fileStore.contract.name" class="h-full w-full dark:bg-[#F7F7F7] rounded-sm">
+    <div v-if="fileStore.contract.name" class="h-full w-full dark:bg-[#F7F7F7] rounded-sm relative">
         <!-- Back Button for Function Layer -->
         <button v-if="!isMainLayerVisible"
-            class="text-left text-black text-xs mx-1 mt-1 flex flex-row items-center space-x-1" @click="toggleLayer">
+            class="text-left text-black text-xs mx-1 mt-1 flex flex-row items-center space-x-1 relative z-[9999]" @click="toggleLayer">
             <ArrowLeftCircleIcon class="w-5" />
             <span>Back</span>
         </button>
+
+        <!-- Canvas Controls Toolbar (positioned absolutely above canvas) -->
+        <CanvasControls :zoom="zoomLevel" :gridEnabled="gridVisible" :snapToGrid="snapToGridEnabled"
+            :panMode="isPanMode" :canUndo="fileStore.canUndo" :canRedo="fileStore.canRedo"
+            :undoCount="fileStore.undoCount" :redoCount="fileStore.redoCount" @zoom-in="handleZoomIn"
+            @zoom-out="handleZoomOut" @zoom-reset="handleZoomReset" @toggle-grid="toggleGrid"
+            @toggle-snap="toggleSnapToGrid" @toggle-pan="togglePanMode" @fit-to-screen="fitToScreen"
+            @undo="handleUndo" @redo="handleRedo" />
 
         <div ref="workspaceRef" class="flex flex-row h-full w-full" @dragover.prevent @drop="handleDrop">
             <v-stage ref="stageRef" :key="fileStore.contract.name" :config="stageConfig"
@@ -107,14 +115,16 @@
 
 
 <script setup>
-import { computed, nextTick, onMounted, ref, watch, watchEffect } from 'vue';
+import { computed, nextTick, onMounted, ref, watch, watchEffect, onUnmounted } from 'vue';
 import Contract from '@/components/palette/scd/Contract.vue'
 import Variable from '@/components/palette/scd/Variable.vue'
 import Struct from '@/components/palette/scd/Struct.vue'
 import Function from '@/components/palette/scd/Function.vue'
 import StatementRenderer from './palette/fd/StatementRenderer.vue';
 import Modal from './Modal.vue';
+import CanvasControls from './CanvasControls.vue';
 import { useContractStorage } from '@/stores/contract'
+import { useSettingsStore } from '@/stores/settings'
 import { ArrowLeftCircleIcon } from '@heroicons/vue/24/outline';
 import { useUIStore } from '@/stores/uiStore';
 import Enum from './palette/scd/Enum.vue';
@@ -122,6 +132,7 @@ import Modifier from './palette/scd/Modifier.vue';
 import ErrorDeclaration from './palette/scd/ErrorDeclaration.vue';
 
 const fileStore = useContractStorage()
+const settingsStore = useSettingsStore()
 
 const isMainLayerVisible = ref(true);
 const isFunctionLayerVisible = ref(!isMainLayerVisible.value)
@@ -135,6 +146,12 @@ const widthCanvaRef = ref(0);
 const heightCanvaRef = ref(0);
 
 const canvasReady = ref(false)
+
+// Canvas controls state
+const zoomLevel = ref(1);
+const gridVisible = ref(settingsStore.editor.gridEnabled);
+const snapToGridEnabled = ref(settingsStore.editor.snapToGrid);
+const isPanMode = ref(false);
 
 const stageConfig = computed(() => ({
     width: widthCanvaRef.value - widthCanvaRef.value * 0.1, // 10% padding
@@ -292,6 +309,8 @@ const handleScdDragMove = (e, cmp) => {
     cmp.x = x
     cmp.y = y
 
+    // Save history after drag
+    fileStore.saveHistory();
 };
 
 const handleDragMove = () => {
@@ -462,6 +481,7 @@ const handleDrop = (event) => {
                 literals: [],
                 description: "",
             })
+            fileStore.saveHistory();
         }
         if (item.label == "Variable") {
             console.log("⚠️ Var created")
@@ -476,6 +496,7 @@ const handleDrop = (event) => {
                 visibility: "public",
                 description: "",
             })
+            fileStore.saveHistory();
         }
         if (item.label == "Function") {
             fileStore.contract.functions.push({
@@ -489,6 +510,7 @@ const handleDrop = (event) => {
                 },
                 description: "",
             })
+            fileStore.saveHistory();
         } if (item.label == "Assignment") {
             console.log("creating assignment stmt!");
 
@@ -802,6 +824,225 @@ const handleListKeyPress = (event) => {
         fileStore.deleteElement();
     }
 }
+
+// ==================== Canvas Controls Handlers ====================
+
+// Zoom handlers
+const handleZoomIn = () => {
+    const stage = stageRef.value?.getNode();
+    if (!stage) return;
+
+    const oldScale = stage.scaleX();
+    const newScale = oldScale * 1.2;
+
+    // Center zoom at center of stage
+    const center = {
+        x: widthCanvaRef.value / 2,
+        y: heightCanvaRef.value / 2
+    };
+
+    const mousePointTo = {
+        x: (center.x - stage.x()) / oldScale,
+        y: (center.y - stage.y()) / oldScale,
+    };
+
+    const newPos = {
+        x: center.x - mousePointTo.x * newScale,
+        y: center.y - mousePointTo.y * newScale,
+    };
+
+    stage.scale({ x: newScale, y: newScale });
+    stage.position(newPos);
+    stage.batchDraw();
+    zoomLevel.value = newScale;
+
+    // Save to history after significant zoom changes
+    if (Math.abs(newScale - oldScale) > 0.1) {
+        fileStore.saveHistory();
+    }
+};
+
+const handleZoomOut = () => {
+    const stage = stageRef.value?.getNode();
+    if (!stage) return;
+
+    const oldScale = stage.scaleX();
+    const newScale = Math.max(0.1, oldScale / 1.2); // Don't zoom out too much
+
+    const center = {
+        x: widthCanvaRef.value / 2,
+        y: heightCanvaRef.value / 2
+    };
+
+    const mousePointTo = {
+        x: (center.x - stage.x()) / oldScale,
+        y: (center.y - stage.y()) / oldScale,
+    };
+
+    const newPos = {
+        x: center.x - mousePointTo.x * newScale,
+        y: center.y - mousePointTo.y * newScale,
+    };
+
+    stage.scale({ x: newScale, y: newScale });
+    stage.position(newPos);
+    stage.batchDraw();
+    zoomLevel.value = newScale;
+
+    // Save to history after significant zoom changes
+    if (Math.abs(newScale - oldScale) > 0.1) {
+        fileStore.saveHistory();
+    }
+};
+
+const handleZoomReset = () => {
+    const stage = stageRef.value?.getNode();
+    if (!stage) return;
+
+    stage.scale({ x: 1, y: 1 });
+    stage.position({ x: 0, y: 0 });
+    stage.batchDraw();
+    zoomLevel.value = 1;
+
+    fileStore.saveHistory();
+};
+
+const fitToScreen = () => {
+    const stage = stageRef.value?.getNode();
+    if (!stage) return;
+
+    const layer = mainLayer.value?.getNode();
+    if (!layer) return;
+
+    // Get all nodes to calculate bounds
+    const allElements = [
+        ...fileStore.contract.variables || [],
+        ...fileStore.contract.structs || [],
+        ...fileStore.contract.functions || [],
+        ...fileStore.contract.enums || [],
+        ...fileStore.contract.modifiers || [],
+        ...fileStore.contract.errorDeclarations || [],
+    ];
+
+    if (fileStore.contract._constructor) {
+        allElements.push(fileStore.contract._constructor);
+    }
+
+    if (allElements.length === 0) {
+        handleZoomReset();
+        return;
+    }
+
+    // Find bounding box of all elements
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    allElements.forEach(el => {
+        if (el.x !== undefined && el.y !== undefined) {
+            minX = Math.min(minX, el.x);
+            minY = Math.min(minY, el.y);
+            maxX = Math.max(maxX, el.x + 200); // Approximate element width
+            maxY = Math.max(maxY, el.y + 100); // Approximate element height
+        }
+    });
+
+    const contentWidth = maxX - minX;
+    const contentHeight = maxY - minY;
+
+    // Calculate scale to fit content with padding
+    const padding = 50;
+    const scaleX = (widthCanvaRef.value - padding * 2) / contentWidth;
+    const scaleY = (heightCanvaRef.value - padding * 2) / contentHeight;
+    const scale = Math.min(scaleX, scaleY, 1); // Don't zoom in beyond 100%
+
+    // Center the content
+    const offsetX = (widthCanvaRef.value - contentWidth * scale) / 2 - minX * scale;
+    const offsetY = (heightCanvaRef.value - contentHeight * scale) / 2 - minY * scale;
+
+    stage.scale({ x: scale, y: scale });
+    stage.position({ x: offsetX, y: offsetY });
+    stage.batchDraw();
+    zoomLevel.value = scale;
+
+    fileStore.saveHistory();
+};
+
+// Grid and snap handlers
+const toggleGrid = () => {
+    gridVisible.value = !gridVisible.value;
+    settingsStore.updateEditorPreferences({ gridEnabled: gridVisible.value });
+};
+
+const toggleSnapToGrid = () => {
+    snapToGridEnabled.value = !snapToGridEnabled.value;
+    settingsStore.updateEditorPreferences({ snapToGrid: snapToGridEnabled.value });
+};
+
+// Pan mode handler
+const togglePanMode = () => {
+    isPanMode.value = !isPanMode.value;
+    const stage = stageRef.value?.getNode();
+    if (stage) {
+        stage.draggable(isPanMode.value);
+    }
+};
+
+// Undo/Redo handlers
+const handleUndo = () => {
+    fileStore.undo();
+};
+
+const handleRedo = () => {
+    fileStore.redo();
+};
+
+// Enhanced keyboard shortcuts
+const handleCanvasKeyboard = (event) => {
+    // Zoom shortcuts
+    if (event.ctrlKey || event.metaKey) {
+        if (event.key === '=' || event.key === '+') {
+            event.preventDefault();
+            handleZoomIn();
+        } else if (event.key === '-' || event.key === '_') {
+            event.preventDefault();
+            handleZoomOut();
+        } else if (event.key === '0') {
+            event.preventDefault();
+            handleZoomReset();
+        } else if (event.key === 'f' || event.key === 'F') {
+            event.preventDefault();
+            fitToScreen();
+        } else if (event.key === 'z' && !event.shiftKey) {
+            event.preventDefault();
+            handleUndo();
+        } else if (event.key === 'z' && event.shiftKey) {
+            event.preventDefault();
+            handleRedo();
+        } else if (event.key === 'y') {
+            event.preventDefault();
+            handleRedo();
+        }
+    }
+
+    // Pan mode toggle with Space
+    if (event.key === ' ' && !event.repeat) {
+        event.preventDefault();
+        togglePanMode();
+    }
+};
+
+// Initialize history and add keyboard listeners
+onMounted(() => {
+    window.addEventListener('keydown', handleCanvasKeyboard);
+
+    // Initialize history when contract is loaded
+    if (fileStore.contract && Object.keys(fileStore.contract).length > 0) {
+        fileStore.initHistory();
+    }
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleCanvasKeyboard);
+});
 </script>
 
 <style scoped>

@@ -5,468 +5,11 @@ export const useContractStorage = defineStore("contract", {
   state: () => {
     return {
       contract: {
-      }
-      // {
-      //   "name": "Purchase",
-      //   "x": 10,
-      //   "y": 10,
-      //   "variables": [
-      //     {
-      //       "name": "value",
-      //       "type": {
-      //         "base": "uint"
-      //       },
-      //       "visibility": "public",
-      //       "x": 50,
-      //       "y": 50
-      //     },
-      //     {
-      //       "name": "seller",
-      //       "type": {
-      //         "base": "address",
-      //         "payable": true
-      //       },
-      //       "visibility": "public",
-      //       "x": 50,
-      //       "y": 110
-      //     },
-      //     {
-      //       "name": "buyer",
-      //       "type": {
-      //         "base": "address",
-      //         "payable": true
-      //       },
-      //       "visibility": "public",
-      //       "x": 50,
-      //       "y": 170
-      //     },
-      //     {
-      //       "name": "state",
-      //       "type": {
-      //         "base": "State"
-      //       },
-      //       "visibility": "public",
-      //       "x": 50,
-      //       "y": 230
-      //     }
-      //   ],
-      //   "structs": [
-      //     {
-      //       "name": "State",
-      //       "x": 150,
-      //       "y": 100,
-      //       "literals": [
-      //         {
-      //           "type": {
-      //             "base": "enumLiteral"
-      //           },
-      //           "name": "Created"
-      //         },
-      //         {
-      //           "type": {
-      //             "base": "enumLiteral"
-      //           },
-      //           "name": "Locked"
-      //         },
-      //         {
-      //           "type": {
-      //             "base": "enumLiteral"
-      //           },
-      //           "name": "Release"
-      //         },
-      //         {
-      //           "type": {
-      //             "base": "enumLiteral"
-      //           },
-      //           "name": "Inactive"
-      //         }
-      //       ]
-      //     }
-      //   ],
-      //   "constructor": {
-      //     "x": 250,
-      //     "y": 50,
-      //     "params": [],
-      //     "modifiers": [
-      //       "payable"
-      //     ],
-      //     "body": {
-      //       "type": "Block",
-      //       "statements": [
-      //         {
-      //           "type": "AssignmentStatement",
-      //           "expressions": [
-      //             {
-      //               "left": {
-      //                 "type": "Variable",
-      //                 "name": "seller"
-      //               },
-      //               "right": {
-      //                 "type": "Identifier",
-      //                 "value": "caller"
-      //               }
-      //             }
-      //           ]
-      //         },
-      //         {
-      //           "type": "AssignmentStatement",
-      //           "expressions": [
-      //             {
-      //               "left": {
-      //                 "type": "Variable",
-      //                 "name": "value"
-      //               },
-      //               "right": {
-      //                 "type": "BinaryOperation",
-      //                 "operator": "/",
-      //                 "left": {
-      //                   "type": "Identifier",
-      //                   "value": "transaction.value"
-      //                 },
-      //                 "right": {
-      //                   "type": "Literal",
-      //                   "value": 2
-      //                 }
-      //               }
-      //             }
-      //           ]
-      //         },
-      //         {
-      //           "type": "IfStatement",
-      //           "condition": {
-      //             "type": "BinaryOperation",
-      //             "operator": "!=",
-      //             "left": {
-      //               "type": "BinaryOperation",
-      //               "operator": "*",
-      //               "left": {
-      //                 "type": "Literal",
-      //                 "value": 2
-      //               },
-      //               "right": {
-      //                 "type": "Identifier",
-      //                 "value": "value"
-      //               }
-      //             },
-      //             "right": {
-      //               "type": "Identifier",
-      //               "value": "transaction.value"
-      //             }
-      //           },
-      //           "then": {
-      //             "type": "Block",
-      //             "statements": [
-      //               {
-      //                 "type": "RevertStatement",
-      //                 "error": "ValueNotEven"
-      //               }
-      //             ]
-      //           }
-      //         }
-      //       ]
-      //     }
-      //   },
-      //   "functions": [
-      //     {
-      //       "name": "abort",
-      //       "x": 450,
-      //       "y": 200,
-      //       "params": [],
-      //       "modifiers": [
-      //         "external",
-      //         "onlySeller",
-      //         "inState(State.Created)"
-      //       ],
-      //       "body": {
-      //         "type": "Block",
-      //         "statements": [
-
-      //           {
-      //             "type": "EmitStatement",
-      //             "event": "Aborted",
-      //             "args": []
-      //           },
-      //           {
-      //             "type": "AssignmentStatement",
-      //             "expressions": [
-      //               {
-      //                 "left": {
-      //                   "type": "Variable",
-      //                   "name": "state"
-      //                 },
-      //                 "right": {
-      //                   "type": "Identifier",
-      //                   "value": "State.Inactive"
-      //                 }
-      //               }
-      //             ]
-      //           },
-      //           {
-      //             "type": "CallStatement",
-      //             "object": "seller",
-      //             "method": "refund",
-      //             "params": [
-      //               {
-      //                 "type": "BinaryOperation",
-      //                 "operator": "*",
-      //                 "left": {
-      //                   "type": "Literal",
-      //                   "value": 2
-      //                 },
-      //                 "right": {
-      //                   "type": "Identifier",
-      //                   "value": "value"
-      //                 }
-      //               }
-      //             ]
-      //           }
-      //         ]
-      //       }
-      //     },
-      //     {
-      //       "name": "confirmPurchase",
-      //       "x": 450,
-      //       "y": 350,
-      //       "params": [],
-      //       "modifiers": [
-      //         "external",
-      //         "inState(State.Created)",
-      //         "payable"
-      //       ],
-      //       "body": {
-      //         "type": "Block",
-      //         "statements": [
-
-      //           {
-      //             "type": "AssignmentStatement",
-      //             "expressions": [
-      //               {
-      //                 "left": {
-      //                   "type": "Variable",
-      //                   "name": "buyer"
-      //                 },
-      //                 "right": {
-      //                   "type": "Identifier",
-      //                   "value": "caller"
-      //                 }
-      //               }
-      //             ]
-      //           },
-      //           {
-      //             "type": "AssignmentStatement",
-      //             "expressions": [
-      //               {
-      //                 "left": {
-      //                   "type": "Variable",
-      //                   "name": "state"
-      //                 },
-      //                 "right": {
-      //                   "type": "Identifier",
-      //                   "value": "State.Locked"
-      //                 }
-      //               }
-      //             ]
-      //           },
-      //           {
-      //             "type": "EmitStatement",
-      //             "event": "PurchaseConfirmed",
-      //             "args": []
-      //           },
-      //           {
-      //             "type": "ForStatement",
-      //             "init": {
-      //               "type": "AssignmentStatement",
-      //               "expressions": [
-      //                 {
-      //                   "left": {
-      //                     "type": "Variable",
-      //                     "name": "i"
-      //                   },
-      //                   "right": {
-      //                     "type": "Literal",
-      //                     "value": 0
-      //                   }
-      //                 }
-      //               ]
-      //             },
-      //             "condition": {
-      //               "type": "BinaryOperation",
-      //               "operator": "<",
-      //               "left": {
-      //                 "type": "Identifier",
-      //                 "value": "i"
-      //               },
-      //               "right": {
-      //                 "type": "MemberAccess",
-      //                 "object": "_values",
-      //                 "member": "length"
-      //               }
-      //             },
-      //             "post": {
-      //               "type": "AssignmentStatement",
-      //               "expressions": [
-      //                 {
-      //                   "left": {
-      //                     "type": "Variable",
-      //                     "name": "i"
-      //                   },
-      //                   "right": {
-      //                     "type": "BinaryOperation",
-      //                     "operator": "+",
-      //                     "left": {
-      //                       "type": "Identifier",
-      //                       "value": "i"
-      //                     },
-      //                     "right": {
-      //                       "type": "Literal",
-      //                       "value": 1
-      //                     }
-      //                   }
-      //                 }
-      //               ]
-      //             },
-      //             "body": {
-      //               "type": "Block",
-      //               "statements": [
-      //                 {
-      //                   "type": "IfStatement",
-      //                   "condition": {
-      //                     "type": "BinaryOperation",
-      //                     "operator": ">=",
-      //                     "left": {
-      //                       "type": "Identifier",
-      //                       "value": "i"
-      //                     },
-      //                     "right": {
-      //                       "type": "MemberAccess",
-      //                       "object": "bidsList",
-      //                       "member": "length"
-      //                     }
-      //                   },
-      //                   "then": {
-      //                     "type": "Block",
-      //                     "statements": [
-      //                       {
-      //                         "type": "BreakStatement"
-      //                       }
-      //                     ]
-      //                   }
-      //                 }
-      //               ]
-      //             }
-      //           }
-      //         ]
-      //       }
-      //     },
-      //     {
-      //       "name": "confirmReceived",
-      //       "x": 200,
-      //       "y": 400,
-      //       "params": [],
-      //       "modifiers": [
-      //         "external",
-      //         "onlyBuyer",
-      //         "inState(State.Locked)"
-      //       ],
-      //       "body": {
-      //         "type": "Block",
-      //         "statements": [
-      //           {
-      //             "type": "EmitStatement",
-      //             "event": "ItemReceived",
-      //             "args": []
-      //           },
-      //           {
-      //             "type": "AssignmentStatement",
-      //             "expressions": [
-      //               {
-      //                 "left": {
-      //                   "type": "Variable",
-      //                   "name": "state"
-      //                 },
-      //                 "right": {
-      //                   "type": "Identifier",
-      //                   "value": "State.Release"
-      //                 }
-      //               }
-      //             ]
-      //           },
-      //           {
-      //             "type": "CallStatement",
-      //             "object": "buyer",
-      //             "method": "refund",
-      //             "params": [
-      //               {
-      //                 "type": "Identifier",
-      //                 "value": "value"
-      //               }
-      //             ]
-      //           }
-      //         ]
-      //       }
-      //     },
-      //     {
-      //       "name": "refundSeller",
-      //       "x": 500,
-      //       "y": 50,
-      //       "params": [],
-      //       "modifiers": [
-      //         "external",
-      //         "onlySeller",
-      //         "inState(State.Release)"
-      //       ],
-      //       "body": {
-      //         "type": "Block",
-      //         "statements": [
-      //           {
-      //             "type": "EmitStatement",
-      //             "event": "SellerRefunded",
-      //             "args": []
-      //           },
-      //           {
-      //             "type": "AssignmentStatement",
-      //             "expressions": [
-      //               {
-      //                 "left": {
-      //                   "type": "Variable",
-      //                   "name": "state"
-      //                 },
-      //                 "right": {
-      //                   "type": "Identifier",
-      //                   "value": "State.Inactive"
-      //                 }
-      //               }
-      //             ]
-      //           },
-      //           {
-      //             "type": "CallStatement",
-      //             "object": "seller",
-      //             "method": "refund",
-      //             "params": [
-      //               {
-      //                 "type": "BinaryOperation",
-      //                 "operator": "*",
-      //                 "left": {
-      //                   "type": "Literal",
-      //                   "value": 3
-      //                 },
-      //                 "right": {
-      //                   "type": "Identifier",
-      //                   "value": "value"
-      //                 }
-      //               }
-      //             ]
-      //           }
-      //         ]
-      //       }
-      //     }
-      //   ],
-      //   // "custom": {
-      //   //   "ai-hint": "Buyer-seller escrow transaction with state transitions and refund logic",
-      //   //   "blockchain-agnostic": true
-      //   // }
-      // },
-      ,
+      },
+      // History management
+      history: [],
+      historyIndex: -1,
+      maxHistorySize: 50,
       selectedFunction: {},
       selectedElement: {}, // Keep for backward compatibility
       selectedElements: [], // Array for multi-selection
@@ -637,11 +180,68 @@ export const useContractStorage = defineStore("contract", {
 
       console.log(`✅ Deleted ${count} element(s)`);
       this.clearSelection();
+      this.saveHistory();
+    },
+
+    // History management
+    saveHistory() {
+      // Create a deep copy of the current contract state
+      const snapshot = JSON.parse(JSON.stringify(this.contract));
+
+      // Remove any history after current index (for new branch)
+      this.history = this.history.slice(0, this.historyIndex + 1);
+
+      // Add new snapshot
+      this.history.push(snapshot);
+
+      // Limit history size
+      if (this.history.length > this.maxHistorySize) {
+        this.history.shift();
+      } else {
+        this.historyIndex++;
+      }
+
+      console.log(`📝 History saved (${this.historyIndex + 1}/${this.history.length})`);
+    },
+
+    undo() {
+      if (this.historyIndex > 0) {
+        this.historyIndex--;
+        this.contract = JSON.parse(JSON.stringify(this.history[this.historyIndex]));
+        console.log(`↩️ Undo: Restored to state ${this.historyIndex + 1}`);
+      } else {
+        console.warn("⚠️ Nothing to undo");
+      }
+    },
+
+    redo() {
+      if (this.historyIndex < this.history.length - 1) {
+        this.historyIndex++;
+        this.contract = JSON.parse(JSON.stringify(this.history[this.historyIndex]));
+        console.log(`↪️ Redo: Restored to state ${this.historyIndex + 1}`);
+      } else {
+        console.warn("⚠️ Nothing to redo");
+      }
+    },
+
+    clearHistory() {
+      this.history = [];
+      this.historyIndex = -1;
+      console.log("🗑️ History cleared");
+    },
+
+    initHistory() {
+      // Save initial state
+      if (this.contract && Object.keys(this.contract).length > 0) {
+        this.clearHistory();
+        this.saveHistory();
+      }
     }
   },
   getters: {
-
-
-
+    canUndo: (state) => state.historyIndex > 0,
+    canRedo: (state) => state.historyIndex < state.history.length - 1,
+    undoCount: (state) => state.historyIndex,
+    redoCount: (state) => state.history.length - state.historyIndex - 1,
   },
 });
