@@ -11,6 +11,8 @@ import {
   createGuardRef,
   createFunction,
   createConstructor,
+  createEvent,
+  createErrorDeclaration,
 } from './elements.js'
 
 describe('createParameter', () => {
@@ -176,5 +178,37 @@ describe('createConstructor', () => {
 
   it('rejects an invalid mutability value', () => {
     expect(() => createConstructor({ mutability: 'nope' })).toThrow(/Invalid mutability "nope"/)
+  })
+})
+
+describe('createEvent', () => {
+  it('creates an event with defaults', () => {
+    const e = createEvent('Aborted')
+    expect(e.cmp_type).toBe('Event')
+    expect(e.parameters).toEqual([])
+    expect(typeof e.id).toBe('string')
+    expect(e.id).toMatch(/^event_/)
+  })
+
+  it('accepts typed parameters', () => {
+    const param = createParameter('buyer', primitiveType('address'))
+    const e = createEvent('PurchaseConfirmed', { parameters: [param] })
+    expect(e.parameters).toEqual([param])
+  })
+})
+
+describe('createErrorDeclaration', () => {
+  it('creates an error declaration with defaults', () => {
+    const err = createErrorDeclaration('OnlySeller')
+    expect(err.cmp_type).toBe('ErrorDeclaration')
+    expect(err.parameters).toEqual([])
+    expect(typeof err.id).toBe('string')
+    expect(err.id).toMatch(/^errordeclaration_/)
+  })
+
+  it('accepts typed parameters', () => {
+    const param = createParameter('value', primitiveType('uint', { size: 256 }))
+    const err = createErrorDeclaration('ValueNotEven', { parameters: [param] })
+    expect(err.parameters).toEqual([param])
   })
 })

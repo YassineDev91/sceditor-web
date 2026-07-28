@@ -103,3 +103,11 @@ export function createConstructor({
     body,
   }
 }
+
+export function createEvent(name, { x = 0, y = 0, parameters = [] } = {}) {
+  return baseElement('Event', name, x, y, { parameters })
+}
+
+export function createErrorDeclaration(name, { x = 0, y = 0, parameters = [] } = {}) {
+  return baseElement('ErrorDeclaration', name, x, y, { parameters })
+}
