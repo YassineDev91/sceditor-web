@@ -1,0 +1,214 @@
+import { describe, it, expect } from 'vitest'
+import { primitiveType } from './types.js'
+import {
+  createParameter,
+  createVariable,
+  createStructField,
+  createStruct,
+  createEnumValue,
+  createEnum,
+  createGuard,
+  createGuardRef,
+  createFunction,
+  createConstructor,
+  createEvent,
+  createErrorDeclaration,
+} from './elements.js'
+
+describe('createParameter', () => {
+  it('pairs a name with a type', () => {
+    const type = primitiveType('uint')
+    expect(createParameter('amount', type)).toEqual({ name: 'amount', type })
+  })
+})
+
+describe('createVariable', () => {
+  it('creates a variable with defaults', () => {
+    const type = primitiveType('address')
+    const v = createVariable('seller', type)
+    expect(v.cmp_type).toBe('Variable')
+    expect(v.name).toBe('seller')
+    expect(v.type).toBe(type)
+    expect(v.visibility).toBe('public')
+    expect(v.x).toBe(0)
+    expect(v.y).toBe(0)
+    expect(v.description).toBe('')
+    expect(typeof v.id).toBe('string')
+    expect(v.id).toMatch(/^variable_/)
+  })
+
+  it('accepts x, y, and visibility overrides', () => {
+    const v = createVariable('balance', primitiveType('uint'), { x: 10, y: 20, visibility: 'private' })
+    expect(v.x).toBe(10)
+    expect(v.y).toBe(20)
+    expect(v.visibility).toBe('private')
+  })
+
+  it('gives two variables distinct ids', () => {
+    const a = createVariable('a', primitiveType('bool'))
+    const b = createVariable('b', primitiveType('bool'))
+    expect(a.id).not.toBe(b.id)
+  })
+})
+
+describe('createStructField', () => {
+  it('pairs a name with a type', () => {
+    const type = primitiveType('string')
+    expect(createStructField('label', type)).toEqual({ name: 'label', type })
+  })
+})
+
+describe('createStruct', () => {
+  it('creates a struct with defaults', () => {
+    const s = createStruct('Order')
+    expect(s.cmp_type).toBe('Struct')
+    expect(s.name).toBe('Order')
+    expect(s.literals).toEqual([])
+    expect(typeof s.id).toBe('string')
+    expect(s.id).toMatch(/^struct_/)
+  })
+
+  it('accepts literals', () => {
+    const field = createStructField('qty', primitiveType('uint'))
+    const s = createStruct('Order', { literals: [field] })
+    expect(s.literals).toEqual([field])
+  })
+})
+
+describe('createEnumValue', () => {
+  it('wraps a name', () => {
+    expect(createEnumValue('Created')).toEqual({ name: 'Created' })
+  })
+})
+
+describe('createEnum', () => {
+  it('creates an enum with defaults', () => {
+    const e = createEnum('State')
+    expect(e.cmp_type).toBe('Enum')
+    expect(e.values).toEqual([])
+    expect(typeof e.id).toBe('string')
+    expect(e.id).toMatch(/^enum_/)
+  })
+
+  it('accepts values', () => {
+    const e = createEnum('State', { values: [createEnumValue('Created'), createEnumValue('Locked')] })
+    expect(e.values).toEqual([{ name: 'Created' }, { name: 'Locked' }])
+  })
+})
+
+describe('createGuard', () => {
+  it('creates a guard with defaults', () => {
+    const g = createGuard('OnlySeller')
+    expect(g.cmp_type).toBe('Guard')
+    expect(g.name).toBe('OnlySeller')
+    expect(g.parameters).toEqual([])
+    expect(g.body).toEqual({ type: 'Block', statements: [] })
+    expect(typeof g.id).toBe('string')
+    expect(g.id).toMatch(/^guard_/)
+  })
+
+  it('accepts parameters and a body', () => {
+    const param = createParameter('state_', primitiveType('uint'))
+    const body = { type: 'Block', statements: [{ cmp_type: 'ConditionStatement' }] }
+    const g = createGuard('InState', { parameters: [param], body })
+    expect(g.parameters).toEqual([param])
+    expect(g.body).toEqual(body)
+  })
+})
+
+describe('createGuardRef', () => {
+  it('references a guard by id with no args', () => {
+    expect(createGuardRef('guard_abc')).toEqual({ ref: 'guard_abc', args: [] })
+  })
+
+  it('references a guard by id with args', () => {
+    expect(createGuardRef('guard_abc', ['State.Created'])).toEqual({ ref: 'guard_abc', args: ['State.Created'] })
+  })
+
+  it('rejects a missing guard id', () => {
+    expect(() => createGuardRef('')).toThrow(/requires a guard id/)
+  })
+})
+
+describe('createFunction', () => {
+  it('creates a function with defaults', () => {
+    const f = createFunction('abort')
+    expect(f.cmp_type).toBe('Function')
+    expect(f.name).toBe('abort')
+    expect(f.params).toEqual([])
+    expect(f.returnParams).toBeNull()
+    expect(f.mutability).toBe('write')
+    expect(f.acceptsValue).toBe(false)
+    expect(f.visibility).toBe('external')
+    expect(f.guards).toEqual([])
+    expect(f.body).toEqual({ type: 'Block', statements: [] })
+    expect(typeof f.id).toBe('string')
+    expect(f.id).toMatch(/^function_/)
+  })
+
+  it('accepts guards and mutability overrides', () => {
+    const guard = createGuardRef('guard_abc', ['State.Created'])
+    const f = createFunction('confirmPurchase', { mutability: 'write', acceptsValue: true, guards: [guard] })
+    expect(f.guards).toEqual([guard])
+    expect(f.acceptsValue).toBe(true)
+  })
+
+  it('rejects an invalid mutability value', () => {
+    expect(() => createFunction('f', { mutability: 'nope' })).toThrow(/Invalid mutability "nope"/)
+  })
+
+  it('rejects an invalid visibility value', () => {
+    expect(() => createFunction('f', { visibility: 'public' })).toThrow(/Invalid visibility "public"/)
+  })
+})
+
+describe('createConstructor', () => {
+  it('creates a constructor with defaults', () => {
+    const c = createConstructor()
+    expect(c.cmp_type).toBe('Constructor')
+    expect(c.params).toEqual([])
+    expect(c.mutability).toBe('write')
+    expect(c.acceptsValue).toBe(false)
+    expect(c.guards).toEqual([])
+    expect(c.body).toEqual({ type: 'Block', statements: [] })
+    expect(typeof c.id).toBe('string')
+    expect(c.id).toMatch(/^constructor_/)
+    expect(c.name).toBeUndefined()
+  })
+
+  it('rejects an invalid mutability value', () => {
+    expect(() => createConstructor({ mutability: 'nope' })).toThrow(/Invalid mutability "nope"/)
+  })
+})
+
+describe('createEvent', () => {
+  it('creates an event with defaults', () => {
+    const e = createEvent('Aborted')
+    expect(e.cmp_type).toBe('Event')
+    expect(e.parameters).toEqual([])
+    expect(typeof e.id).toBe('string')
+    expect(e.id).toMatch(/^event_/)
+  })
+
+  it('accepts typed parameters', () => {
+    const param = createParameter('buyer', primitiveType('address'))
+    const e = createEvent('PurchaseConfirmed', { parameters: [param] })
+    expect(e.parameters).toEqual([param])
+  })
+})
+
+describe('createErrorDeclaration', () => {
+  it('creates an error declaration with defaults', () => {
+    const err = createErrorDeclaration('OnlySeller')
+    expect(err.cmp_type).toBe('ErrorDeclaration')
+    expect(err.parameters).toEqual([])
+    expect(typeof err.id).toBe('string')
+    expect(err.id).toMatch(/^errordeclaration_/)
+  })
+
+  it('accepts typed parameters', () => {
+    const param = createParameter('value', primitiveType('uint', { size: 256 }))
+    const err = createErrorDeclaration('ValueNotEven', { parameters: [param] })
+    expect(err.parameters).toEqual([param])
+  })
+})
