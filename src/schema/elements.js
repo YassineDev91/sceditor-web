@@ -46,3 +46,60 @@ export function createGuardRef(guardId, args = []) {
   }
   return { ref: guardId, args }
 }
+
+const MUTABILITY_VALUES = ['pure', 'view', 'write']
+const VISIBILITY_VALUES = ['external', 'internal']
+
+function assertMutability(mutability) {
+  if (!MUTABILITY_VALUES.includes(mutability)) {
+    throw new Error(`Invalid mutability "${mutability}". Expected one of: ${MUTABILITY_VALUES.join(', ')}`)
+  }
+}
+
+function assertVisibility(visibility) {
+  if (!VISIBILITY_VALUES.includes(visibility)) {
+    throw new Error(`Invalid visibility "${visibility}". Expected one of: ${VISIBILITY_VALUES.join(', ')}`)
+  }
+}
+
+export function createFunction(name, {
+  x = 0,
+  y = 0,
+  params = [],
+  returnParams = null,
+  mutability = 'write',
+  acceptsValue = false,
+  visibility = 'external',
+  guards = [],
+  body = { type: 'Block', statements: [] },
+} = {}) {
+  assertMutability(mutability)
+  assertVisibility(visibility)
+  return baseElement('Function', name, x, y, {
+    params, returnParams, mutability, acceptsValue, visibility, guards, body,
+  })
+}
+
+export function createConstructor({
+  x = 0,
+  y = 0,
+  params = [],
+  mutability = 'write',
+  acceptsValue = false,
+  guards = [],
+  body = { type: 'Block', statements: [] },
+} = {}) {
+  assertMutability(mutability)
+  return {
+    id: createId('constructor'),
+    cmp_type: 'Constructor',
+    x,
+    y,
+    description: '',
+    params,
+    mutability,
+    acceptsValue,
+    guards,
+    body,
+  }
+}

@@ -9,6 +9,8 @@ import {
   createEnum,
   createGuard,
   createGuardRef,
+  createFunction,
+  createConstructor,
 } from './elements.js'
 
 describe('createParameter', () => {
@@ -123,5 +125,56 @@ describe('createGuardRef', () => {
 
   it('rejects a missing guard id', () => {
     expect(() => createGuardRef('')).toThrow(/requires a guard id/)
+  })
+})
+
+describe('createFunction', () => {
+  it('creates a function with defaults', () => {
+    const f = createFunction('abort')
+    expect(f.cmp_type).toBe('Function')
+    expect(f.name).toBe('abort')
+    expect(f.params).toEqual([])
+    expect(f.returnParams).toBeNull()
+    expect(f.mutability).toBe('write')
+    expect(f.acceptsValue).toBe(false)
+    expect(f.visibility).toBe('external')
+    expect(f.guards).toEqual([])
+    expect(f.body).toEqual({ type: 'Block', statements: [] })
+    expect(typeof f.id).toBe('string')
+    expect(f.id).toMatch(/^function_/)
+  })
+
+  it('accepts guards and mutability overrides', () => {
+    const guard = createGuardRef('guard_abc', ['State.Created'])
+    const f = createFunction('confirmPurchase', { mutability: 'write', acceptsValue: true, guards: [guard] })
+    expect(f.guards).toEqual([guard])
+    expect(f.acceptsValue).toBe(true)
+  })
+
+  it('rejects an invalid mutability value', () => {
+    expect(() => createFunction('f', { mutability: 'nope' })).toThrow(/Invalid mutability "nope"/)
+  })
+
+  it('rejects an invalid visibility value', () => {
+    expect(() => createFunction('f', { visibility: 'public' })).toThrow(/Invalid visibility "public"/)
+  })
+})
+
+describe('createConstructor', () => {
+  it('creates a constructor with defaults', () => {
+    const c = createConstructor()
+    expect(c.cmp_type).toBe('Constructor')
+    expect(c.params).toEqual([])
+    expect(c.mutability).toBe('write')
+    expect(c.acceptsValue).toBe(false)
+    expect(c.guards).toEqual([])
+    expect(c.body).toEqual({ type: 'Block', statements: [] })
+    expect(typeof c.id).toBe('string')
+    expect(c.id).toMatch(/^constructor_/)
+    expect(c.name).toBeUndefined()
+  })
+
+  it('rejects an invalid mutability value', () => {
+    expect(() => createConstructor({ mutability: 'nope' })).toThrow(/Invalid mutability "nope"/)
   })
 })
