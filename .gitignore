@@ -30,6 +30,7 @@ coverage
 *.tsbuildinfo
 .env
 .claude/
+.superpowers/
 
 # Archive/backup files
 *.zip
