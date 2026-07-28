@@ -7,6 +7,8 @@ import {
   createStruct,
   createEnumValue,
   createEnum,
+  createGuard,
+  createGuardRef,
 } from './elements.js'
 
 describe('createParameter', () => {
@@ -87,5 +89,39 @@ describe('createEnum', () => {
   it('accepts values', () => {
     const e = createEnum('State', { values: [createEnumValue('Created'), createEnumValue('Locked')] })
     expect(e.values).toEqual([{ name: 'Created' }, { name: 'Locked' }])
+  })
+})
+
+describe('createGuard', () => {
+  it('creates a guard with defaults', () => {
+    const g = createGuard('OnlySeller')
+    expect(g.cmp_type).toBe('Guard')
+    expect(g.name).toBe('OnlySeller')
+    expect(g.parameters).toEqual([])
+    expect(g.body).toEqual({ type: 'Block', statements: [] })
+    expect(typeof g.id).toBe('string')
+    expect(g.id).toMatch(/^guard_/)
+  })
+
+  it('accepts parameters and a body', () => {
+    const param = createParameter('state_', primitiveType('uint'))
+    const body = { type: 'Block', statements: [{ cmp_type: 'ConditionStatement' }] }
+    const g = createGuard('InState', { parameters: [param], body })
+    expect(g.parameters).toEqual([param])
+    expect(g.body).toEqual(body)
+  })
+})
+
+describe('createGuardRef', () => {
+  it('references a guard by id with no args', () => {
+    expect(createGuardRef('guard_abc')).toEqual({ ref: 'guard_abc', args: [] })
+  })
+
+  it('references a guard by id with args', () => {
+    expect(createGuardRef('guard_abc', ['State.Created'])).toEqual({ ref: 'guard_abc', args: ['State.Created'] })
+  })
+
+  it('rejects a missing guard id', () => {
+    expect(() => createGuardRef('')).toThrow(/requires a guard id/)
   })
 })

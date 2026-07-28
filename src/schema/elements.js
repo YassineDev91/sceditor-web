@@ -35,3 +35,14 @@ export function createEnumValue(name) {
 export function createEnum(name, { x = 0, y = 0, values = [] } = {}) {
   return baseElement('Enum', name, x, y, { values })
 }
+
+export function createGuard(name, { x = 0, y = 0, parameters = [], body = { type: 'Block', statements: [] } } = {}) {
+  return baseElement('Guard', name, x, y, { parameters, body })
+}
+
+export function createGuardRef(guardId, args = []) {
+  if (!guardId) {
+    throw new Error('createGuardRef requires a guard id')
+  }
+  return { ref: guardId, args }
+}
