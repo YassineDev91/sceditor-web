@@ -85,13 +85,19 @@ const rectConfig = computed(() => ({
     // dash: [3, 2],
 }));
 
-const nameConfig = computed(() => ({
-    x:  35,
-    y:  10,
-    fontSize: 12,
-    text: props.name,
-    data: props.data
-}));
+const nameConfig = computed(() => {
+    const badgeReserve = (isReadOnly.value ? 30 : 0) + (isPayable.value ? 20 : 0);
+    return {
+        x: 35,
+        y: 10,
+        fontSize: 12,
+        text: props.name,
+        data: props.data,
+        width: rectConfig.value.width - 35 - 10 - badgeReserve,
+        ellipsis: true,
+        wrap: 'none',
+    };
+});
 
 const mutabilityBadgeConfig = computed(() => ({
     x: rectConfig.value.width - 28,
@@ -111,14 +117,14 @@ const payableBadgeConfig = computed(() => ({
 
 const guardChipConfig = computed(() => ({
     x: 5,
-    y: baseHeight - 14,
+    y: dynamicHeight.value - guardRowHeight + 2,
     text: guardNames.value.join(', '),
     fontSize: 9,
     fill: '#6b7280',
     width: maxWidth.value - 10,
     ellipsis: true,
+    wrap: 'none',
 }));
-
 
 const returnConfig = computed(() => ({
 
