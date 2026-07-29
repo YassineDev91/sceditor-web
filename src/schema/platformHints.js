@@ -1,4 +1,4 @@
-const KNOWN_TARGETS = ['solidity', 'vyper', 'ink', 'solana']
+const KNOWN_TARGETS = ['solidity', 'ink', 'solana']
 
 export function withPlatformHints(element, target, hints) {
   if (!KNOWN_TARGETS.includes(target)) {

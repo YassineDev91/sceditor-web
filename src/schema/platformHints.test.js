@@ -22,10 +22,10 @@ describe('withPlatformHints', () => {
 
   it('preserves other targets when adding a new one', () => {
     const element = { platformHints: { solidity: { visibility: 'external' } } }
-    const result = withPlatformHints(element, 'vyper', { decorator: "@nonreentrant('lock')" })
+    const result = withPlatformHints(element, 'ink', { decorator: "@nonreentrant('lock')" })
     expect(result.platformHints).toEqual({
       solidity: { visibility: 'external' },
-      vyper: { decorator: "@nonreentrant('lock')" },
+      ink: { decorator: "@nonreentrant('lock')" },
     })
   })
 
