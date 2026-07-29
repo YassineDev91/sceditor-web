@@ -31,6 +31,20 @@
         class="bg-slate-800 input border  p-1 rounded outline-none border-slate-600 focus:border-blue-600 mb-3" />
     </template>
 
+    <template v-if="element.cmp_type == 'RevertStatement'">
+      <label>Error:</label>
+      <select v-if="fileStore.contract.errorDeclarations.length > 0" v-model="element.errorRef"
+        class="bg-slate-800 input border p-1 rounded outline-none border-slate-600 focus:border-blue-600 mb-3">
+        <option value="" disabled>Select an error</option>
+        <option v-for="err in fileStore.contract.errorDeclarations" :key="err.id" :value="err.id">{{ err.name }}</option>
+      </select>
+      <p v-else class="text-xs text-gray-500 mb-3">No errors declared — add one on the structural layer first.</p>
+      <label>Args (comma-separated):</label>
+      <input :value="(element.args || []).join(',')"
+        @change="e => element.args = e.target.value.split(',').map(s => s.trim()).filter(Boolean)"
+        class="bg-slate-800 input border  p-1 rounded outline-none border-slate-600 focus:border-blue-600 mb-3" />
+    </template>
+
     <template v-if="element.cmp_type == 'ConditionStatement'">
       <h1 class="my-1">Condition</h1>
       <div class="grid grid-cols-3 gap-1">

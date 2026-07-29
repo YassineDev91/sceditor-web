@@ -5,6 +5,7 @@ import AssignmentStatement from './AssignmentStatement.vue'
 import ReturnStatement from './ReturnStatement.vue'
 import EmitStatement from './EmitStatement.vue'
 import CallStatement from './CallStatement.vue'
+import RevertStatement from './RevertStatement.vue'
 
 import LoopStatement from './LoopStatement.vue'
 import ConditionStatement from './ConditionStatement.vue'
@@ -22,6 +23,7 @@ const componentMap = {
   ReturnStatement,
   EmitStatement,
   CallStatement,
+  RevertStatement,
   ConditionStatement,
   LoopStatement
 }

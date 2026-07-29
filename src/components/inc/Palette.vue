@@ -44,6 +44,7 @@ const elements = [
     { label: 'Call', icon: 'callStatementIcon', type: 'call', stage: 'FD', action: () => createStatement('call') },
     { label: 'Condition', icon: 'git', type: 'star', stage: 'FD', action: () => createStatement('condition') },
     { label: 'Emit', icon: 'emit', type: 'arrow', stage: 'FD', action: () => createStatement('emit') },
+    { label: 'Revert', icon: 'error', type: 'star', stage: 'FD', action: () => createStatement('revert') },
     { label: 'Loop', icon: 'loop', type: 'star', stage: 'FD', action: () => createStatement('loop') },
     { label: 'Literal', icon: 'three-point', type: 'star', stage: 'FD', action: () => createStatement('literal') },
 ]
@@ -123,6 +124,15 @@ function createStatement(type) {
             fileStore.selectedFunction.body.statements.push({
                 cmp_type: "EmitStatement",
                 eventRef: null,
+                args: [],
+                description:""
+            })
+            break;
+        case "revert":
+            console.log(`creating ${type} statement ...`);
+            fileStore.selectedFunction.body.statements.push({
+                cmp_type: "RevertStatement",
+                errorRef: null,
                 args: [],
                 description:""
             })
