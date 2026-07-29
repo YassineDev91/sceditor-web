@@ -113,6 +113,33 @@
             </div>
         </div>
 
+        <!-- Verify Server Configuration -->
+        <div class="space-y-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <h5 class="font-medium text-gray-900 dark:text-white">Verify Server</h5>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+                Generated code is compiled through this service before being shown as verified —
+                a separate self-hosted service from the LLM proxy above, with its own shared secret.
+            </p>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Verify URL
+                </label>
+                <input type="text" v-model="settingsStore.llm.verify.url" @blur="saveSettings"
+                    placeholder="http://localhost:4100"
+                    class="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2" />
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Shared Secret
+                </label>
+                <input type="password" v-model="settingsStore.llm.verify.secret" @blur="saveSettings"
+                    placeholder="Matches VERIFY_SHARED_SECRET on the server"
+                    class="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2" />
+            </div>
+        </div>
+
         <!-- Test Connection Button -->
         <div class="pt-3">
             <button @click="testConnection" :disabled="testingConnection"
