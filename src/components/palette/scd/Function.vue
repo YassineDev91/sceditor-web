@@ -6,6 +6,9 @@
         <v-rect :config="returnConfig"></v-rect>
         <v-rect :config="selectionConfig" v-if="selected"></v-rect>
         <v-image :config="iconConfig" />
+        <v-text v-if="isReadOnly" :config="mutabilityBadgeConfig" />
+        <v-text v-if="isPayable" :config="payableBadgeConfig" />
+        <v-text v-if="guardNames.length > 0" :config="guardChipConfig" />
         <!-- Parameters -->
         <Parameter v-for="param in params" :key="param.id" :name="param.name" :x="props.x" :y="props.y - 20" />
 
@@ -31,6 +34,14 @@ const emit = defineEmits(['click', 'dragend', 'dblclick']);
 
 const fileStore = useContractStorage()
 
+const guardNames = computed(() =>
+  (props.data.guards || [])
+    .map(g => fileStore.contract.guards.find(guard => guard.id === g.ref)?.name)
+    .filter(Boolean)
+)
+const isPayable = computed(() => props.data.acceptsValue === true)
+const isReadOnly = computed(() => props.data.mutability && props.data.mutability !== 'write')
+
 const groupConfig = computed(() => ({
     x: props.x,
     y: props.y,
@@ -44,8 +55,10 @@ const maxWidth = ref(170);
 const baseHeight = 50;       // fixed top area
 const statementHeight = 30;  // height per statement
 
+const guardRowHeight = 18;
 const dynamicHeight = computed(() => {
-    return baseHeight + (props.statements?.length || 0) * statementHeight;
+    const guardsHeight = guardNames.value.length > 0 ? guardRowHeight : 0;
+    return baseHeight + guardsHeight + (props.statements?.length || 0) * statementHeight;
 });
 
 const props = defineProps({
@@ -78,6 +91,32 @@ const nameConfig = computed(() => ({
     fontSize: 12,
     text: props.name,
     data: props.data
+}));
+
+const mutabilityBadgeConfig = computed(() => ({
+    x: rectConfig.value.width - 28,
+    y: 10,
+    text: props.data.mutability === 'pure' ? 'pure' : 'view',
+    fontSize: 9,
+    fill: '#3b82f6',
+}));
+
+const payableBadgeConfig = computed(() => ({
+    x: rectConfig.value.width - (isReadOnly.value ? 55 : 28),
+    y: 10,
+    text: '₿',
+    fontSize: 11,
+    fill: '#d97706',
+}));
+
+const guardChipConfig = computed(() => ({
+    x: 5,
+    y: baseHeight - 14,
+    text: guardNames.value.join(', '),
+    fontSize: 9,
+    fill: '#6b7280',
+    width: maxWidth.value - 10,
+    ellipsis: true,
 }));
 
 
