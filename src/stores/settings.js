@@ -9,20 +9,20 @@ export const useSettingsStore = defineStore("settings", {
       llm: {
         provider: import.meta.env.VITE_AI_PROVIDER || "ollama",
         ollama: {
-          url: import.meta.env.VITE_OLLAMA_URL || "http://localhost:11434",
           model: import.meta.env.VITE_OLLAMA_MODEL || "llama3",
         },
         gemini: {
-          apiKey: import.meta.env.VITE_GEMINI_API_KEY || "",
           model: import.meta.env.VITE_GEMINI_MODEL || "gemini-pro",
         },
         openai: {
-          apiKey: import.meta.env.VITE_OPENAI_API_KEY || "",
           model: import.meta.env.VITE_OPENAI_MODEL || "gpt-4",
         },
         anthropic: {
-          apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY || "",
           model: import.meta.env.VITE_ANTHROPIC_MODEL || "claude-3-5-sonnet-20241022",
+        },
+        proxy: {
+          url: import.meta.env.VITE_PROXY_URL || "http://localhost:4000",
+          secret: "",
         },
       },
       // Editor Preferences
@@ -56,7 +56,7 @@ export const useSettingsStore = defineStore("settings", {
       this.saveSettings();
     },
 
-    // Update LLM configuration
+    // Update LLM configuration (also used for the shared "proxy" config)
     updateLLMConfig(provider, config) {
       if (this.llm[provider]) {
         this.llm[provider] = { ...this.llm[provider], ...config };
@@ -78,20 +78,20 @@ export const useSettingsStore = defineStore("settings", {
       this.llm = {
         provider: "ollama",
         ollama: {
-          url: "http://localhost:11434",
           model: "llama3",
         },
         gemini: {
-          apiKey: "",
           model: "gemini-pro",
         },
         openai: {
-          apiKey: "",
           model: "gpt-4",
         },
         anthropic: {
-          apiKey: "",
           model: "claude-3-5-sonnet-20241022",
+        },
+        proxy: {
+          url: "http://localhost:4000",
+          secret: "",
         },
       };
 
@@ -113,36 +113,38 @@ export const useSettingsStore = defineStore("settings", {
       console.log("🔄 Settings reset to defaults");
     },
 
-    // Test LLM connection
+    // Test the proxy connection (and, transitively, whichever provider is selected)
     async testLLMConnection() {
       const provider = this.llm.provider;
       try {
-        if (provider === "ollama") {
-          const response = await fetch(`${this.llm.ollama.url}/api/tags`);
-          if (response.ok) {
-            const data = await response.json();
-            return { success: true, message: `Connected! Found ${data.models?.length || 0} models.` };
-          }
-        } else if (provider === "gemini") {
-          if (!this.llm.gemini.apiKey) {
-            return { success: false, message: "API key is required" };
-          }
-          // Simple test - just verify key format
-          return { success: true, message: "API key configured" };
-        } else if (provider === "openai") {
-          if (!this.llm.openai.apiKey) {
-            return { success: false, message: "API key is required" };
-          }
-          return { success: true, message: "API key configured" };
-        } else if (provider === "anthropic") {
-          if (!this.llm.anthropic.apiKey) {
-            return { success: false, message: "API key is required" };
-          }
-          return { success: true, message: "API key configured" };
+        const response = await fetch(`${this.llm.proxy.url}/api/status`, {
+          headers: { "X-Proxy-Secret": this.llm.proxy.secret },
+        });
+
+        if (response.status === 401) {
+          return { success: false, message: "Proxy authentication failed — check your shared secret in Settings." };
         }
-        return { success: false, message: "Unknown provider" };
+        if (!response.ok) {
+          return { success: false, message: `Proxy returned ${response.status}` };
+        }
+
+        const status = await response.json();
+        const providerStatus = status[provider];
+        if (!providerStatus) {
+          return { success: false, message: "Unknown provider" };
+        }
+
+        if (provider === "ollama") {
+          return providerStatus.reachable
+            ? { success: true, message: `Connected! Found ${providerStatus.models?.length || 0} models.` }
+            : { success: false, message: "Could not reach Ollama from the proxy server." };
+        }
+
+        return providerStatus.configured
+          ? { success: true, message: "API key configured on the server." }
+          : { success: false, message: `${provider} is not configured on the server.` };
       } catch (error) {
-        return { success: false, message: error.message };
+        return { success: false, message: "Could not reach the proxy server — is it running, and is the Proxy URL setting correct?" };
       }
     },
   },
