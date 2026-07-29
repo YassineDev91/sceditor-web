@@ -64,4 +64,29 @@ describe('POST /api/verify', () => {
     const body = await res.json()
     expect(body.error).toBe('compiler crashed')
   })
+
+  it('fails closed (503) and rejects every request when VERIFY_SHARED_SECRET is unset entirely', async () => {
+    const original = process.env.VERIFY_SHARED_SECRET
+    delete process.env.VERIFY_SHARED_SECRET
+    let unconfiguredServer
+    try {
+      const unconfiguredApp = createApp(mockAdapters)
+      unconfiguredServer = await new Promise((resolve) => {
+        const s = unconfiguredApp.listen(0, () => resolve(s))
+      })
+      const unconfiguredUrl = `http://localhost:${unconfiguredServer.address().port}`
+
+      const res = await fetch(`${unconfiguredUrl}/api/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Verify-Secret': 'anything' },
+        body: JSON.stringify({ language: 'fake', code: 'x' }),
+      })
+      expect(res.status).toBe(503)
+      const body = await res.json()
+      expect(body.error).toMatch(/not configured with a shared secret/)
+    } finally {
+      process.env.VERIFY_SHARED_SECRET = original
+      if (unconfiguredServer) await new Promise((resolve) => unconfiguredServer.close(resolve))
+    }
+  })
 })

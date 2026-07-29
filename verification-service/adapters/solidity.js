@@ -13,5 +13,10 @@ export async function compile(code) {
     return { success: false, errors: errors.map((e) => e.formattedMessage).join('\n') }
   }
 
+  const contracts = output.contracts?.['Contract.sol'] || {}
+  if (Object.keys(contracts).length === 0) {
+    return { success: false, errors: 'No contract definition was found in the generated source.' }
+  }
+
   return { success: true, errors: null }
 }

@@ -39,11 +39,14 @@
     <Drawer v-model:open="showDrawer">
         <div class="bg-slate-800 border-solid border-white outline-1 w-full h-full rounded-md flex flex-col">
             <div v-if="verified !== null" class="px-3 pt-3">
-                <span v-if="verified" class="inline-flex items-center gap-1 text-green-400 text-xs font-medium">
+                <span v-if="verified === 'ok'" class="inline-flex items-center gap-1 text-green-400 text-xs font-medium">
                     ✓ Verified — compiles successfully
                 </span>
-                <span v-else class="inline-flex items-center gap-1 text-red-400 text-xs font-medium">
+                <span v-else-if="verified === 'failed'" class="inline-flex items-center gap-1 text-red-400 text-xs font-medium">
                     ✗ Not verified — compilation failed after {{ attempts.length }} attempt(s)
+                </span>
+                <span v-else class="inline-flex items-center gap-1 text-yellow-400 text-xs font-medium">
+                    ⚠ Could not verify — see error below
                 </span>
             </div>
             <div v-if="attempts.length > 1" class="px-3 pt-2 text-xs text-gray-400 space-y-1">
@@ -230,16 +233,20 @@ async function generate() {
     });
 
     attempts.value = result.attempts;
-    verified.value = result.success;
 
     if (result.success) {
+        verified.value = 'ok';
         generatedCode.value = result.code;
         console.log("✅ Code generated and verified successfully");
-    } else if (result.code) {
+    } else if (result.attempts.length > 0 && result.attempts.every(a => !a.success) && result.code) {
+        // genuinely exhausted all compile attempts — every recorded attempt actually ran and failed to compile
+        verified.value = 'failed';
         generatedCode.value = result.code;
         console.warn("⚠️ Code generated but did not pass verification after all attempts:", result.finalError);
     } else {
-        generatedCode.value = `Error generating code: ${result.finalError}\n\nPlease check:\n- Your provider/model configuration in Settings\n- The proxy server and verify server are both running and reachable\n- The Proxy/Verify URLs and Shared Secrets in Settings are correct\n- Ollama is running locally (if the proxy is configured to reach it)`;
+        // infra error: proxy/verify-service unreachable, or generate/verify threw before completing an attempt
+        verified.value = 'error';
+        generatedCode.value = result.code || `Error generating code: ${result.finalError}\n\nPlease check:\n- Your provider/model configuration in Settings\n- The proxy server and verify server are both running and reachable\n- The Proxy/Verify URLs and Shared Secrets in Settings are correct\n- Ollama is running locally (if the proxy is configured to reach it)`;
         console.error("❌ Error generating code:", result.finalError);
     }
 }

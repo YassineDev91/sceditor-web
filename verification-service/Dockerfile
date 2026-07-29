@@ -1,9 +1,15 @@
-FROM rust:1.79-bookworm
+# Newer LTS-ish Rust than the original 1.79 pin — cargo-contract's current MSRV
+# tends to outpace older Rust releases. This may still need adjustment to match
+# whatever cargo-contract/ink! version is actually targeted at deploy time.
+FROM rust:1.82-bookworm
 
 # Node.js + bun (for Express + solc)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && npm install -g bun
+
+# ink! contracts compile to WASM — cargo-contract build requires this target.
+RUN rustup target add wasm32-unknown-unknown
 
 # cargo-contract (ink!)
 RUN cargo install cargo-contract --locked

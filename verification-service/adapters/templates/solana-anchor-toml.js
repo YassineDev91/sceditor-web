@@ -29,7 +29,13 @@ no-entrypoint = []
 no-idl = []
 cpi = ["no-entrypoint"]
 default = []
+idl-build = ["anchor-lang/idl-build"]
 
 [dependencies]
 anchor-lang = "0.30.1"
+`
+
+export const WORKSPACE_CARGO_TOML = `[workspace]
+members = ["programs/*"]
+resolver = "2"
 `

@@ -60,8 +60,12 @@ describe('solana adapter', () => {
     )
     const writtenPaths = writeFile.mock.calls.map((call) => call[0])
     expect(writtenPaths.some((p) => p.endsWith('Anchor.toml'))).toBe(true)
-    expect(writtenPaths.some((p) => p.endsWith('Cargo.toml'))).toBe(true)
     expect(writtenPaths.some((p) => p.endsWith('lib.rs'))).toBe(true)
+    // both the workspace root Cargo.toml and the nested program Cargo.toml must be written
+    const cargoTomlPaths = writtenPaths.filter((p) => p.endsWith('Cargo.toml'))
+    expect(cargoTomlPaths).toHaveLength(2)
+    expect(cargoTomlPaths.some((p) => p.includes(path.join('programs', 'contract')))).toBe(true)
+    expect(cargoTomlPaths.some((p) => !p.includes('programs'))).toBe(true)
   })
 
   it('runs anchor build scoped to the scaffolded workspace root', async () => {

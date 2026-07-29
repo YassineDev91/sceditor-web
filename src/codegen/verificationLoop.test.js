@@ -74,6 +74,7 @@ describe('runVerificationLoop', () => {
     })
 
     expect(result.success).toBe(false)
+    expect(result.code).toBeNull()
     expect(result.attempts).toHaveLength(0)
     expect(result.finalError).toContain('proxy unreachable')
     expect(verify).not.toHaveBeenCalled()
@@ -92,6 +93,7 @@ describe('runVerificationLoop', () => {
     })
 
     expect(result.success).toBe(false)
+    expect(result.code).toBe('some code')
     expect(result.attempts).toHaveLength(0)
     expect(result.finalError).toContain('verification service unreachable')
     expect(generate).toHaveBeenCalledTimes(1)

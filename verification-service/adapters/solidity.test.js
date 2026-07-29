@@ -39,4 +39,10 @@ describe('solidity adapter', () => {
     expect(result.success).toBe(false)
     expect(result.errors.length).toBeGreaterThan(0)
   })
+
+  it('reports failure when the source compiles cleanly but contains no contract definition', async () => {
+    const result = await compile('pragma solidity ^0.8.0;\n// no contract here')
+    expect(result.success).toBe(false)
+    expect(result.errors).toContain('No contract definition')
+  })
 })

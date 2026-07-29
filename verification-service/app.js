@@ -8,7 +8,10 @@ export function createApp(adapters) {
 
   app.use((req, res, next) => {
     const expected = process.env.VERIFY_SHARED_SECRET
-    if (expected && req.header('X-Verify-Secret') !== expected) {
+    if (!expected) {
+      return res.status(503).json({ error: 'Verification service is not configured with a shared secret (VERIFY_SHARED_SECRET) — refusing all requests.' })
+    }
+    if (req.header('X-Verify-Secret') !== expected) {
       return res.status(401).json({ error: 'Invalid or missing verify secret' })
     }
     next()
