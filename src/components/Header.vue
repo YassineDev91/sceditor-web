@@ -156,6 +156,9 @@ const importContractFromJson = () => {
       reader.onload = (e) => {
         try {
           const data = JSON.parse(e.target.result);
+          if (data.schemaVersion !== 2) {
+            alert("This file uses an older format — some fields may be missing or display incorrectly.");
+          }
           fileStore.contract = data;
           fileStore.contract.name = data.name || 'Imported Contract';
           console.log('Contract imported successfully:', fileStore.contract);
