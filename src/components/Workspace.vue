@@ -68,16 +68,21 @@
                         :selected="isElementSelected(enumItem)" @click="fileStore.showProperties(enumItem)"
                         @dragend="(e) => handleScdDragMove(e, enumItem)" />
 
-                    <Modifier v-for="modifier in fileStore.contract.modifiers" :key="modifier.name"
-                        :name="modifier.name" :data="modifier" :x="modifier.x" :y="modifier.y" :params="modifier.params"
-                        :statements="modifier.body.statements" :selected="isElementSelected(modifier)"
-                        @click="fileStore.showProperties(modifier)" @dblclick="showFunctionLayer(modifier)"
-                        @dragend="(e) => handleScdDragMove(e, modifier)" />
+                    <Guard v-for="guard in fileStore.contract.guards" :key="guard.id"
+                        :name="guard.name" :data="guard" :x="guard.x" :y="guard.y" :params="guard.parameters"
+                        :statements="guard.body.statements" :selected="isElementSelected(guard)"
+                        @click="fileStore.showProperties(guard)" @dblclick="showFunctionLayer(guard)"
+                        @dragend="(e) => handleScdDragMove(e, guard)" />
 
                     <ErrorDeclaration v-for="_error in fileStore.contract.errorDeclarations" :key="_error.name"
                         :name="_error.name" :data="_error" :x="_error.x" :y="_error.y" :literals="_error.literals"
                         :selected="isElementSelected(_error)" @click="fileStore.showProperties(_error)"
                         @dragend="(e) => handleScdDragMove(e, _error)" />
+
+                    <Event v-for="event in fileStore.contract.events" :key="event.id"
+                        :name="event.name" :data="event" :x="event.x" :y="event.y"
+                        :selected="isElementSelected(event)" @click="fileStore.showProperties(event)"
+                        @dragend="(e) => handleScdDragMove(e, event)" />
                 </v-layer>
 
                 <!-- Function Layer -->
@@ -128,8 +133,9 @@ import { useSettingsStore } from '@/stores/settings'
 import { ArrowLeftCircleIcon } from '@heroicons/vue/24/outline';
 import { useUIStore } from '@/stores/uiStore';
 import Enum from './palette/scd/Enum.vue';
-import Modifier from './palette/scd/Modifier.vue';
+import Guard from './palette/scd/Guard.vue';
 import ErrorDeclaration from './palette/scd/ErrorDeclaration.vue';
+import Event from './palette/scd/Event.vue';
 
 const fileStore = useContractStorage()
 const settingsStore = useSettingsStore()
@@ -472,45 +478,13 @@ const handleDrop = (event) => {
         }
     } else {
         if (item.label == "Struct") {
-            console.log("⚠️ struct created")
-            fileStore.contract.structs.push({
-                name: "new_struct",
-                cmp_type: "Struct",
-                x: pointerPosition.x,
-                y: pointerPosition.y,
-                literals: [],
-                description: "",
-            })
-            fileStore.saveHistory();
+            fileStore.createStructElement(pointerPosition);
         }
         if (item.label == "Variable") {
-            console.log("⚠️ Var created")
-            fileStore.contract.variables.push({
-                name: "new_variable",
-                cmp_type: "Variable",
-                type: {
-                    base: "String"
-                },
-                x: pointerPosition.x,
-                y: pointerPosition.y,
-                visibility: "public",
-                description: "",
-            })
-            fileStore.saveHistory();
+            fileStore.createVariableElement(pointerPosition);
         }
         if (item.label == "Function") {
-            fileStore.contract.functions.push({
-                name: "new_function",
-                cmp_type: "Function",
-                x: pointerPosition.x,
-                y: pointerPosition.y,
-                body: {
-                    "type": "Block",
-                    "statements": []
-                },
-                description: "",
-            })
-            fileStore.saveHistory();
+            fileStore.createFunctionElement(pointerPosition);
         } if (item.label == "Assignment") {
             console.log("creating assignment stmt!");
 
@@ -761,8 +735,9 @@ const selectElementsInBox = () => {
         ...fileStore.contract.structs || [],
         ...fileStore.contract.functions || [],
         ...fileStore.contract.enums || [],
-        ...fileStore.contract.modifiers || [],
+        ...fileStore.contract.guards || [],
         ...fileStore.contract.errorDeclarations || [],
+        ...fileStore.contract.events || [],
     ];
 
     if (fileStore.contract._constructor) {
@@ -920,8 +895,9 @@ const fitToScreen = () => {
         ...fileStore.contract.structs || [],
         ...fileStore.contract.functions || [],
         ...fileStore.contract.enums || [],
-        ...fileStore.contract.modifiers || [],
+        ...fileStore.contract.guards || [],
         ...fileStore.contract.errorDeclarations || [],
+        ...fileStore.contract.events || [],
     ];
 
     if (fileStore.contract._constructor) {
