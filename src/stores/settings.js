@@ -41,7 +41,23 @@ export const useSettingsStore = defineStore("settings", {
       },
     };
 
-    return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+    if (!saved) {
+      return defaults;
+    }
+
+    const parsed = JSON.parse(saved);
+    return {
+      ...defaults,
+      ...parsed,
+      llm: {
+        provider: parsed.llm?.provider ?? defaults.llm.provider,
+        ollama: { model: parsed.llm?.ollama?.model ?? defaults.llm.ollama.model },
+        gemini: { model: parsed.llm?.gemini?.model ?? defaults.llm.gemini.model },
+        openai: { model: parsed.llm?.openai?.model ?? defaults.llm.openai.model },
+        anthropic: { model: parsed.llm?.anthropic?.model ?? defaults.llm.anthropic.model },
+        proxy: { ...defaults.llm.proxy, ...parsed.llm?.proxy },
+      },
+    };
   },
   actions: {
     // Save settings to localStorage

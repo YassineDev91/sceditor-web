@@ -44,6 +44,47 @@ describe('llm state shape', () => {
   })
 })
 
+describe('migration from old-shape localStorage', () => {
+  it('backfills llm.proxy defaults and drops stale apiKey/ollama.url fields', () => {
+    const oldShapeBlob = {
+      llm: {
+        provider: 'openai',
+        gemini: { apiKey: 'old-gemini-key', model: 'gemini-pro' },
+        openai: { apiKey: 'old-openai-key', model: 'gpt-4' },
+        anthropic: { apiKey: 'old-anthropic-key', model: 'claude-3-5-sonnet-20241022' },
+        ollama: { url: 'http://localhost:11434', model: 'llama3' },
+      },
+      editor: {
+        autosaveEnabled: true,
+        autosaveInterval: 30000,
+        gridEnabled: true,
+        snapToGrid: false,
+        gridSize: 20,
+        theme: 'light',
+      },
+      general: { language: 'en', showWelcome: true },
+    }
+    localStorage.setItem('sceditor-settings', JSON.stringify(oldShapeBlob))
+
+    const store = useSettingsStore()
+
+    // proxy config must be backfilled with proper defaults, not left undefined
+    expect(store.llm.proxy).toBeDefined()
+    expect(store.llm.proxy.url).toBe('http://localhost:4000')
+    expect(store.llm.proxy.secret).toBe('')
+
+    // stale apiKey fields and ollama.url must not survive into the loaded state
+    expect(store.llm.gemini.apiKey).toBeUndefined()
+    expect(store.llm.openai.apiKey).toBeUndefined()
+    expect(store.llm.anthropic.apiKey).toBeUndefined()
+    expect(store.llm.ollama.url).toBeUndefined()
+
+    // fields that do still exist in the new shape should be preserved from the saved blob
+    expect(store.llm.provider).toBe('openai')
+    expect(store.llm.ollama.model).toBe('llama3')
+  })
+})
+
 describe('testLLMConnection', () => {
   it('reports proxy authentication failure on a 401', async () => {
     const store = useSettingsStore()
