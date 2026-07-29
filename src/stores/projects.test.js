@@ -94,6 +94,24 @@ describe('renameProject', () => {
   })
 })
 
+describe('switching projects flushes pending edits', () => {
+  it('does not lose an unsaved edit when switching to another project and back', async () => {
+    const projectsStore = useProjectsStore()
+    const contractStore = useContractStorage()
+    await projectsStore.createProject('Project A')
+    const idA = projectsStore.activeProjectId
+
+    // Simulate an edit that hasn't been explicitly autosaved yet (the debounce window)
+    contractStore.contract.variables.push({ id: 'v1', name: 'unsaved_var' })
+
+    await projectsStore.createProject('Project B')
+    await projectsStore.openProject(idA)
+
+    expect(contractStore.contract.variables).toHaveLength(1)
+    expect(contractStore.contract.variables[0].name).toBe('unsaved_var')
+  })
+})
+
 describe('deleteProject', () => {
   it('deletes a non-active project without touching the live contract', async () => {
     const projectsStore = useProjectsStore()

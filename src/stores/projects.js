@@ -30,7 +30,14 @@ export const useProjectsStore = defineStore("projects", {
       return record;
     },
 
+    async _flushActive() {
+      if (this.activeProjectId) {
+        await this.saveActiveProject();
+      }
+    },
+
     async createProject(name) {
+      await this._flushActive();
       const contractStore = useContractStorage();
       contractStore.initNewContract(name);
       const serialized = JSON.parse(JSON.stringify(contractStore.contract));
@@ -39,6 +46,7 @@ export const useProjectsStore = defineStore("projects", {
     },
 
     async createProjectFromContract(contract) {
+      await this._flushActive();
       const contractStore = useContractStorage();
       contractStore.contract = contract;
       contractStore.initHistory();
@@ -48,6 +56,7 @@ export const useProjectsStore = defineStore("projects", {
     },
 
     async openProject(id) {
+      await this._flushActive();
       const record = await getProject(id);
       if (!record) return;
       const contractStore = useContractStorage();
@@ -59,15 +68,17 @@ export const useProjectsStore = defineStore("projects", {
     async renameProject(id, name) {
       const trimmed = (name || "").trim();
       if (!trimmed) return;
-      const record = await getProject(id);
-      if (!record) return;
-      record.name = trimmed;
-      record.contract.name = trimmed;
-      record.updatedAt = Date.now();
-      await putProject(record);
       if (id === this.activeProjectId) {
         const contractStore = useContractStorage();
         contractStore.contract.name = trimmed;
+        await this.saveActiveProject();
+      } else {
+        const record = await getProject(id);
+        if (!record) return;
+        record.name = trimmed;
+        record.contract.name = trimmed;
+        record.updatedAt = Date.now();
+        await putProject(record);
       }
       await this.loadProjectList();
     },
@@ -85,6 +96,7 @@ export const useProjectsStore = defineStore("projects", {
     },
 
     async duplicateProject(id) {
+      await this._flushActive();
       const record = await getProject(id);
       if (!record) return;
       const newName = `${record.name} (copy)`;
