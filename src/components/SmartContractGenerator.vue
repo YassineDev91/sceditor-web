@@ -23,7 +23,6 @@
             <option value="ink">ink! for Polkadot</option>
             <option value="solana">Rust for Solana</option>
             <option value="solidity">Solidity for Ethereum</option>
-            <option value="vyper">Vyper for Ethereum</option>
         </select>
 
         <div class="flex flex-row space-x-2">
@@ -38,8 +37,22 @@
         </p>
     </div>
     <Drawer v-model:open="showDrawer">
-        <div class=" bg-slate-800 border-solid border-white outline-1 w-full h-full rounded-md ">
-            <div class="text-white text-sm p-3">
+        <div class="bg-slate-800 border-solid border-white outline-1 w-full h-full rounded-md flex flex-col">
+            <div v-if="verified !== null" class="px-3 pt-3">
+                <span v-if="verified" class="inline-flex items-center gap-1 text-green-400 text-xs font-medium">
+                    ✓ Verified — compiles successfully
+                </span>
+                <span v-else class="inline-flex items-center gap-1 text-red-400 text-xs font-medium">
+                    ✗ Not verified — compilation failed after {{ attempts.length }} attempt(s)
+                </span>
+            </div>
+            <div v-if="attempts.length > 1" class="px-3 pt-2 text-xs text-gray-400 space-y-1">
+                <div v-for="a in attempts" :key="a.attempt">
+                    Attempt {{ a.attempt }}: {{ a.success ? '✓ compiled' : '✗ failed' }}
+                    <span v-if="!a.success" class="text-gray-500">— {{ a.errors?.slice(0, 120) }}</span>
+                </div>
+            </div>
+            <div class="text-white text-sm p-3 overflow-auto flex-1">
                 <code v-html="highlightedCode"></code>
             </div>
         </div>
@@ -54,8 +67,11 @@ import { computed, ref, watch } from "vue";
 import Drawer from "./Drawer.vue";
 import hljs from "highlight.js";
 import 'highlight.js/styles/github-dark-dimmed.css';
+import { runVerificationLoop } from '@/codegen/verificationLoop'
 
 const generatedCode = ref("empty");
+const attempts = ref([]);
+const verified = ref(null);
 var showDrawer = ref(false)
 const fileStore = useContractStorage()
 const settingsStore = useSettingsStore()
@@ -147,6 +163,41 @@ async function callProxy(provider, model, prompt) {
     return data.code;
 }
 
+// Verify service API call handler
+async function verifyCode(language, code) {
+    const { url, secret } = settingsStore.llm.verify;
+    const response = await fetch(`${url}/api/verify`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Verify-Secret': secret,
+        },
+        body: JSON.stringify({ language, code }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+        throw new Error(data.error || `Verification request failed: ${response.status} ${response.statusText}`);
+    }
+
+    return data;
+}
+
+function buildFixPrompt(previousCode, errors) {
+    return `The following ${sc_language.value} smart contract failed to compile.
+
+<CODE>
+${previousCode}
+</CODE>
+
+<COMPILER_ERRORS>
+${errors}
+</COMPILER_ERRORS>
+
+Fix the code so it compiles successfully, while still implementing the same contract specification as before. Output only the corrected ${sc_language.value} smart contract code. Do not include explanations.`;
+}
+
 async function generate() {
     if (!selectedProvider.value) {
         alert("Please configure an LLM provider in Settings.");
@@ -165,19 +216,31 @@ async function generate() {
 
     showDrawer.value = true;
     generatedCode.value = "Generating code... Please wait.";
+    attempts.value = [];
+    verified.value = null;
 
     console.log(`Generating code using ${selectedProvider.value} (${selectedModel.value})`);
 
-    try {
-        const rawCode = await callProxy(selectedProvider.value, selectedModel.value, prompt.value);
+    const result = await runVerificationLoop({
+        language: sc_language.value,
+        buildPrompt: () => prompt.value,
+        buildFixPrompt,
+        generate: (p) => callProxy(selectedProvider.value, selectedModel.value, p).then(extractCode),
+        verify: verifyCode,
+    });
 
-        // Extract code from markdown blocks if present
-        generatedCode.value = extractCode(rawCode);
-        console.log("✅ Code generated successfully");
+    attempts.value = result.attempts;
+    verified.value = result.success;
 
-    } catch (error) {
-        console.error("❌ Error generating code:", error);
-        generatedCode.value = `Error generating code: ${error.message}\n\nPlease check:\n- Your provider/model configuration in Settings\n- The proxy server is running and reachable\n- The Proxy URL and Shared Secret settings are correct\n- Ollama is running locally (if the proxy is configured to reach it)`;
+    if (result.success) {
+        generatedCode.value = result.code;
+        console.log("✅ Code generated and verified successfully");
+    } else if (result.code) {
+        generatedCode.value = result.code;
+        console.warn("⚠️ Code generated but did not pass verification after all attempts:", result.finalError);
+    } else {
+        generatedCode.value = `Error generating code: ${result.finalError}\n\nPlease check:\n- Your provider/model configuration in Settings\n- The proxy server and verify server are both running and reachable\n- The Proxy/Verify URLs and Shared Secrets in Settings are correct\n- Ollama is running locally (if the proxy is configured to reach it)`;
+        console.error("❌ Error generating code:", result.finalError);
     }
 }
 
@@ -186,10 +249,10 @@ const highlightedCode = computed(() => {
 
     return highlighted
 });
-// Function to extract Solidity, Rust, or Vyper code from response
+// Function to extract Solidity or Rust code from response
 function extractCode(response) {
     // Try to extract code from markdown code blocks
-    const match = response.match(/```(?:solidity|rust|vyper|sol|rs)?\n?([\s\S]+?)\n?```/);
+    const match = response.match(/```(?:solidity|rust|sol|rs)?\n?([\s\S]+?)\n?```/);
     if (match) {
         return match[1].trim();
     }
