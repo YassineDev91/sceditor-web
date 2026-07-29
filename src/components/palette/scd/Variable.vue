@@ -11,6 +11,7 @@
 </template>
 <script setup>
 import { useContractStorage } from "@/stores/contract";
+import { formatTypeNode } from '@/schema/typeFormat'
 import { data } from "autoprefixer";
 import { computed, onMounted, ref } from "vue";
 import { useImage } from "vue-konva";
@@ -68,13 +69,21 @@ const textConfig = computed(() => ({
     data: props.data
 }))
 
+const typeText = computed(() =>
+  formatTypeNode(props.data.type, {
+    resolveRef: (id) =>
+      fileStore.contract.structs.find(s => s.id === id)?.name ||
+      fileStore.contract.enums.find(e => e.id === id)?.name ||
+      id,
+  })
+)
+
 const typeTextConfig = computed(() => ({
     x: typeMarginX,
     y: typeMarginY,
-    text: props.data.type.payable ? props.data.type.base + ' payable' : props.data.type.base,
+    text: typeText.value,
     fill: 'gray',
     fontSize: 12,
-    data: props.data.type.base
 }))
 const [image] = useImage("src/assets/icons/variable.svg")
 const iconConfig = ref({

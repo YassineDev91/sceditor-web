@@ -1,4 +1,4 @@
-<!-- EmitStatement.vue -->
+<!-- RevertStatement.vue -->
 <template>
 
     <v-group ref="groupRef" :config="groupConfig" @dragmove="(e) => emit('dragmove', e)" @mousedown="handleSelect">
@@ -6,17 +6,16 @@
         <v-text :config="textConfig"></v-text>
         <v-image :config="iconConfig"></v-image>
         <ContentRectangle :config="contentRect"></ContentRectangle>
-        <!-- <AddStatement ref="addStatementCmp" :coordinates="{ x: props.x + 30, y: props.y + 60 }"></AddStatement> -->
-
     </v-group>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useImage } from 'vue-konva';
-import ContentRectangle from './ContentRectangle.vue';
 import { useContractStorage } from '@/stores/contract';
+import ContentRectangle from './ContentRectangle.vue';
 const emit = defineEmits(['dragmove']);
+
 const fileStore = useContractStorage();
 
 const props = defineProps({
@@ -24,11 +23,6 @@ const props = defineProps({
     y: Number,
     statement: Object
 });
-
-const eventName = computed(() =>
-  (fileStore.contract.events || []).find(e => e.id === props.statement.eventRef)?.name || 'no event selected'
-);
-
 const groupRef = ref({})
 const rectRef = ref({})
 const rectConfig = ref({
@@ -37,8 +31,8 @@ const rectConfig = ref({
     width: 200,
     height: 80,
     cornerRadius: 5,
-    fill: "#FFDBD4",
-    stroke: "#FA9580",
+    fill: "#FDECEA",
+    stroke: "#E57373",
     strokeWidth: 1,
 
 })
@@ -48,17 +42,21 @@ const textConfig = ref({
     y: rectConfig.value.y + 17,
 
     fontSize: 13,
-    text: props.statement.cmp_type || 'EmitStatement',
+    text: props.statement.cmp_type || 'RevertStatement',
 })
+
+const errorName = computed(() =>
+  fileStore.contract.errorDeclarations.find(e => e.id === props.statement.errorRef)?.name || 'no error selected'
+);
 
 const contentRect = computed(() => ({
     x: props.x + 10,
     y: props.y + 30,
-    content: eventName.value,
+    content: errorName.value,
     height: 30,
     width: 180,
     fillColor: "#FEFDF8",
-    borderColor: "#FA9580",
+    borderColor: "#E57373",
     fontSize: 13,
     strokeWidth: 1,
 }))
@@ -67,7 +65,7 @@ const groupConfig = ref({
     y: props.y,
     draggable: true,
 })
-const [image] = useImage("src/assets/icons/emit_icon.png")
+const [image] = useImage("src/assets/icons/error.png")
 const iconConfig = ref({
     x: rectConfig.value.x + 10,
     y: rectConfig.value.y + 10,
@@ -82,9 +80,6 @@ function handleSelect() {
 }
 
 onMounted(() => {
-    console.log("emit rect x,y", rectConfig.value.x, rectConfig.value.y)
-    console.log("emit props x,y", props.x, props.y)
-
     groupRef.value.getNode().width(rectRef.value.getNode().width())
     groupRef.value.getNode().height(rectRef.value.getNode().height())
 })

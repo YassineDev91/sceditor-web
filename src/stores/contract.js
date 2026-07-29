@@ -1,5 +1,17 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import { createContract } from "@/schema/contract";
+import {
+  createVariable,
+  createStruct,
+  createFunction,
+  createConstructor,
+  createEnum,
+  createGuard,
+  createErrorDeclaration,
+  createEvent,
+} from "@/schema/elements";
+import { primitiveType } from "@/schema/types";
 
 export const useContractStorage = defineStore("contract", {
   state: () => {
@@ -19,6 +31,40 @@ export const useContractStorage = defineStore("contract", {
   actions: {
     logSomthing() {
       console.log("im calling from the store !");
+    },
+    initNewContract(name) {
+      this.contract = createContract(name);
+      this.contract._constructor = createConstructor({ x: 50, y: 120 });
+      this.clearHistory();
+      this.saveHistory();
+    },
+    createVariableElement({ x, y }) {
+      this.contract.variables.push(createVariable("new_variable", primitiveType("string"), { x, y }));
+      this.saveHistory();
+    },
+    createStructElement({ x, y }) {
+      this.contract.structs.push(createStruct("new_struct", { x, y }));
+      this.saveHistory();
+    },
+    createFunctionElement({ x, y }) {
+      this.contract.functions.push(createFunction("new_function", { x, y }));
+      this.saveHistory();
+    },
+    createEnumElement({ x, y }) {
+      this.contract.enums.push(createEnum("new_enum", { x, y }));
+      this.saveHistory();
+    },
+    createGuardElement({ x, y }) {
+      this.contract.guards.push(createGuard("new_guard", { x, y }));
+      this.saveHistory();
+    },
+    createErrorDeclarationElement({ x, y }) {
+      this.contract.errorDeclarations.push(createErrorDeclaration("new_error", { x, y }));
+      this.saveHistory();
+    },
+    createEventElement({ x, y }) {
+      this.contract.events.push(createEvent("new_event", { x, y }));
+      this.saveHistory();
     },
     showProperties(element, multiSelect = false) {
 
@@ -80,17 +126,16 @@ export const useContractStorage = defineStore("contract", {
       }
     },
     selectAll() {
-      // Select all elements on the current stage
       const allElements = [
         ...this.contract.variables || [],
         ...this.contract.structs || [],
         ...this.contract.functions || [],
         ...this.contract.enums || [],
-        ...this.contract.modifiers || [],
+        ...this.contract.guards || [],
         ...this.contract.errorDeclarations || [],
+        ...this.contract.events || [],
       ];
 
-      // Add constructor if it exists
       if (this.contract._constructor) {
         allElements.push(this.contract._constructor);
       }
@@ -99,10 +144,9 @@ export const useContractStorage = defineStore("contract", {
         el.isSelected = true;
       });
 
-      // Set entire array at once with NEW reference
       this.selectedElements = allElements;
 
-      console.log(`✅ Selected all ${this.selectedElements.length} elements`);
+      console.log(`✅ Selected all ${this.selectedElements.length} element(s)`);
     },
     showFunctionalDiagram(element) {
 
@@ -118,8 +162,14 @@ export const useContractStorage = defineStore("contract", {
         ...this.contract.variables,
         ...this.contract.structs,
         ...this.contract.functions,
-        this.contract.constructor
+        ...this.contract.enums,
+        ...this.contract.guards,
+        ...this.contract.errorDeclarations,
+        ...this.contract.events,
       ];
+      if (this.contract._constructor) {
+        all.push(this.contract._constructor);
+      }
 
       const target = all.find(el => el?.id === id);
       if (target) {
@@ -167,11 +217,14 @@ export const useContractStorage = defineStore("contract", {
           case "Enum":
             this.contract.enums = this.contract.enums.filter(e => e !== element);
             break;
-          case "Modifier":
-            this.contract.modifiers = this.contract.modifiers.filter(m => m !== element);
+          case "Guard":
+            this.contract.guards = this.contract.guards.filter(g => g !== element);
             break;
           case "ErrorDeclaration":
             this.contract.errorDeclarations = this.contract.errorDeclarations.filter(err => err !== element);
+            break;
+          case "Event":
+            this.contract.events = this.contract.events.filter(ev => ev !== element);
             break;
           default:
             console.warn("⚠️ Unknown element type:", type);
