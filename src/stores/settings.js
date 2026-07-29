@@ -24,6 +24,10 @@ export const useSettingsStore = defineStore("settings", {
           url: import.meta.env.VITE_PROXY_URL || "http://localhost:4000",
           secret: "",
         },
+        verify: {
+          url: import.meta.env.VITE_VERIFY_URL || "http://localhost:4100",
+          secret: "",
+        },
       },
       // Editor Preferences
       editor: {
@@ -56,6 +60,7 @@ export const useSettingsStore = defineStore("settings", {
         openai: { model: parsed.llm?.openai?.model ?? defaults.llm.openai.model },
         anthropic: { model: parsed.llm?.anthropic?.model ?? defaults.llm.anthropic.model },
         proxy: { ...defaults.llm.proxy, ...parsed.llm?.proxy },
+        verify: { ...defaults.llm.verify, ...parsed.llm?.verify },
       },
     };
   },
@@ -107,6 +112,10 @@ export const useSettingsStore = defineStore("settings", {
         },
         proxy: {
           url: "http://localhost:4000",
+          secret: "",
+        },
+        verify: {
+          url: "http://localhost:4100",
           secret: "",
         },
       };

@@ -44,6 +44,32 @@ describe('llm state shape', () => {
   })
 })
 
+describe('llm.verify config', () => {
+  it('has a default url and empty secret', () => {
+    const store = useSettingsStore()
+    expect(store.llm.verify.url).toBe('http://localhost:4100')
+    expect(store.llm.verify.secret).toBe('')
+  })
+
+  it('updateLLMConfig updates the verify config and persists it', () => {
+    const store = useSettingsStore()
+    store.updateLLMConfig('verify', { secret: 'my-secret' })
+    expect(store.llm.verify.secret).toBe('my-secret')
+    expect(store.llm.verify.url).toBe('http://localhost:4100')
+  })
+
+  it('backfills verify defaults for an old-shape saved blob with no verify key', () => {
+    // beforeEach already ran stubLocalStorage() + setActivePinia(createPinia()) for this test —
+    // just seed the fresh stub directly, no need to redo either.
+    localStorage.setItem('sceditor-settings', JSON.stringify({
+      llm: { provider: 'ollama', ollama: { model: 'llama3' }, proxy: { url: 'http://localhost:4000', secret: 'x' } },
+    }))
+    const store = useSettingsStore()
+    expect(store.llm.verify.url).toBe('http://localhost:4100')
+    expect(store.llm.verify.secret).toBe('')
+  })
+})
+
 describe('migration from old-shape localStorage', () => {
   it('backfills llm.proxy defaults and drops stale apiKey/ollama.url fields', () => {
     const oldShapeBlob = {
