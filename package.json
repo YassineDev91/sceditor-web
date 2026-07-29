@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "server": "node server/index.js"
+    "server": "node server/index.js",
+    "verify-service": "bun verification-service/index.js"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
