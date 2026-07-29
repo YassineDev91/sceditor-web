@@ -28,12 +28,13 @@ var fileStore = useContractStorage()
 
 const elements = [
     // SCD
-    { label: 'Struct', type: 'struct', icon: 'struct', stage: 'SCD', action: () => { createStruct() } },
-    { label: 'Variable', type: 'variable', icon: 'variable', stage: 'SCD', action: () => { createVariable() } },
-    { label: 'Function', type: 'function', icon: 'function', stage: 'SCD', action: () => { createFunction() } },
-    { label: 'Enum', type: 'enum', icon: 'enum', stage: 'SCD', action: () => { createEnum() }},
-    { label: 'Modifier', type: 'modifier', icon: 'modifier', stage: 'SCD', action: () => { createModifier() }},
-    { label: 'ErrorDeclaration', type: 'error', icon: 'error', stage: 'SCD', action: () => { createErrorDeclaration() }},
+    { label: 'Struct', type: 'struct', icon: 'struct', stage: 'SCD', action: () => { fileStore.createStructElement({ x: 100, y: 100 }) } },
+    { label: 'Variable', type: 'variable', icon: 'variable', stage: 'SCD', action: () => { fileStore.createVariableElement({ x: 100, y: 100 }) } },
+    { label: 'Function', type: 'function', icon: 'function', stage: 'SCD', action: () => { fileStore.createFunctionElement({ x: 100, y: 100 }) } },
+    { label: 'Enum', type: 'enum', icon: 'enum', stage: 'SCD', action: () => { fileStore.createEnumElement({ x: 100, y: 100 }) }},
+    { label: 'Guard', type: 'guard', icon: 'modifier', stage: 'SCD', action: () => { fileStore.createGuardElement({ x: 100, y: 100 }) }},
+    { label: 'ErrorDeclaration', type: 'error', icon: 'error', stage: 'SCD', action: () => { fileStore.createErrorDeclarationElement({ x: 100, y: 100 }) }},
+    { label: 'Event', type: 'event', icon: 'emit', stage: 'SCD', action: () => { fileStore.createEventElement({ x: 100, y: 100 }) }},
     { label: 'Literal', type: 'literal', icon: 'three-point', stage: 'SCD', },
     // {  label: 'Return', type: 'return', icon: '' },
     // {  label: 'Parameter', type: 'parameter', icon: '' },
@@ -57,82 +58,6 @@ function getPaletteElements() {
         return elm.stage == 'FD'
     }
     )
-}
-function createStruct() {
-    fileStore.contract.structs.push({
-        name: "new_struct",
-        cmp_type: "Struct",
-        literals: [],
-        x: 100,
-        y: 100,
-        cmp_type: "Struct",
-        details:"sdetails"
-    })
-    console.log("creating struct ...", fileStore.contract.structs);
-}
-
-function createVariable() {
-    fileStore.contract.variables.push({
-        name: "new_variable",
-        x: 100,
-        y: 100,
-        cmp_type: "Variable",
-        type: {
-            base: "",
-            payable: false
-        },
-        description:""
-    })
-}
-
-function createFunction() {
-    fileStore.contract.functions.push({
-        name: "new_function",
-        x: 100,
-        y: 100,
-        cmp_type: "Function",
-        body: {
-            "type": "Block",
-            "statements": []
-        },
-        description:""
-    })
-}
-
-function createEnum() {
-    fileStore.contract.enums.push({
-        name: "new_enum",
-        x: 100,
-        y: 100,
-        cmp_type: "Enum",
-        values: [],
-        description:""
-    })
-}
-
-function createModifier() {
-    fileStore.contract.modifiers.push({
-        name: "new_modifier",
-        x: 100,
-        y: 100,
-        cmp_type: "Modifier",
-        body: {
-            "type": "Block",
-            "statements": []
-        },
-        values: [],
-        parameters: [], 
-        description:""
-    })
-}
-function createErrorDeclaration() {
-    fileStore.contract.errorDeclarations.push({
-        name: "new_error",
-        x: 100,
-        y: 100,
-        cmp_type: "ErrorDeclaration",
-        description:""
-    })
 }
 
 function createStatement(type) {
