@@ -14,7 +14,6 @@ import { useContractStorage } from '@/stores/contract'
 import { useImage } from 'vue-konva'
 import { formatTypeNode } from '@/schema/typeFormat'
 
-
 const emit = defineEmits(['click', 'dragend'])
 const fileStore = useContractStorage()
 const props = defineProps({
@@ -28,23 +27,23 @@ const paramTypesText = computed(() =>
   (props.data.parameters || []).map(p => formatTypeNode(p.type)).join(', ')
 )
 
-const contentWidth = computed(() => Math.max(props.name.length * 9 + 60, paramTypesText.value.length * 7 + 80))
+const contentWidth = props.name.length * 9 + 60
 
 const groupConfig = computed(() => ({
   x: props.x,
   y: props.y,
   name: props.name,
-  type: 'ErrorDeclaration',
+  type: 'Event',
   draggable: true,
 }))
 
 const rectConfig = computed(() => ({
   x: 0,
   y: 0,
-  width: contentWidth.value,
+  width: contentWidth,
   height: 40,
-  fill: '#FDECEA',
-  stroke: '#E57373',
+  fill: '#E3F2FD',
+  stroke: '#64B5F6',
   cornerRadius: 5,
   strokeWidth: 1,
 }))
@@ -52,20 +51,20 @@ const rectConfig = computed(() => ({
 const textConfig = computed(() => ({
   x: 35,
   y: 15,
-  text: `error ${props.name}(${paramTypesText.value});`,
+  text: `event ${props.name}(${paramTypesText.value});`,
   fontSize: 12,
   fill: '#000',
 }))
 
 const selectionConfig = computed(() => ({
-    width: rectConfig.value.width, // Bind to dynamic maxWidth
-    height: rectConfig.value.height,
-    stroke: '#3498db',
-    cornerRadius: 5,
-    strokeWidth: 1.5,
-}));
+  width: rectConfig.value.width,
+  height: rectConfig.value.height,
+  stroke: '#3498db',
+  cornerRadius: 5,
+  strokeWidth: 1.5,
+}))
 
-const [image] = useImage("src/assets/icons/error.png")
+const [image] = useImage("src/assets/icons/emit.png")
 const iconConfig = ref({
   x: 5,
   y: 5,
@@ -73,5 +72,4 @@ const iconConfig = ref({
   width: 30,
   height: 30
 })
-
 </script>

@@ -33,7 +33,7 @@ const groupConfig = computed(() => ({
   x: props.x,
   y: props.y,
   name: props.name,
-  type: 'Modifier',
+  type: 'Guard',
   draggable: true,
 }))
 
@@ -67,7 +67,7 @@ const selectionRectConfig = computed(() => ({
 const titleConfig = ref({
   x: 30,
   y: 10,
-  text: props.name || 'modifier',
+  text: props.name || 'guard',
   fontSize: 12,
   fill: '#000',
 })
