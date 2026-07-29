@@ -48,6 +48,7 @@ import { primitiveType, arrayType, associativeType, referenceType } from '@/sche
 
 const PRIMITIVE_NAMES = ['address', 'bool', 'string', 'bytes', 'uint', 'int', 'timestamp', 'decimal']
 const NUMERIC_PRIMITIVES = ['uint', 'int']
+const NUMERIC_OR_BYTES = ['uint', 'int', 'bytes']
 
 const fileStore = useContractStorage()
 const model = defineModel({ required: true })
@@ -59,7 +60,7 @@ const kind = computed({
     if (newKind === 'primitive') model.value = primitiveType('uint')
     else if (newKind === 'array') model.value = arrayType(primitiveType('uint'))
     else if (newKind === 'associative') model.value = associativeType(primitiveType('address'), primitiveType('uint'))
-    else if (newKind === 'reference') model.value = referenceType('')
+    else if (newKind === 'reference') model.value = { kind: 'reference', ref: '' }
   }
 })
 
@@ -67,7 +68,11 @@ const showsSize = computed(() => NUMERIC_PRIMITIVES.includes(primitiveName.value
 
 const primitiveName = computed({
   get: () => model.value.name,
-  set: (name) => { model.value = primitiveType(name, { size: model.value.size, payable: model.value.payable }) }
+  set: (name) => {
+    const size = NUMERIC_OR_BYTES.includes(name) ? model.value.size : undefined
+    const payable = name === 'address' ? model.value.payable : undefined
+    model.value = primitiveType(name, { size, payable })
+  }
 })
 const primitiveSize = computed({
   get: () => model.value.size,
@@ -75,7 +80,10 @@ const primitiveSize = computed({
 })
 const primitivePayable = computed({
   get: () => !!model.value.payable,
-  set: (payable) => { model.value = primitiveType(primitiveName.value, { size: model.value.size, payable }) }
+  set: (payable) => {
+    if (primitiveName.value !== 'address') return
+    model.value = primitiveType(primitiveName.value, { size: model.value.size, payable })
+  }
 })
 
 const arraySize = computed({

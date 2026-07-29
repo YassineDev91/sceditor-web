@@ -472,7 +472,7 @@ const handleDrop = (event) => {
             }
             struct.literals.push({
                 name: "new_literal",
-                type: { base: "string" },
+                type: { kind: "primitive", name: "string" },
                 visibility: "public"
             });
             console.log(`✅ Added literal to struct ${structName}`);

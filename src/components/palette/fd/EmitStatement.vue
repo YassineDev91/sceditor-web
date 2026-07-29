@@ -26,7 +26,7 @@ const props = defineProps({
 });
 
 const eventName = computed(() =>
-  fileStore.contract.events.find(e => e.id === props.statement.eventRef)?.name || 'no event selected'
+  (fileStore.contract.events || []).find(e => e.id === props.statement.eventRef)?.name || 'no event selected'
 );
 
 const groupRef = ref({})

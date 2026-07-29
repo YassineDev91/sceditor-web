@@ -33,11 +33,11 @@
             <hr class="my-2 border-slate-600 border-2 rounded" />
             <div class="flex row gap-2">
                 <h4 class="font-bold mb-1">Parameters</h4>
-                <button @click="addParameterTo(element)">
+                <button @click="addParameterTo(element, 'params')">
                     <PlusIcon class="w-5"></PlusIcon>
                 </button>
             </div>
-            <div v-for="(param, index) in element.parameters" :key="index"
+            <div v-for="(param, index) in element.params" :key="index"
                 class="border rounded p-2 mb-2 border-slate-600 focus:border-blue-600">
                 <input v-model="param.name"
                     class="bg-slate-700 input border  p-1 rounded outline-none border-slate-600 focus:border-blue-600 mb-3"
@@ -189,12 +189,12 @@ function addLiteralToStruct(element) {
 }
 
 function guardName(guardId) {
-    return fileStore.contract.guards.find(g => g.id === guardId)?.name || guardId;
+    return (fileStore.contract.guards || []).find(g => g.id === guardId)?.name || guardId;
 }
 
 function unattachedGuards(element) {
     const attachedIds = new Set((element.guards || []).map(g => g.ref));
-    return fileStore.contract.guards.filter(g => !attachedIds.has(g.id));
+    return (fileStore.contract.guards || []).filter(g => !attachedIds.has(g.id));
 }
 
 function attachGuard(element, guardId) {
@@ -203,11 +203,11 @@ function attachGuard(element, guardId) {
     element.guards.push(createGuardRef(guardId));
 }
 
-function addParameterTo(element) {
-    if (!element.parameters) {
-        element.parameters = [];
+function addParameterTo(element, field = 'parameters') {
+    if (!element[field]) {
+        element[field] = [];
     }
-    element.parameters.push({
+    element[field].push({
         name: "new_param",
         type: { kind: "primitive", name: "uint", size: 256 }
     });
