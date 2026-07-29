@@ -22,15 +22,6 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Ollama URL
-                </label>
-                <input type="text" v-model="settingsStore.llm.ollama.url" @blur="saveSettings"
-                    placeholder="http://localhost:11434"
-                    class="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2" />
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Model
                 </label>
                 <select v-model="settingsStore.llm.ollama.model" @change="saveSettings"
@@ -47,19 +38,6 @@
         <!-- Gemini Configuration -->
         <div v-if="settingsStore.llm.provider === 'gemini'" class="space-y-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
             <h5 class="font-medium text-gray-900 dark:text-white">Google Gemini Settings</h5>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    API Key
-                </label>
-                <input type="password" v-model="settingsStore.llm.gemini.apiKey" @blur="saveSettings"
-                    placeholder="Enter your Gemini API key"
-                    class="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2" />
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Get your API key from <a href="https://makersuite.google.com/app/apikey" target="_blank"
-                        class="text-blue-600 dark:text-blue-400 hover:underline">Google AI Studio</a>
-                </p>
-            </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -80,19 +58,6 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    API Key
-                </label>
-                <input type="password" v-model="settingsStore.llm.openai.apiKey" @blur="saveSettings"
-                    placeholder="Enter your OpenAI API key"
-                    class="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2" />
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank"
-                        class="text-blue-600 dark:text-blue-400 hover:underline">OpenAI Platform</a>
-                </p>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Model
                 </label>
                 <select v-model="settingsStore.llm.openai.model" @change="saveSettings"
@@ -110,19 +75,6 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    API Key
-                </label>
-                <input type="password" v-model="settingsStore.llm.anthropic.apiKey" @blur="saveSettings"
-                    placeholder="Enter your Anthropic API key"
-                    class="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2" />
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Get your API key from <a href="https://console.anthropic.com/settings/keys" target="_blank"
-                        class="text-blue-600 dark:text-blue-400 hover:underline">Anthropic Console</a>
-                </p>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Model
                 </label>
                 <select v-model="settingsStore.llm.anthropic.model" @change="saveSettings"
@@ -131,6 +83,33 @@
                     <option value="claude-3-opus-20240229">Claude 3 Opus</option>
                     <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
                 </select>
+            </div>
+        </div>
+
+        <!-- Proxy Server Configuration -->
+        <div class="space-y-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <h5 class="font-medium text-gray-900 dark:text-white">Proxy Server</h5>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+                All providers (including Ollama) are called through this proxy — it holds the real
+                API keys on the server side so they never reach the browser.
+            </p>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Proxy URL
+                </label>
+                <input type="text" v-model="settingsStore.llm.proxy.url" @blur="saveSettings"
+                    placeholder="http://localhost:4000"
+                    class="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2" />
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Shared Secret
+                </label>
+                <input type="password" v-model="settingsStore.llm.proxy.secret" @blur="saveSettings"
+                    placeholder="Matches PROXY_SHARED_SECRET on the server"
+                    class="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2" />
             </div>
         </div>
 
