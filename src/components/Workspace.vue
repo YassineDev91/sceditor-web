@@ -129,6 +129,7 @@ import StatementRenderer from './palette/fd/StatementRenderer.vue';
 import Modal from './Modal.vue';
 import CanvasControls from './CanvasControls.vue';
 import { useContractStorage } from '@/stores/contract'
+import { useProjectsStore } from '@/stores/projects'
 import { useSettingsStore } from '@/stores/settings'
 import { ArrowLeftCircleIcon } from '@heroicons/vue/24/outline';
 import { useUIStore } from '@/stores/uiStore';
@@ -138,6 +139,7 @@ import ErrorDeclaration from './palette/scd/ErrorDeclaration.vue';
 import Event from './palette/scd/Event.vue';
 
 const fileStore = useContractStorage()
+const projectsStore = useProjectsStore()
 const settingsStore = useSettingsStore()
 
 const isMainLayerVisible = ref(true);
@@ -226,22 +228,14 @@ onMounted(async () => {
         });
     }
 
-    // restore contract
-    const saved_contract = localStorage.getItem('saved_contract')
-    if (saved_contract) {
-        try {
-            const parsed_contract = JSON.parse(saved_contract)
-            fileStore.contract = parsed_contract
-            console.log("✅ Restored contract from localStorage");
-            const savedTime = localStorage.getItem('saved_contract_time');
-            if (savedTime) {
-                const timestamp = parseInt(savedTime);
-                ui.setLastSavedTime(timestamp);
-                console.log(`📅 Last saved: ${new Date(timestamp).toLocaleString()}`);
-            }
-        } catch (error) {
-            console.warn("⚠️ Failed to parse saved contract", error);
-        }
+    // load projects: migrate any legacy single-document save, then open the most recently edited project
+    await projectsStore.migrateLegacyLocalStorage();
+    await projectsStore.loadProjectList();
+    if (projectsStore.projects.length > 0) {
+        const mostRecent = projectsStore.projects[0];
+        await projectsStore.openProject(mostRecent.id);
+        ui.setLastSavedTime(mostRecent.updatedAt);
+        console.log("✅ Opened most recently edited project:", mostRecent.name);
     }
 
     // handle keyboard shortcuts
@@ -532,12 +526,11 @@ watch(() => ui.stageScale, (newScale) => {
 
 // Debounced autosave function
 let saveTimeout = null;
-const saveContract = () => {
+const saveContract = async () => {
     try {
         ui.setSaving(true);
-        localStorage.setItem('saved_contract', JSON.stringify(fileStore.contract));
+        await projectsStore.saveActiveProject();
         const now = Date.now();
-        localStorage.setItem('saved_contract_time', now.toString());
         ui.setLastSavedTime(now);
         console.log("💾 Contract autosaved");
         setTimeout(() => ui.setSaving(false), 500); // Show saving indicator briefly
@@ -632,10 +625,6 @@ function keepWithinBounds(x, y, width, height) {
         x: Math.max(0, Math.min(x, maxX)),
         y: Math.max(0, Math.min(y, maxY))
     };
-}
-// Manual save
-const manualSave = () => {
-    localStorage.setItem('saved_contract', JSON.stringify(fileStore.contract))
 }
 // Mouse drag selection handlers
 const handleMouseDown = (e) => {
@@ -1007,14 +996,9 @@ const handleCanvasKeyboard = (event) => {
     }
 };
 
-// Initialize history and add keyboard listeners
+// Add keyboard listeners
 onMounted(() => {
     window.addEventListener('keydown', handleCanvasKeyboard);
-
-    // Initialize history when contract is loaded
-    if (fileStore.contract && Object.keys(fileStore.contract).length > 0) {
-        fileStore.initHistory();
-    }
 });
 
 onUnmounted(() => {
