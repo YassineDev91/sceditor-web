@@ -62,6 +62,7 @@ export const useProjectsStore = defineStore("projects", {
       const record = await getProject(id);
       if (!record) return;
       record.name = trimmed;
+      record.contract.name = trimmed;
       record.updatedAt = Date.now();
       await putProject(record);
       if (id === this.activeProjectId) {

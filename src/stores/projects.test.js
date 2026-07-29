@@ -79,6 +79,19 @@ describe('renameProject', () => {
     await projectsStore.loadProjectList()
     expect(projectsStore.projects.find(p => p.id === id).name).toBe('Keep Me')
   })
+
+  it('keeps a non-active project\'s stored contract name in sync with the rename', async () => {
+    const projectsStore = useProjectsStore()
+    const contractStore = useContractStorage()
+    await projectsStore.createProject('Project A')
+    const idA = projectsStore.activeProjectId
+    await projectsStore.createProject('Project B') // now B is active, A is not
+
+    await projectsStore.renameProject(idA, 'Project A Renamed')
+
+    await projectsStore.openProject(idA)
+    expect(contractStore.contract.name).toBe('Project A Renamed')
+  })
 })
 
 describe('deleteProject', () => {
