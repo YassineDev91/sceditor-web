@@ -53,9 +53,9 @@
 import { ref, defineProps, defineEmits, watch, nextTick } from 'vue'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import { NewspaperIcon } from '@heroicons/vue/24/outline'
-import { useContractStorage } from '@/stores/contract'
+import { useProjectsStore } from '@/stores/projects'
 
-const fileStore = useContractStorage()
+const projectsStore = useProjectsStore()
 
 const props = defineProps({
     open: {
@@ -88,13 +88,7 @@ const closeModal = () => {
     emit('update:open', false)
 }
 const newContract = () => {
-    const isContractEmpty = fileStore.contract.name == null ? true : false
-    if (isContractEmpty) {
-        createNewContract(props.contractName)
-    } else {
-        if (confirm("A new contract will replace the current one, are you sure ?", "yes or no"))
-            createNewContract(props.contractName)
-    }
+    createNewContract(props.contractName)
     localOpen.value = false
     emit('contract-created');
     emit('update:open', false)
@@ -107,6 +101,6 @@ const newContract = () => {
 
 }
 const createNewContract = (name) => {
-    fileStore.initNewContract(name)
+    projectsStore.createProject(name)
 }
 </script>
