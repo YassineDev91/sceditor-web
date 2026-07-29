@@ -126,104 +126,25 @@ ${JSON.stringify(fileStore.contract, null, 2)}
 Now generate the ${sc_language.value} code. Output only the smart contract code. Do not include explanations.`
 });
 
-// Provider-specific API call handlers
-async function callOllama(prompt) {
-    const ollamaUrl = settingsStore.llm.ollama.url;
-    const response = await fetch(`${ollamaUrl}/api/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            model: selectedModel.value,
-            prompt: prompt,
-            stream: false
-        })
-    });
-
-    if (!response.ok) {
-        throw new Error(`Ollama request failed: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.response;
-}
-
-async function callGemini(prompt) {
-    const apiKey = settingsStore.llm.gemini.apiKey;
-    if (!apiKey) {
-        throw new Error("Gemini API key not configured. Please configure it in Settings.");
-    }
-
-    const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel.value}:generateContent?key=${apiKey}`,
-        {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }]
-            })
-        }
-    );
-
-    if (!response.ok) {
-        throw new Error(`Gemini request failed: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.candidates[0]?.content?.parts?.[0]?.text;
-}
-
-async function callOpenAI(prompt) {
-    const apiKey = settingsStore.llm.openai.apiKey;
-    if (!apiKey) {
-        throw new Error("OpenAI API key not configured. Please configure it in Settings.");
-    }
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+// Proxy API call handler
+async function callProxy(provider, model, prompt) {
+    const { url, secret } = settingsStore.llm.proxy;
+    const response = await fetch(`${url}/api/generate`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
+            'X-Proxy-Secret': secret,
         },
-        body: JSON.stringify({
-            model: selectedModel.value,
-            messages: [{ role: 'user', content: prompt }]
-        })
+        body: JSON.stringify({ provider, model, prompt }),
     });
 
-    if (!response.ok) {
-        throw new Error(`OpenAI request failed: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content;
-}
-
-async function callAnthropic(prompt) {
-    const apiKey = settingsStore.llm.anthropic.apiKey;
-    if (!apiKey) {
-        throw new Error("Anthropic API key not configured. Please configure it in Settings.");
-    }
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-            model: selectedModel.value,
-            max_tokens: 4096,
-            messages: [{ role: 'user', content: prompt }]
-        })
-    });
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-        throw new Error(`Anthropic request failed: ${response.status} ${response.statusText}`);
+        throw new Error(data.error || `Proxy request failed: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data.content[0]?.text;
+    return data.code;
 }
 
 async function generate() {
@@ -248,25 +169,7 @@ async function generate() {
     console.log(`Generating code using ${selectedProvider.value} (${selectedModel.value})`);
 
     try {
-        let rawCode = "";
-
-        // Call the appropriate provider API
-        switch (selectedProvider.value) {
-            case "ollama":
-                rawCode = await callOllama(prompt.value);
-                break;
-            case "gemini":
-                rawCode = await callGemini(prompt.value);
-                break;
-            case "openai":
-                rawCode = await callOpenAI(prompt.value);
-                break;
-            case "anthropic":
-                rawCode = await callAnthropic(prompt.value);
-                break;
-            default:
-                throw new Error(`Unknown provider: ${selectedProvider.value}`);
-        }
+        const rawCode = await callProxy(selectedProvider.value, selectedModel.value, prompt.value);
 
         // Extract code from markdown blocks if present
         generatedCode.value = extractCode(rawCode);
@@ -274,7 +177,7 @@ async function generate() {
 
     } catch (error) {
         console.error("❌ Error generating code:", error);
-        generatedCode.value = `Error generating code: ${error.message}\n\nPlease check:\n- Your provider configuration in Settings\n- Your API key is valid (for cloud providers)\n- Ollama is running (for local provider)\n- The API endpoint is accessible`;
+        generatedCode.value = `Error generating code: ${error.message}\n\nPlease check:\n- Your provider/model configuration in Settings\n- The proxy server is running and reachable\n- The Proxy URL and Shared Secret settings are correct\n- Ollama is running locally (if the proxy is configured to reach it)`;
     }
 }
 
