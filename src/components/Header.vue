@@ -68,10 +68,10 @@
       <UserCircleIcon class="w-10 h-10"></UserCircleIcon>
     </div>
   </div>
-  <Modal v-model:open="showModal" title="New Smart Contract Diagram">
+  <Modal v-model:open="showModal" title="New Smart Contract Diagram" :contractName="newContractName">
     <div class="flex flex-col gap-2">
       <label for="contractName">Title</label>
-      <input type="text" name="contractName" id="contractName" :value="fileStore.contract.name"
+      <input type="text" name="contractName" id="contractName" v-model="newContractName"
         class="p-1 outline-none border border-1 rounded focus:border-blue-600">
     </div>
   </Modal>
@@ -94,6 +94,7 @@ import IconDocumentation from './icons/IconDocumentation.vue';
 var fileStore = useContractStorage()
 const uiStore = useUIStore()
 const showModal = ref(false)
+const newContractName = ref('')
 const showSettingsModal = ref(false)
 const isExportButtonPressed = ref(false)
 

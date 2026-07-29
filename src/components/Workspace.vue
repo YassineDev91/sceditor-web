@@ -107,10 +107,10 @@
 
     <!-- Modal for Contract Creation -->
     <Modal v-model:open="showModal" @contract-created="onContractCreated" title="New Smart Contract Diagram"
-        :stageRef="stageRef">
+        :stageRef="stageRef" :contractName="newContractName">
         <div class="flex flex-col gap-2">
             <label for="contractName">Title</label>
-            <input type="text" name="contractName" id="contractName"
+            <input type="text" name="contractName" id="contractName" v-model="newContractName"
                 class="p-1 outline-none border border-1 rounded focus:border-blue-600" />
         </div>
     </Modal>
@@ -144,6 +144,7 @@ const isMainLayerVisible = ref(true);
 const isFunctionLayerVisible = ref(!isMainLayerVisible.value)
 const selectedFunction = ref(null)
 const showModal = ref(false)
+const newContractName = ref('')
 const stageRef = ref(null)
 const mainLayer = ref(null)
 const functionLayer = ref(null)
