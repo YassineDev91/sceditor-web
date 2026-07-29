@@ -15,13 +15,20 @@
 import { computed, onMounted, ref } from 'vue';
 import { useImage } from 'vue-konva';
 import ContentRectangle from './ContentRectangle.vue';
+import { useContractStorage } from '@/stores/contract';
 const emit = defineEmits(['dragmove']);
+const fileStore = useContractStorage();
 
 const props = defineProps({
     x: Number,
     y: Number,
     statement: Object
 });
+
+const eventName = computed(() =>
+  fileStore.contract.events.find(e => e.id === props.statement.eventRef)?.name || 'no event selected'
+);
+
 const groupRef = ref({})
 const rectRef = ref({})
 const rectConfig = ref({
@@ -47,7 +54,7 @@ const textConfig = ref({
 const contentRect = computed(() => ({
     x: props.x + 10,
     y: props.y + 30,
-    content: props.statement.event,
+    content: eventName.value,
     height: 30,
     width: 180,
     fillColor: "#FEFDF8",

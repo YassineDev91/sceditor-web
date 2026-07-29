@@ -122,7 +122,7 @@ function createStatement(type) {
             console.log(`creating ${type} statement ...`);
             fileStore.selectedFunction.body.statements.push({
                 cmp_type: "EmitStatement",
-                event: "",
+                eventRef: null,
                 args: [],
                 description:""
             })
