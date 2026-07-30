@@ -24,6 +24,7 @@
 <script setup>
 import { useContractStorage } from '@/stores/contract'
 import { nextPalettePosition } from './paletteLayout.js'
+import { nextStepPosition } from '@/schema/steps'
 var fileStore = useContractStorage()
 
 
@@ -41,13 +42,12 @@ const elements = [
     // {  label: 'Parameter', type: 'parameter', icon: '' },
 
     // FD
-    { label: 'Assignment', icon: 'assignmentStatementIcon', type: 'image', stage: 'FD', action: () => createStatement('assignment') },
-    { label: 'Call', icon: 'callStatementIcon', type: 'call', stage: 'FD', action: () => createStatement('call') },
-    { label: 'Condition', icon: 'git', type: 'star', stage: 'FD', action: () => createStatement('condition') },
-    { label: 'Emit', icon: 'emit', type: 'arrow', stage: 'FD', action: () => createStatement('emit') },
-    { label: 'Revert', icon: 'error', type: 'star', stage: 'FD', action: () => createStatement('revert') },
-    { label: 'Loop', icon: 'loop', type: 'star', stage: 'FD', action: () => createStatement('loop') },
-    { label: 'Literal', icon: 'three-point', type: 'star', stage: 'FD', action: () => createStatement('literal') },
+    { label: 'Action', icon: 'assignmentStatementIcon', type: 'image', stage: 'FD', action: () => addStep('Action', 'new_action') },
+    { label: 'Call', icon: 'callStatementIcon', type: 'call', stage: 'FD', action: () => addStep('Call', 'new_call') },
+    { label: 'Decision', icon: 'git', type: 'star', stage: 'FD', action: () => addStep('Decision', 'new_decision') },
+    { label: 'Emit', icon: 'emit', type: 'arrow', stage: 'FD', action: () => addStep('Emit', 'new_emit') },
+    { label: 'Return', icon: 'three-point', type: 'star', stage: 'FD', action: () => addStep('Return', 'new_return') },
+    { label: 'Revert', icon: 'error', type: 'star', stage: 'FD', action: () => addStep('Revert', 'new_revert') },
 ]
 const startDrag = (event, item) => {
     event.dataTransfer.setData('application/json', JSON.stringify(item));
@@ -62,103 +62,13 @@ function getPaletteElements() {
     )
 }
 
-function createStatement(type) {
-    switch (type) {
-        case 'assignment':
-            console.log(`creating ${type} statement ...`);
-            fileStore.selectedFunction.body.statements.push({
-                cmp_type: "AssignmentStatement",
-                expressions: [
-                    {
-                        "left": {
-                            "type": "",
-                            "name": ""
-                        },
-                        "right": {
-                            "type": "",
-                            "value": ""
-                        }
-                    }
-                ],
-                description:""
-            })
-            break;
-        case "call":
-            console.log(`creating ${type} statement ...`);
-            fileStore.selectedFunction.body.statements.push({
-                cmp_type: "CallStatement",
-                object: "",
-                method: "",
-                params: [
-                    {
-                        "type": "BinaryOperation",
-                        "operator": "*",
-                        "left": {
-                            "type": "Literal",
-                            "value": 2
-                        },
-                        "right": {
-                            "type": "Identifier",
-                            "value": "value"
-                        }
-                    }
-                ],
-                description:""
-            })
-            break;
-        case "condition":
-            console.log(`creating ${type} statement ...`);
-            fileStore.selectedFunction.body.statements.push({
-                cmp_type: "ConditionStatement",
-                condition: {
-                    type: "BinaryExpression",
-                    left: "",
-                    operator: "",
-                    right: ""
-                },
-                body: [],
-                description:""
-            })
-            break;
-        case "emit":
-            console.log(`creating ${type} statement ...`);
-            fileStore.selectedFunction.body.statements.push({
-                cmp_type: "EmitStatement",
-                eventRef: null,
-                args: [],
-                description:""
-            })
-            break;
-        case "revert":
-            console.log(`creating ${type} statement ...`);
-            fileStore.selectedFunction.body.statements.push({
-                cmp_type: "RevertStatement",
-                errorRef: null,
-                args: [],
-                description:""
-            })
-            break;
-        case 'loop':
-            console.log(`creating ${type} statement ...`);
-
-            fileStore.selectedFunction.body.statements.push({
-                cmp_type: "LoopStatement",
-                init:{},
-                condition: {
-                    type: "BinaryExpression",
-                    left: "",
-                    operator: "",
-                    right: ""
-                },
-                post:{},
-                body: {},
-                description:""
-            })
-            break;
-
-        default:
-            break;
+function addStep(kind, name) {
+    if (!fileStore.selectedFunction) {
+        console.warn("⚠️ No function/guard open — can't add a step");
+        return;
     }
+    const position = nextStepPosition(fileStore.selectedFunction);
+    fileStore.createBodyStep(fileStore.selectedFunction, kind, name, position);
 }
 </script>
 
