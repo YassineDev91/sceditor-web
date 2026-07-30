@@ -181,7 +181,7 @@ const { handleDrop, handleScdDragMove } = useStructuralDragAndDrop(stageRef, mai
 const {
   graphOf, handleStepDragMove, startConnection, updateConnectionPreview,
   finishConnectionAtPointer, cancelConnection, connectingLineConfig, edgeArrowConfig,
-} = useStepGraph(mainLayer, stageRef);
+} = useStepGraph(functionLayer, stageRef);
 
 const stepGraph = computed(() => graphOf(selectedFunction.value));
 
