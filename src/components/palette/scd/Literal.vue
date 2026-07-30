@@ -43,13 +43,16 @@ const visibilityConfig = computed(() =>({
 }))
 
 const nameConfig = computed(() =>({
-    x: textRectConfig.value.x + 30,
+    x: textRectConfig.value.x + 6,
     y: textRectConfig.value.y + 5,
     text: props.name,
     fontSize: 12,
+    width: 60,
+    wrap: 'none',
+    ellipsis: true,
 }))
 const typeConfig = computed(() => ({
-    x: nameConfig.value.x + 55,
+    x: textRectConfig.value.x + 68,
     y: nameConfig.value.y,
     text: props.data?.type
         ? formatTypeNode(props.data.type, {
@@ -61,6 +64,9 @@ const typeConfig = computed(() => ({
         : '',
     fontSize: 11,
     fill: '#7C6BAE',
+    width: 56,
+    wrap: 'none',
+    ellipsis: true,
 }))
 onMounted(() => {
   
