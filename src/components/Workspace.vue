@@ -17,7 +17,9 @@
 
         <div ref="workspaceRef" class="flex flex-row h-full w-full" @dragover.prevent @drop="handleDrop">
             <v-stage ref="stageRef" :key="fileStore.contract.name" :config="stageConfig"
-                @mousedown="handleMouseDown" @mousemove="handleMouseMove" @mouseup="handleMouseUp">
+                @mousedown="handleMouseDown"
+                @mousemove="(e) => { updateConnectionPreview(); handleMouseMove(e); }"
+                @mouseup="() => { finishConnectionAtPointer(selectedFunction); handleMouseUp(); }">
                 <!-- Contract Layer -->
                 <v-layer>
                     <Contract v-if="fileStore.contract.name" :name="fileStore.contract.name" :x="fileStore.contract.x"
@@ -50,7 +52,7 @@
 
                     <function v-for="_function in fileStore.contract.functions" :key="_function.id"
                         :name="_function.name" :x="_function.x" :y="_function.y" :data="_function"
-                        :params="_function.params" :statements="_function.body.statements"
+                        :params="_function.params" :statements="_function.body.steps"
                         :returnParams="_function.returnParams" :selected="isElementSelected(_function)"
                         @click="fileStore.showProperties(_function)" @dblclick="showFunctionLayer(_function)"
                         @dragend="(e) => handleScdDragMove(e, _function)" />
@@ -58,7 +60,7 @@
                     <function v-if="fileStore.contract._constructor" name="<<constructor>>"
                         :x="fileStore.contract._constructor.x" :y="fileStore.contract._constructor.y"
                         :data="fileStore.contract._constructor" :params="fileStore.contract._constructor.params"
-                        :statements="fileStore.contract._constructor.body.statements"
+                        :statements="fileStore.contract._constructor.body.steps"
                         :selected="isElementSelected(fileStore.contract._constructor)"
                         @click="fileStore.showProperties(fileStore.contract._constructor)"
                         @dblclick="showFunctionLayer(fileStore.contract._constructor)"
@@ -71,7 +73,7 @@
 
                     <Guard v-for="guard in fileStore.contract.guards" :key="guard.id"
                         :name="guard.name" :data="guard" :x="guard.x" :y="guard.y" :params="guard.parameters"
-                        :statements="guard.body.statements" :selected="isElementSelected(guard)"
+                        :statements="guard.body.steps" :selected="isElementSelected(guard)"
                         @click="fileStore.showProperties(guard)" @dblclick="showFunctionLayer(guard)"
                         @dragend="(e) => handleScdDragMove(e, guard)" />
 
@@ -87,12 +89,15 @@
                 </v-layer>
 
                 <!-- Function Layer -->
-                <v-layer ref="functionLayer" :visible="isFunctionLayerVisible" v-if="isFunctionLayerVisible"
-                    @vue:mounted="loadFLayersNode">
-                    <StatementRenderer v-for="(stmt, index) in selectedFunction.body.statements" :key="stmt.id || index"
-                        :statement="stmt" :x="20" :y="80 * index" @dragmove="handleDragMove"
-                        @select="handleStatementSelect" />
-                    <v-arrow v-for="connector in connectors" :key="connector.id" :config="getArrowConfig(connector)" />
+                <v-layer ref="functionLayer" :visible="isFunctionLayerVisible" v-if="isFunctionLayerVisible">
+                    <Step v-for="step in stepGraph.steps" :key="step.id" :step="step" :x="step.x" :y="step.y"
+                        :is-start="step.id === stepGraph.startStepId"
+                        @dragmove="(e) => handleStepDragMove(selectedFunction, e, step)"
+                        @select="handleStatementSelect"
+                        @start-connect="startConnection"
+                        @set-start="(s) => fileStore.setBodyStartStep(selectedFunction, s.id)" />
+                    <v-arrow v-for="edge in stepGraph.edges" :key="edge.id" :config="edgeArrowConfig(selectedFunction, edge)" />
+                    <v-line v-if="connectingLineConfig" :config="connectingLineConfig"></v-line>
                 </v-layer>
             </v-stage>
         </div>
@@ -121,12 +126,12 @@
 
 
 <script setup>
-import { nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import Contract from '@/components/palette/scd/Contract.vue'
 import Variable from '@/components/palette/scd/Variable.vue'
 import Struct from '@/components/palette/scd/Struct.vue'
 import Function from '@/components/palette/scd/Function.vue'
-import StatementRenderer from './palette/fd/StatementRenderer.vue';
+import Step from './palette/fd/Step.vue';
 import Modal from './Modal.vue';
 import CanvasControls from './CanvasControls.vue';
 import { useContractStorage } from '@/stores/contract'
@@ -142,7 +147,7 @@ import { useCanvasSizing } from '@/composables/useCanvasSizing';
 import { useCanvasControls } from '@/composables/useCanvasControls';
 import { useSelectionBox } from '@/composables/useSelectionBox';
 import { useStructuralDragAndDrop } from '@/composables/useStructuralDragAndDrop';
-import { useFunctionLayerConnectors } from '@/composables/useFunctionLayerConnectors';
+import { useStepGraph } from '@/composables/useStepGraph';
 import { useAutosave } from '@/composables/useAutosave';
 import { useCanvasKeyboardShortcuts } from '@/composables/useCanvasKeyboardShortcuts';
 import { useLayerSwitching } from '@/composables/useLayerSwitching';
@@ -174,14 +179,22 @@ const {
 const { handleDrop, handleScdDragMove } = useStructuralDragAndDrop(stageRef, mainLayer);
 
 const {
-  connectors, loadFLayersNode, resetConnectors, handleDragMove, getArrowConfig, handleStatementSelect,
-} = useFunctionLayerConnectors(functionLayer, stageRef, widthCanvaRef, heightCanvaRef);
+  graphOf, handleStepDragMove, startConnection, updateConnectionPreview,
+  finishConnectionAtPointer, cancelConnection, connectingLineConfig, edgeArrowConfig,
+} = useStepGraph(mainLayer, stageRef);
+
+const stepGraph = computed(() => graphOf(selectedFunction.value));
+
+function handleStatementSelect(statement) {
+  console.log('📍 Statement selected in Workspace:', statement)
+  fileStore.showProperties(statement)
+}
 
 useAutosave();
 
 const {
   isMainLayerVisible, isFunctionLayerVisible, selectedFunction, toggleLayer, showFunctionLayer,
-} = useLayerSwitching({ onToggle: resetConnectors });
+} = useLayerSwitching({ onToggle: cancelConnection });
 
 useCanvasKeyboardShortcuts(
   { handleZoomIn, handleZoomOut, handleZoomReset, fitToScreen, handleUndo, handleRedo, togglePanMode },
