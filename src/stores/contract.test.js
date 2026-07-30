@@ -158,3 +158,142 @@ describe('updatePosition', () => {
     expect(store.contract.events[0].y).toBe(6)
   })
 })
+
+describe('body step-graph actions', () => {
+  it('createBodyStep pushes a step and sets it as the start step', () => {
+    const store = useContractStorage()
+    store.initNewContract('Purchase')
+    store.createFunctionElement({ x: 0, y: 0 })
+    const fn = store.contract.functions[0]
+    const step = store.createBodyStep(fn, 'Action', 'log it', { x: 5, y: 5 })
+    expect(fn.body.steps).toHaveLength(1)
+    expect(fn.body.startStepId).toBe(step.id)
+  })
+
+  it('does not overwrite the start step when a second step is added', () => {
+    const store = useContractStorage()
+    store.initNewContract('Purchase')
+    store.createFunctionElement({ x: 0, y: 0 })
+    const fn = store.contract.functions[0]
+    const first = store.createBodyStep(fn, 'Action', 'first')
+    store.createBodyStep(fn, 'Action', 'second')
+    expect(fn.body.startStepId).toBe(first.id)
+  })
+
+  it('addBodyFlowEdge connects two steps', () => {
+    const store = useContractStorage()
+    store.initNewContract('Purchase')
+    store.createFunctionElement({ x: 0, y: 0 })
+    const fn = store.contract.functions[0]
+    const a = store.createBodyStep(fn, 'Action', 'a')
+    const b = store.createBodyStep(fn, 'Action', 'b')
+    const edge = store.addBodyFlowEdge(fn, a.id, b.id, 'then')
+    expect(fn.body.edges).toHaveLength(1)
+    expect(edge.label).toBe('then')
+  })
+
+  it('addBodyFlowEdge rejects a second outgoing edge from a non-Decision step', () => {
+    const store = useContractStorage()
+    store.initNewContract('Purchase')
+    store.createFunctionElement({ x: 0, y: 0 })
+    const fn = store.contract.functions[0]
+    const a = store.createBodyStep(fn, 'Action', 'a')
+    const b = store.createBodyStep(fn, 'Action', 'b')
+    const c = store.createBodyStep(fn, 'Action', 'c')
+    store.addBodyFlowEdge(fn, a.id, b.id)
+    const rejected = store.addBodyFlowEdge(fn, a.id, c.id)
+    expect(rejected).toBeNull()
+    expect(fn.body.edges).toHaveLength(1)
+  })
+
+  it('addBodyFlowEdge allows multiple outgoing edges from a Decision step', () => {
+    const store = useContractStorage()
+    store.initNewContract('Purchase')
+    store.createFunctionElement({ x: 0, y: 0 })
+    const fn = store.contract.functions[0]
+    const decision = store.createBodyStep(fn, 'Decision', 'check')
+    const b = store.createBodyStep(fn, 'Action', 'b')
+    const c = store.createBodyStep(fn, 'Action', 'c')
+    store.addBodyFlowEdge(fn, decision.id, b.id, 'yes')
+    const second = store.addBodyFlowEdge(fn, decision.id, c.id, 'no')
+    expect(second).not.toBeNull()
+    expect(fn.body.edges).toHaveLength(2)
+  })
+
+  it('addBodyFlowEdge returns null when the source step does not exist', () => {
+    const store = useContractStorage()
+    store.initNewContract('Purchase')
+    store.createFunctionElement({ x: 0, y: 0 })
+    const fn = store.contract.functions[0]
+    const b = store.createBodyStep(fn, 'Action', 'b')
+    expect(store.addBodyFlowEdge(fn, 'missing_id', b.id)).toBeNull()
+  })
+
+  it('deleteBodyStep removes the step and any edges touching it', () => {
+    const store = useContractStorage()
+    store.initNewContract('Purchase')
+    store.createFunctionElement({ x: 0, y: 0 })
+    const fn = store.contract.functions[0]
+    const a = store.createBodyStep(fn, 'Action', 'a')
+    const b = store.createBodyStep(fn, 'Action', 'b')
+    store.addBodyFlowEdge(fn, a.id, b.id)
+    store.deleteBodyStep(fn, b.id)
+    expect(fn.body.steps).toHaveLength(1)
+    expect(fn.body.edges).toHaveLength(0)
+  })
+
+  it('deleteBodyStep clears startStepId when the start step is deleted', () => {
+    const store = useContractStorage()
+    store.initNewContract('Purchase')
+    store.createFunctionElement({ x: 0, y: 0 })
+    const fn = store.contract.functions[0]
+    const a = store.createBodyStep(fn, 'Action', 'a')
+    store.deleteBodyStep(fn, a.id)
+    expect(fn.body.startStepId).toBeNull()
+  })
+
+  it('deleteBodyFlowEdge removes only the targeted edge', () => {
+    const store = useContractStorage()
+    store.initNewContract('Purchase')
+    store.createFunctionElement({ x: 0, y: 0 })
+    const fn = store.contract.functions[0]
+    const a = store.createBodyStep(fn, 'Action', 'a')
+    const b = store.createBodyStep(fn, 'Action', 'b')
+    const edge = store.addBodyFlowEdge(fn, a.id, b.id)
+    store.deleteBodyFlowEdge(fn, edge.id)
+    expect(fn.body.edges).toHaveLength(0)
+  })
+
+  it('updateBodyStepPosition moves a step', () => {
+    const store = useContractStorage()
+    store.initNewContract('Purchase')
+    store.createFunctionElement({ x: 0, y: 0 })
+    const fn = store.contract.functions[0]
+    const a = store.createBodyStep(fn, 'Action', 'a', { x: 0, y: 0 })
+    store.updateBodyStepPosition(fn, a.id, 42, 43)
+    expect(fn.body.steps[0].x).toBe(42)
+    expect(fn.body.steps[0].y).toBe(43)
+  })
+
+  it('setBodyStartStep changes the start step', () => {
+    const store = useContractStorage()
+    store.initNewContract('Purchase')
+    store.createFunctionElement({ x: 0, y: 0 })
+    const fn = store.contract.functions[0]
+    const a = store.createBodyStep(fn, 'Action', 'a')
+    const b = store.createBodyStep(fn, 'Action', 'b')
+    store.setBodyStartStep(fn, b.id)
+    expect(fn.body.startStepId).toBe(b.id)
+  })
+
+  it('creating a step on an old-shape body starts a fresh graph instead of crashing', () => {
+    const store = useContractStorage()
+    store.initNewContract('Purchase')
+    store.createFunctionElement({ x: 0, y: 0 })
+    const fn = store.contract.functions[0]
+    fn.body = { type: 'Block', statements: [{ cmp_type: 'AssignmentStatement' }] }
+    const step = store.createBodyStep(fn, 'Action', 'first')
+    expect(fn.body.steps).toEqual([step])
+    expect(fn.body.startStepId).toBe(step.id)
+  })
+})

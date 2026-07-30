@@ -12,6 +12,7 @@ import {
   createEvent,
 } from "@/schema/elements";
 import { primitiveType } from "@/schema/types";
+import { createStep, createFlowEdge, maxOutgoingEdges, normalizeBody } from "@/schema/steps";
 
 export const useContractStorage = defineStore("contract", {
   state: () => {
@@ -233,6 +234,74 @@ export const useContractStorage = defineStore("contract", {
 
       console.log(`✅ Deleted ${count} element(s)`);
       this.clearSelection();
+      this.saveHistory();
+    },
+
+    // Step-graph actions (Function/Guard/Constructor bodies)
+    createBodyStep(bodyOwner, kind, name, { x, y } = {}) {
+      const body = normalizeBody(bodyOwner.body);
+      const step = createStep(kind, name, { x: x ?? 0, y: y ?? 0 });
+      body.steps.push(step);
+      if (!body.startStepId) {
+        body.startStepId = step.id;
+      }
+      bodyOwner.body = body;
+      this.saveHistory();
+      return step;
+    },
+
+    deleteBodyStep(bodyOwner, stepId) {
+      const body = normalizeBody(bodyOwner.body);
+      body.steps = body.steps.filter(s => s.id !== stepId);
+      body.edges = body.edges.filter(e => e.from !== stepId && e.to !== stepId);
+      if (body.startStepId === stepId) {
+        body.startStepId = body.steps[0]?.id ?? null;
+      }
+      bodyOwner.body = body;
+      this.saveHistory();
+    },
+
+    addBodyFlowEdge(bodyOwner, fromStepId, toStepId, label = '') {
+      const body = normalizeBody(bodyOwner.body);
+      const fromStep = body.steps.find(s => s.id === fromStepId);
+      if (!fromStep) {
+        console.warn("⚠️ addBodyFlowEdge: source step not found:", fromStepId);
+        return null;
+      }
+      const existingOutgoing = body.edges.filter(e => e.from === fromStepId).length;
+      if (existingOutgoing >= maxOutgoingEdges(fromStep.cmp_type)) {
+        console.warn(`⚠️ ${fromStep.cmp_type} steps allow at most ${maxOutgoingEdges(fromStep.cmp_type)} outgoing edge(s)`);
+        return null;
+      }
+      const edge = createFlowEdge(fromStepId, toStepId, { label });
+      body.edges.push(edge);
+      bodyOwner.body = body;
+      this.saveHistory();
+      return edge;
+    },
+
+    deleteBodyFlowEdge(bodyOwner, edgeId) {
+      const body = normalizeBody(bodyOwner.body);
+      body.edges = body.edges.filter(e => e.id !== edgeId);
+      bodyOwner.body = body;
+      this.saveHistory();
+    },
+
+    updateBodyStepPosition(bodyOwner, stepId, x, y) {
+      const body = normalizeBody(bodyOwner.body);
+      const step = body.steps.find(s => s.id === stepId);
+      if (step) {
+        step.x = x;
+        step.y = y;
+      }
+      bodyOwner.body = body;
+      this.saveHistory();
+    },
+
+    setBodyStartStep(bodyOwner, stepId) {
+      const body = normalizeBody(bodyOwner.body);
+      body.startStepId = stepId;
+      bodyOwner.body = body;
       this.saveHistory();
     },
 

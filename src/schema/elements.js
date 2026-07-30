@@ -1,4 +1,5 @@
 import { createId } from './id.js'
+import { createStepGraph } from './steps.js'
 
 function baseElement(cmp_type, name, x, y, extra = {}) {
   return {
@@ -36,7 +37,7 @@ export function createEnum(name, { x = 0, y = 0, values = [] } = {}) {
   return baseElement('Enum', name, x, y, { values })
 }
 
-export function createGuard(name, { x = 0, y = 0, parameters = [], body = { type: 'Block', statements: [] } } = {}) {
+export function createGuard(name, { x = 0, y = 0, parameters = [], body = createStepGraph() } = {}) {
   return baseElement('Guard', name, x, y, { parameters, body })
 }
 
@@ -71,7 +72,7 @@ export function createFunction(name, {
   acceptsValue = false,
   visibility = 'external',
   guards = [],
-  body = { type: 'Block', statements: [] },
+  body = createStepGraph(),
 } = {}) {
   assertMutability(mutability)
   assertVisibility(visibility)
@@ -87,7 +88,7 @@ export function createConstructor({
   mutability = 'write',
   acceptsValue = false,
   guards = [],
-  body = { type: 'Block', statements: [] },
+  body = createStepGraph(),
 } = {}) {
   assertMutability(mutability)
   return {
