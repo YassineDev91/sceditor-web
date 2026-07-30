@@ -52,7 +52,7 @@
 
                     <function v-for="_function in fileStore.contract.functions" :key="_function.id"
                         :name="_function.name" :x="_function.x" :y="_function.y" :data="_function"
-                        :params="_function.params" :statements="_function.body.steps"
+                        :params="_function.params" :statements="bodySteps(_function)"
                         :returnParams="_function.returnParams" :selected="isElementSelected(_function)"
                         @click="fileStore.showProperties(_function)" @dblclick="showFunctionLayer(_function)"
                         @dragend="(e) => handleScdDragMove(e, _function)" />
@@ -60,7 +60,7 @@
                     <function v-if="fileStore.contract._constructor" name="<<constructor>>"
                         :x="fileStore.contract._constructor.x" :y="fileStore.contract._constructor.y"
                         :data="fileStore.contract._constructor" :params="fileStore.contract._constructor.params"
-                        :statements="fileStore.contract._constructor.body.steps"
+                        :statements="bodySteps(fileStore.contract._constructor)"
                         :selected="isElementSelected(fileStore.contract._constructor)"
                         @click="fileStore.showProperties(fileStore.contract._constructor)"
                         @dblclick="showFunctionLayer(fileStore.contract._constructor)"
@@ -73,7 +73,7 @@
 
                     <Guard v-for="guard in fileStore.contract.guards" :key="guard.id"
                         :name="guard.name" :data="guard" :x="guard.x" :y="guard.y" :params="guard.parameters"
-                        :statements="guard.body.steps" :selected="isElementSelected(guard)"
+                        :statements="bodySteps(guard)" :selected="isElementSelected(guard)"
                         @click="fileStore.showProperties(guard)" @dblclick="showFunctionLayer(guard)"
                         @dragend="(e) => handleScdDragMove(e, guard)" />
 
@@ -92,7 +92,7 @@
                 <v-layer ref="functionLayer" :visible="isFunctionLayerVisible" v-if="isFunctionLayerVisible">
                     <Step v-for="step in stepGraph.steps" :key="step.id" :step="step" :x="step.x" :y="step.y"
                         :is-start="step.id === stepGraph.startStepId"
-                        @dragmove="(e) => handleStepDragMove(selectedFunction, e, step)"
+                        @dragend="(e) => handleStepDragMove(selectedFunction, e, step)"
                         @select="handleStatementSelect"
                         @start-connect="startConnection"
                         @set-start="(s) => fileStore.setBodyStartStep(selectedFunction, s.id)" />
@@ -182,6 +182,8 @@ const {
   graphOf, handleStepDragMove, startConnection, updateConnectionPreview,
   finishConnectionAtPointer, cancelConnection, connectingLineConfig, edgeArrowConfig,
 } = useStepGraph(functionLayer, stageRef);
+
+const bodySteps = (owner) => graphOf(owner).steps;
 
 const stepGraph = computed(() => graphOf(selectedFunction.value));
 

@@ -63,7 +63,7 @@ function getPaletteElements() {
 }
 
 function addStep(kind, name) {
-    if (!fileStore.selectedFunction) {
+    if (!fileStore.selectedFunction?.id) {
         console.warn("⚠️ No function/guard open — can't add a step");
         return;
     }

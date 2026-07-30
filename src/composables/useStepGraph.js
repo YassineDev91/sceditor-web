@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { useContractStorage } from '@/stores/contract';
 import { normalizeBody } from '@/schema/steps';
 
-export function useStepGraph(mainLayer, stageRef) {
+export function useStepGraph(layerRef, stageRef) {
   const fileStore = useContractStorage();
 
   // Set while the user is dragging from a step's connector handle toward
@@ -25,20 +25,21 @@ export function useStepGraph(mainLayer, stageRef) {
   const updateConnectionPreview = () => {
     if (!pendingConnection.value) return;
     const stage = stageRef.value?.getNode();
-    const layer = mainLayer.value?.getNode();
+    const layer = layerRef.value?.getNode();
     if (!stage || !layer) return;
 
     const fromNode = layer.findOne((n) => n.attrs.data?.id === pendingConnection.value.fromStepId);
     if (!fromNode) return;
 
     const fromBox = fromNode.getClientRect({ relativeTo: layer });
-    const pos = stage.getPointerPosition();
+    const pos = layer.getRelativePointerPosition();
     if (!pos) return;
 
     connectingLineConfig.value = {
       points: [fromBox.x + fromBox.width, fromBox.y + fromBox.height / 2, pos.x, pos.y],
       stroke: '#999999',
       dash: [4, 4],
+      listening: false,
     };
   };
 
@@ -66,7 +67,7 @@ export function useStepGraph(mainLayer, stageRef) {
   };
 
   const edgeArrowConfig = (bodyOwner, edge) => {
-    const layer = mainLayer.value?.getNode();
+    const layer = layerRef.value?.getNode();
     if (!layer) return { id: edge.id, points: [0, 0, 0, 0] };
 
     const fromNode = layer.findOne((n) => n.attrs.data?.id === edge.from);
@@ -88,6 +89,7 @@ export function useStepGraph(mainLayer, stageRef) {
       fill: 'black',
       pointerLength: 8,
       pointerWidth: 8,
+      listening: false,
     };
   };
 

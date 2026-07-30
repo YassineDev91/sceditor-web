@@ -227,6 +227,14 @@ export const useContractStorage = defineStore("contract", {
           case "Event":
             this.contract.events = this.contract.events.filter(ev => ev !== element);
             break;
+          case "Action":
+          case "Call":
+          case "Emit":
+          case "Decision":
+          case "Return":
+          case "Revert":
+            this.deleteBodyStep(this.selectedFunction, element.id);
+            break;
           default:
             console.warn("⚠️ Unknown element type:", type);
         }

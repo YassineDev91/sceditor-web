@@ -1,6 +1,6 @@
 <!-- Step.vue -->
 <template>
-    <v-group ref="groupRef" :config="groupConfig" @dragmove="(e) => emit('dragmove', e)" @mousedown="handleSelect">
+    <v-group ref="groupRef" :config="groupConfig" @dragend="(e) => emit('dragend', e)" @mousedown="handleSelect">
         <v-line v-if="isDecision" :config="diamondConfig"></v-line>
         <v-rect v-else ref="rectRef" :config="rectConfig"></v-rect>
         <v-text :config="textConfig" />
@@ -18,7 +18,7 @@ import { useImage } from 'vue-konva';
 import { useContractStorage } from '@/stores/contract';
 import ContentRectangle from './ContentRectangle.vue';
 
-const emit = defineEmits(['dragmove', 'select', 'start-connect', 'set-start']);
+const emit = defineEmits(['dragend', 'select', 'start-connect', 'set-start']);
 const fileStore = useContractStorage();
 
 const props = defineProps({
@@ -46,7 +46,7 @@ const isDecision = props.step?.cmp_type === 'Decision';
 const groupRef = ref({});
 const rectRef = ref({});
 
-const rectConfig = ref({
+const rectConfig = computed(() => ({
     x: 0,
     y: 0,
     width: WIDTH,
@@ -55,9 +55,9 @@ const rectConfig = ref({
     fill: style.fill,
     stroke: style.stroke,
     strokeWidth: 1,
-});
+}));
 
-const diamondConfig = ref({
+const diamondConfig = computed(() => ({
     points: [
         WIDTH / 2, 0,
         WIDTH, HEIGHT / 2,
@@ -68,12 +68,12 @@ const diamondConfig = ref({
     fill: style.fill,
     stroke: style.stroke,
     strokeWidth: 1,
-});
+}));
 
 // Decision's diamond interior is much narrower than the rect-sized layout
 // used by every other kind, so it gets its own small, centered content
 // region instead of the normal top-left-anchored layout.
-const textConfig = ref(isDecision
+const textConfig = computed(() => isDecision
     ? {
         x: WIDTH / 2 - 40,
         y: HEIGHT / 2 + 6,
@@ -120,7 +120,7 @@ const secondaryRect = computed(() => ({
 }));
 
 const [image] = useImage('src/assets/icons/' + style.icon);
-const iconConfig = ref(isDecision
+const iconConfig = computed(() => isDecision
     ? {
         x: WIDTH / 2 - 11,
         y: HEIGHT / 2 - 19,
@@ -168,14 +168,14 @@ function handleSetStart(e) {
     emit('set-start', props.step);
 }
 
-const groupConfig = ref({
+const groupConfig = computed(() => ({
     x: props.x,
     y: props.y,
     draggable: true,
     type: props.step?.cmp_type || 'Action',
     name: props.step?.name || 'Step',
     data: props.step,
-});
+}));
 
 function handleSelect() {
     console.log('✅ Step clicked:', props.step);
