@@ -23,18 +23,19 @@
 
 <script setup>
 import { useContractStorage } from '@/stores/contract'
+import { nextPalettePosition } from './paletteLayout.js'
 var fileStore = useContractStorage()
 
 
 const elements = [
     // SCD
-    { label: 'Struct', type: 'struct', icon: 'struct', stage: 'SCD', action: () => { fileStore.createStructElement({ x: 100, y: 100 }) } },
-    { label: 'Variable', type: 'variable', icon: 'variable', stage: 'SCD', action: () => { fileStore.createVariableElement({ x: 100, y: 100 }) } },
-    { label: 'Function', type: 'function', icon: 'function', stage: 'SCD', action: () => { fileStore.createFunctionElement({ x: 100, y: 100 }) } },
-    { label: 'Enum', type: 'enum', icon: 'enum', stage: 'SCD', action: () => { fileStore.createEnumElement({ x: 100, y: 100 }) }},
-    { label: 'Guard', type: 'guard', icon: 'modifier', stage: 'SCD', action: () => { fileStore.createGuardElement({ x: 100, y: 100 }) }},
-    { label: 'ErrorDeclaration', type: 'error', icon: 'error', stage: 'SCD', action: () => { fileStore.createErrorDeclarationElement({ x: 100, y: 100 }) }},
-    { label: 'Event', type: 'event', icon: 'emit', stage: 'SCD', action: () => { fileStore.createEventElement({ x: 100, y: 100 }) }},
+    { label: 'Struct', type: 'struct', icon: 'struct', stage: 'SCD', action: () => { fileStore.createStructElement(nextPalettePosition(fileStore.contract)) } },
+    { label: 'Variable', type: 'variable', icon: 'variable', stage: 'SCD', action: () => { fileStore.createVariableElement(nextPalettePosition(fileStore.contract)) } },
+    { label: 'Function', type: 'function', icon: 'function', stage: 'SCD', action: () => { fileStore.createFunctionElement(nextPalettePosition(fileStore.contract)) } },
+    { label: 'Enum', type: 'enum', icon: 'enum', stage: 'SCD', action: () => { fileStore.createEnumElement(nextPalettePosition(fileStore.contract)) }},
+    { label: 'Guard', type: 'guard', icon: 'modifier', stage: 'SCD', action: () => { fileStore.createGuardElement(nextPalettePosition(fileStore.contract)) }},
+    { label: 'ErrorDeclaration', type: 'error', icon: 'error', stage: 'SCD', action: () => { fileStore.createErrorDeclarationElement(nextPalettePosition(fileStore.contract)) }},
+    { label: 'Event', type: 'event', icon: 'emit', stage: 'SCD', action: () => { fileStore.createEventElement(nextPalettePosition(fileStore.contract)) }},
     { label: 'Literal', type: 'literal', icon: 'three-point', stage: 'SCD', },
     // {  label: 'Return', type: 'return', icon: '' },
     // {  label: 'Parameter', type: 'parameter', icon: '' },
