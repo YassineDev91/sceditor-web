@@ -117,11 +117,19 @@ describe('nextStepPosition', () => {
 
   it('places each subsequent step further down, never overlapping', () => {
     const owner = { body: createStepGraph({ steps: [createActionStep('a'), createActionStep('b')] }) }
-    expect(nextStepPosition(owner)).toEqual({ x: 50, y: 250 })
+    expect(nextStepPosition(owner)).toEqual({ x: 50, y: 450 })
   })
 
   it('tolerates an old-shape body', () => {
     const owner = { body: { type: 'Block', statements: [{}] } }
     expect(nextStepPosition(owner)).toEqual({ x: 50, y: 50 })
+  })
+
+  it('produces strictly non-overlapping positions across consecutive step counts', () => {
+    const positions = [0, 1, 2, 3].map(n => {
+      const steps = Array.from({ length: n }, (_, i) => createActionStep(`s${i}`))
+      return nextStepPosition({ body: createStepGraph({ steps }) }).y
+    })
+    expect(positions).toEqual([50, 250, 450, 650])
   })
 })

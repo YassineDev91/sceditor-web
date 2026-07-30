@@ -100,5 +100,5 @@ const STEP_VERTICAL_GAP = 200
 // instead of a ~160x100 structural element).
 export function nextStepPosition(bodyOwner) {
   const body = normalizeBody(bodyOwner?.body)
-  return { x: STEP_BASE_X, y: STEP_BASE_Y + Math.max(0, body.steps.length - 1) * STEP_VERTICAL_GAP }
+  return { x: STEP_BASE_X, y: STEP_BASE_Y + body.steps.length * STEP_VERTICAL_GAP }
 }
