@@ -8,7 +8,7 @@
         </button>
 
         <!-- Canvas Controls Toolbar (positioned absolutely above canvas) -->
-        <CanvasControls :zoom="zoomLevel" :gridEnabled="gridVisible" :snapToGrid="snapToGridEnabled"
+        <CanvasControls v-if="!ui.codeDrawerOpen" :zoom="zoomLevel" :gridEnabled="gridVisible" :snapToGrid="snapToGridEnabled"
             :panMode="isPanMode" :canUndo="fileStore.canUndo" :canRedo="fileStore.canRedo"
             :undoCount="fileStore.undoCount" :redoCount="fileStore.redoCount" @zoom-in="handleZoomIn"
             @zoom-out="handleZoomOut" @zoom-reset="handleZoomReset" @toggle-grid="toggleGrid"

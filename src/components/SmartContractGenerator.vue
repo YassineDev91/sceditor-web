@@ -65,6 +65,7 @@
 <script setup>
 import { useContractStorage } from "@/stores/contract";
 import { useSettingsStore } from "@/stores/settings";
+import { useUIStore } from "@/stores/uiStore";
 import { InboxIcon } from "@heroicons/vue/24/outline";
 import { computed, ref, watch } from "vue";
 import Drawer from "./Drawer.vue";
@@ -78,7 +79,12 @@ const verified = ref(null);
 var showDrawer = ref(false)
 const fileStore = useContractStorage()
 const settingsStore = useSettingsStore()
+const ui = useUIStore()
 const sc_language = ref("");
+
+// Keep the shared UI store in sync so the canvas toolbar can hide itself
+// while this drawer is open (it otherwise renders on top of the drawer).
+watch(showDrawer, (open) => ui.setCodeDrawerOpen(open));
 
 // Provider and model selection from settings store
 const selectedProvider = computed(() => settingsStore.llm.provider);
