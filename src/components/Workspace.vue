@@ -45,7 +45,8 @@
 
                     <struct v-for="struct in fileStore.contract.structs" :key="struct.name" :name="struct.name"
                         :data="struct" :literals="struct.literals" :x="struct.x" :y="struct.y"
-                        :selected="isElementSelected(struct)" @click="fileStore.showProperties(struct)" />
+                        :selected="isElementSelected(struct)" @click="fileStore.showProperties(struct)"
+                        @dragend="(e) => handleScdDragMove(e, struct)" />
 
                     <function v-for="_function in fileStore.contract.functions" :key="_function.id"
                         :name="_function.name" :x="_function.x" :y="_function.y" :data="_function"
