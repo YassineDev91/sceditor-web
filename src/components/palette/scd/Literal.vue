@@ -2,18 +2,29 @@
     <v-group>
         <v-rect ref="textRectRef" :config="textRectConfig"></v-rect>
         <!-- <v-text ref="textRectRef" :config="visibilityConfig"></v-text> -->
-        <v-text ref="literalTextRef" :config="nameConfig"></v-text>
-        <v-text v-if="props.data?.type" :config="typeConfig"></v-text>
+        <v-text ref="literalTextRef" :config="nameConfig" @mouseenter="handleNameMouseEnter" @mouseleave="canvasTooltip.hideTooltip()"></v-text>
+        <v-text v-if="props.data?.type" :config="typeConfig" @mouseenter="handleTypeMouseEnter" @mouseleave="canvasTooltip.hideTooltip()"></v-text>
     </v-group>
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, inject } from "vue";
 import { computed } from 'vue'
 import { formatTypeNode } from '@/schema/typeFormat'
 import { useContractStorage } from '@/stores/contract'
 
 const fileStore = useContractStorage()
+const canvasTooltip = inject('canvasTooltip');
+
+function handleNameMouseEnter(e) {
+  const pos = e.target.getStage().getRelativePointerPosition();
+  canvasTooltip.showTooltip(props.name, pos.x, pos.y);
+}
+
+function handleTypeMouseEnter(e) {
+  const pos = e.target.getStage().getRelativePointerPosition();
+  canvasTooltip.showTooltip(typeConfig.value.text, pos.x, pos.y);
+}
 
 var textRectRef = ref({})
 var literalTextRef = ref({})
