@@ -103,6 +103,12 @@
                         @click="handleDeleteEdge(edge)"></v-circle>
                     <v-line v-if="connectingLineConfig" :config="connectingLineConfig"></v-line>
                 </v-layer>
+
+                <!-- Tooltip Layer (always on top, regardless of which layer is active) -->
+                <v-layer>
+                    <v-rect v-if="canvasTooltip.visible.value" :config="canvasTooltip.tooltipRectConfig.value"></v-rect>
+                    <v-text v-if="canvasTooltip.visible.value" :config="canvasTooltip.tooltipTextConfig.value"></v-text>
+                </v-layer>
             </v-stage>
         </div>
     </div>
@@ -130,7 +136,7 @@
 
 
 <script setup>
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, inject, nextTick, onMounted, provide, ref } from 'vue';
 import Contract from '@/components/palette/scd/Contract.vue'
 import Variable from '@/components/palette/scd/Variable.vue'
 import Struct from '@/components/palette/scd/Struct.vue'
@@ -155,6 +161,7 @@ import { useStepGraph } from '@/composables/useStepGraph';
 import { useAutosave } from '@/composables/useAutosave';
 import { useCanvasKeyboardShortcuts } from '@/composables/useCanvasKeyboardShortcuts';
 import { useLayerSwitching } from '@/composables/useLayerSwitching';
+import { useCanvasTooltip } from '@/composables/useCanvasTooltip';
 
 const fileStore = useContractStorage()
 const projectsStore = useProjectsStore()
@@ -168,6 +175,9 @@ const functionLayer = ref(null)
 const workspaceRef = ref(null)
 
 const { widthCanvaRef, heightCanvaRef, stageConfig } = useCanvasSizing(workspaceRef, stageRef);
+
+const canvasTooltip = useCanvasTooltip();
+provide('canvasTooltip', canvasTooltip);
 
 const {
   zoomLevel, gridVisible, snapToGridEnabled, isPanMode,
