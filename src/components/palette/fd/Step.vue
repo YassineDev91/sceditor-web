@@ -20,6 +20,7 @@ import { useImage } from 'vue-konva';
 import { useContractStorage } from '@/stores/contract';
 import ContentRectangle from './ContentRectangle.vue';
 import { SPACING_UNIT, ICON_SIZE, CORNER_RADIUS, STROKE_WIDTH_NORMAL, HANDLE_VISIBLE_RADIUS, HANDLE_HIT_RADIUS } from '@/constants/nodeStyleTokens';
+import { isMultiSelectModifier } from '@/utils/canvasEvents';
 
 const emit = defineEmits(['dragging', 'dragend', 'select', 'start-connect', 'set-start']);
 const fileStore = useContractStorage();
@@ -194,9 +195,9 @@ const groupConfig = computed(() => ({
     data: props.step,
 }));
 
-function handleSelect() {
+function handleSelect(e) {
     console.log('✅ Step clicked:', props.step);
-    emit('select', props.step);
+    emit('select', props.step, isMultiSelectModifier(e));
 }
 
 function handleStartConnect(e) {

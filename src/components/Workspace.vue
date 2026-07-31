@@ -43,18 +43,18 @@
                     }" />
                     <variable v-for="variable in fileStore.contract.variables" :key="variable.id" :data="variable"
                         :x="variable.x" :y="variable.y" :selected="isElementSelected(variable)"
-                        @click="fileStore.showProperties(variable)" @dragend="(e) => handleScdDragMove(e, variable)" />
+                        @click="(e) => fileStore.showProperties(variable, isMultiSelectModifier(e))" @dragend="(e) => handleScdDragMove(e, variable)" />
 
                     <struct v-for="struct in fileStore.contract.structs" :key="struct.name" :name="struct.name"
                         :data="struct" :literals="struct.literals" :x="struct.x" :y="struct.y"
-                        :selected="isElementSelected(struct)" @click="fileStore.showProperties(struct)"
+                        :selected="isElementSelected(struct)" @click="(e) => fileStore.showProperties(struct, isMultiSelectModifier(e))"
                         @dragend="(e) => handleScdDragMove(e, struct)" />
 
                     <function v-for="_function in fileStore.contract.functions" :key="_function.id"
                         :name="_function.name" :x="_function.x" :y="_function.y" :data="_function"
                         :params="_function.params" :statements="bodySteps(_function)"
                         :returnParams="_function.returnParams" :selected="isElementSelected(_function)"
-                        @click="fileStore.showProperties(_function)" @dblclick="showFunctionLayer(_function)"
+                        @click="(e) => fileStore.showProperties(_function, isMultiSelectModifier(e))" @dblclick="showFunctionLayer(_function)"
                         @dragend="(e) => handleScdDragMove(e, _function)" />
 
                     <function v-if="fileStore.contract._constructor" name="<<constructor>>"
@@ -62,29 +62,29 @@
                         :data="fileStore.contract._constructor" :params="fileStore.contract._constructor.params"
                         :statements="bodySteps(fileStore.contract._constructor)"
                         :selected="isElementSelected(fileStore.contract._constructor)"
-                        @click="fileStore.showProperties(fileStore.contract._constructor)"
+                        @click="(e) => fileStore.showProperties(fileStore.contract._constructor, isMultiSelectModifier(e))"
                         @dblclick="showFunctionLayer(fileStore.contract._constructor)"
                         @dragend="(e) => handleScdDragMove(e, fileStore.contract._constructor)" />
 
                     <Enum v-for="enumItem in fileStore.contract.enums" :key="enumItem.name" :name="enumItem.name"
                         :data="enumItem" :x="enumItem.x" :y="enumItem.y" :values="enumItem.values"
-                        :selected="isElementSelected(enumItem)" @click="fileStore.showProperties(enumItem)"
+                        :selected="isElementSelected(enumItem)" @click="(e) => fileStore.showProperties(enumItem, isMultiSelectModifier(e))"
                         @dragend="(e) => handleScdDragMove(e, enumItem)" />
 
                     <Guard v-for="guard in fileStore.contract.guards" :key="guard.id"
                         :name="guard.name" :data="guard" :x="guard.x" :y="guard.y" :params="guard.parameters"
                         :statements="bodySteps(guard)" :selected="isElementSelected(guard)"
-                        @click="fileStore.showProperties(guard)" @dblclick="showFunctionLayer(guard)"
+                        @click="(e) => fileStore.showProperties(guard, isMultiSelectModifier(e))" @dblclick="showFunctionLayer(guard)"
                         @dragend="(e) => handleScdDragMove(e, guard)" />
 
                     <ErrorDeclaration v-for="_error in fileStore.contract.errorDeclarations" :key="_error.name"
                         :name="_error.name" :data="_error" :x="_error.x" :y="_error.y" :literals="_error.literals"
-                        :selected="isElementSelected(_error)" @click="fileStore.showProperties(_error)"
+                        :selected="isElementSelected(_error)" @click="(e) => fileStore.showProperties(_error, isMultiSelectModifier(e))"
                         @dragend="(e) => handleScdDragMove(e, _error)" />
 
                     <Event v-for="event in fileStore.contract.events" :key="event.id"
                         :name="event.name" :data="event" :x="event.x" :y="event.y"
-                        :selected="isElementSelected(event)" @click="fileStore.showProperties(event)"
+                        :selected="isElementSelected(event)" @click="(e) => fileStore.showProperties(event, isMultiSelectModifier(e))"
                         @dragend="(e) => handleScdDragMove(e, event)" />
                 </v-layer>
 
@@ -164,6 +164,7 @@ import { useAutosave } from '@/composables/useAutosave';
 import { useCanvasKeyboardShortcuts } from '@/composables/useCanvasKeyboardShortcuts';
 import { useLayerSwitching } from '@/composables/useLayerSwitching';
 import { useCanvasTooltip } from '@/composables/useCanvasTooltip';
+import { isMultiSelectModifier } from '@/utils/canvasEvents';
 
 const fileStore = useContractStorage()
 const projectsStore = useProjectsStore()
@@ -204,9 +205,9 @@ const bodySteps = (owner) => graphOf(owner).steps;
 
 const stepGraph = computed(() => graphOf(selectedFunction.value));
 
-function handleStatementSelect(statement) {
+function handleStatementSelect(statement, multiSelect = false) {
   console.log('📍 Statement selected in Workspace:', statement)
-  fileStore.showProperties(statement)
+  fileStore.showProperties(statement, multiSelect)
 }
 
 function handleDeleteEdge(edge) {
