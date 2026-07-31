@@ -2,6 +2,12 @@ import { ref } from 'vue';
 import { useContractStorage } from '@/stores/contract';
 import { normalizeBody } from '@/schema/steps';
 
+// Must match Step.vue's own WIDTH/HEIGHT constants — duplicated locally
+// (same convention Step.vue itself uses) rather than imported, since these
+// describe the fixed box every step renders at, not schema data.
+const STEP_WIDTH = 200;
+const STEP_HEIGHT = 80;
+
 export function useStepGraph(layerRef, stageRef) {
   const fileStore = useContractStorage();
 
@@ -9,6 +15,16 @@ export function useStepGraph(layerRef, stageRef) {
   // another step, to draw a new FlowEdge.
   const pendingConnection = ref(null); // { fromStepId } | null
   const connectingLineConfig = ref(null);
+
+  // Bumped on every `dragmove` (not persisted to the store — persistence
+  // only happens once, on `dragend`, to avoid a saveHistory() deep-clone on
+  // every animation frame). Reading this inside edgeArrowConfig gives it a
+  // reactive dependency that changes on every drag frame, so connected
+  // arrows redraw live instead of only updating once the drag completes.
+  const dragTick = ref(0);
+  const bumpDragTick = () => {
+    dragTick.value++;
+  };
 
   const graphOf = (bodyOwner) => normalizeBody(bodyOwner?.body);
 
@@ -31,16 +47,36 @@ export function useStepGraph(layerRef, stageRef) {
     const fromNode = layer.findOne((n) => n.attrs.data?.id === pendingConnection.value.fromStepId);
     if (!fromNode) return;
 
-    const fromBox = fromNode.getClientRect({ relativeTo: layer });
+    // fromNode.x()/y() is the step group's own live local position (updated
+    // by Konva in real time during a drag) — using the known box size here
+    // instead of getClientRect() avoids the decorations (connector handle,
+    // start handle, start marker) skewing where the line actually starts.
+    const fromX = fromNode.x() + STEP_WIDTH;
+    const fromY = fromNode.y() + STEP_HEIGHT / 2;
     const pos = layer.getRelativePointerPosition();
     if (!pos) return;
 
     connectingLineConfig.value = {
-      points: [fromBox.x + fromBox.width, fromBox.y + fromBox.height / 2, pos.x, pos.y],
+      points: [fromX, fromY, pos.x, pos.y],
       stroke: '#999999',
       dash: [4, 4],
       listening: false,
     };
+  };
+
+  // Step.vue's outer group is the only ancestor that carries `attrs.data`
+  // (the actual step object) — but several of its children (e.g.
+  // ContentRectangle) wrap their own content in a nested <v-group> with no
+  // `data` attr. "Nearest Group ancestor" (Konva's findAncestor('Group'))
+  // can resolve to one of those inner groups instead of the step itself, so
+  // walk up until a `data`-bearing node is found rather than stopping at
+  // the first Group of any kind.
+  const findStepNode = (node) => {
+    let current = node;
+    while (current && !current.attrs?.data) {
+      current = current.getParent?.();
+    }
+    return current;
   };
 
   const finishConnectionAtPointer = (bodyOwner) => {
@@ -54,7 +90,7 @@ export function useStepGraph(layerRef, stageRef) {
     if (!stage || !pos) return;
 
     const shape = stage.getIntersection(pos);
-    const group = shape?.findAncestor('Group', true);
+    const group = shape ? findStepNode(shape) : null;
     const targetStep = group?.attrs?.data;
     if (!targetStep || targetStep.id === fromStepId) return;
 
@@ -67,6 +103,11 @@ export function useStepGraph(layerRef, stageRef) {
   };
 
   const edgeArrowConfig = (bodyOwner, edge) => {
+    // No semantic use of the value itself — reading it here just gives this
+    // function a reactive dependency on every drag frame (see dragTick above),
+    // so the arrow redraws live while either endpoint is being dragged.
+    dragTick.value;
+
     const layer = layerRef.value?.getNode();
     if (!layer) return { id: edge.id, points: [0, 0, 0, 0] };
 
@@ -74,13 +115,15 @@ export function useStepGraph(layerRef, stageRef) {
     const toNode = layer.findOne((n) => n.attrs.data?.id === edge.to);
     if (!fromNode || !toNode) return { id: edge.id, points: [0, 0, 0, 0] };
 
-    const fromBox = fromNode.getClientRect({ relativeTo: layer });
-    const toBox = toNode.getClientRect({ relativeTo: layer });
-
-    const fromX = fromBox.x + fromBox.width;
-    const fromY = fromBox.y + fromBox.height / 2;
-    const toX = toBox.x;
-    const toY = toBox.y + toBox.height / 2;
+    // .x()/.y() is each step group's own live local position — using the
+    // known box size instead of getClientRect() keeps the arrow anchored to
+    // the center of the plain rounded box's edges, not skewed by the
+    // connector handle / start handle / start marker that also live in the
+    // same group and would otherwise widen the group's bounding box.
+    const fromX = fromNode.x() + STEP_WIDTH;
+    const fromY = fromNode.y() + STEP_HEIGHT / 2;
+    const toX = toNode.x();
+    const toY = toNode.y() + STEP_HEIGHT / 2;
 
     return {
       id: edge.id,
@@ -93,9 +136,26 @@ export function useStepGraph(layerRef, stageRef) {
     };
   };
 
+  // Small clickable handle at an edge's midpoint, since the arrow itself is
+  // deliberately non-interactive (listening: false — otherwise it can catch
+  // a connection-drag drop meant for the step underneath it).
+  const edgeDeleteHandleConfig = (bodyOwner, edge) => {
+    const { points } = edgeArrowConfig(bodyOwner, edge);
+    const [x1, y1, x2, y2] = points;
+    return {
+      x: (x1 + x2) / 2,
+      y: (y1 + y2) / 2,
+      radius: 7,
+      fill: '#E57373',
+      stroke: '#B71C1C',
+      strokeWidth: 1,
+    };
+  };
+
   return {
     graphOf,
     handleStepDragMove,
+    bumpDragTick,
     startConnection,
     updateConnectionPreview,
     finishConnectionAtPointer,
@@ -103,5 +163,6 @@ export function useStepGraph(layerRef, stageRef) {
     pendingConnection,
     connectingLineConfig,
     edgeArrowConfig,
+    edgeDeleteHandleConfig,
   };
 }

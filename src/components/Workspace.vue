@@ -92,11 +92,15 @@
                 <v-layer ref="functionLayer" :visible="isFunctionLayerVisible" v-if="isFunctionLayerVisible">
                     <Step v-for="step in stepGraph.steps" :key="step.id" :step="step" :x="step.x" :y="step.y"
                         :is-start="step.id === stepGraph.startStepId"
+                        @dragging="bumpDragTick"
                         @dragend="(e) => handleStepDragMove(selectedFunction, e, step)"
                         @select="handleStatementSelect"
                         @start-connect="startConnection"
                         @set-start="(s) => fileStore.setBodyStartStep(selectedFunction, s.id)" />
                     <v-arrow v-for="edge in stepGraph.edges" :key="edge.id" :config="edgeArrowConfig(selectedFunction, edge)" />
+                    <v-circle v-for="edge in stepGraph.edges" :key="'del-' + edge.id"
+                        :config="edgeDeleteHandleConfig(selectedFunction, edge)"
+                        @click="handleDeleteEdge(edge)"></v-circle>
                     <v-line v-if="connectingLineConfig" :config="connectingLineConfig"></v-line>
                 </v-layer>
             </v-stage>
@@ -179,8 +183,9 @@ const {
 const { handleDrop, handleScdDragMove } = useStructuralDragAndDrop(stageRef, mainLayer);
 
 const {
-  graphOf, handleStepDragMove, startConnection, updateConnectionPreview,
+  graphOf, handleStepDragMove, bumpDragTick, startConnection, updateConnectionPreview,
   finishConnectionAtPointer, cancelConnection, connectingLineConfig, edgeArrowConfig,
+  edgeDeleteHandleConfig,
 } = useStepGraph(functionLayer, stageRef);
 
 const bodySteps = (owner) => graphOf(owner).steps;
@@ -190,6 +195,12 @@ const stepGraph = computed(() => graphOf(selectedFunction.value));
 function handleStatementSelect(statement) {
   console.log('📍 Statement selected in Workspace:', statement)
   fileStore.showProperties(statement)
+}
+
+function handleDeleteEdge(edge) {
+  const userConfirmed = confirm('Are you sure you want to delete this connection?');
+  if (!userConfirmed) return;
+  fileStore.deleteBodyFlowEdge(selectedFunction.value, edge.id);
 }
 
 useAutosave();

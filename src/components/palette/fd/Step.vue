@@ -1,6 +1,6 @@
 <!-- Step.vue -->
 <template>
-    <v-group ref="groupRef" :config="groupConfig" @dragend="(e) => emit('dragend', e)" @mousedown="handleSelect">
+    <v-group ref="groupRef" :config="groupConfig" @dragmove="(e) => emit('dragging', e)" @dragend="(e) => emit('dragend', e)" @mousedown="handleSelect">
         <v-line v-if="isDecision" :config="diamondConfig"></v-line>
         <v-rect v-else ref="rectRef" :config="rectConfig"></v-rect>
         <v-text :config="textConfig" />
@@ -18,7 +18,7 @@ import { useImage } from 'vue-konva';
 import { useContractStorage } from '@/stores/contract';
 import ContentRectangle from './ContentRectangle.vue';
 
-const emit = defineEmits(['dragend', 'select', 'start-connect', 'set-start']);
+const emit = defineEmits(['dragging', 'dragend', 'select', 'start-connect', 'set-start']);
 const fileStore = useContractStorage();
 
 const props = defineProps({
