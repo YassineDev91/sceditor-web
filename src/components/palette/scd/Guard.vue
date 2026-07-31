@@ -38,6 +38,7 @@ const groupConfig = computed(() => ({
   y: props.y,
   name: props.name,
   type: 'Guard',
+  data: props.data,
   draggable: true,
 }))
 

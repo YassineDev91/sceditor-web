@@ -49,6 +49,7 @@ const groupConfig = computed(() => ({
   y: props.y,
   name: props.name,
   type: 'Struct',
+  data: props.data,
   width: rectConfig.value.width,
   height: rectConfig.value.height,
   draggable: true

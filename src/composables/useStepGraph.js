@@ -1,6 +1,8 @@
 import { ref } from 'vue';
 import { useContractStorage } from '@/stores/contract';
+import { useSettingsStore } from '@/stores/settings';
 import { normalizeBody } from '@/schema/steps';
+import { snapValue } from '@/utils/snapToGrid';
 import { HANDLE_VISIBLE_RADIUS, HANDLE_HIT_RADIUS } from '@/constants/nodeStyleTokens';
 
 // Must match Step.vue's own WIDTH/HEIGHT constants — duplicated locally
@@ -9,8 +11,9 @@ import { HANDLE_VISIBLE_RADIUS, HANDLE_HIT_RADIUS } from '@/constants/nodeStyleT
 const STEP_WIDTH = 200;
 const STEP_HEIGHT = 80;
 
-export function useStepGraph(layerRef, stageRef) {
+export function useStepGraph(layerRef, stageRef, groupDrag, snapToGridEnabled) {
   const fileStore = useContractStorage();
+  const settingsStore = useSettingsStore();
 
   // Set while the user is dragging from a step's connector handle toward
   // another step, to draw a new FlowEdge.
@@ -29,10 +32,72 @@ export function useStepGraph(layerRef, stageRef) {
 
   const graphOf = (bodyOwner) => normalizeBody(bodyOwner?.body);
 
+  const resolveStepNode = (element) => layerRef.value?.getNode()?.findOne((n) => n.attrs.data?.id === element.id);
+
+  // dragstart: only begins a group move when the dragged step is part of an
+  // active multi-selection.
+  const handleStepDragStart = (bodyOwner, step) => {
+    // Unconditional reset — clears any stale state left over from a drag
+    // that never reached dragend (e.g. mouse released outside the window),
+    // so a later single-step drag can never inherit a stale multi-step
+    // group. startGroupDrag([step]) filters the dragged step out of the
+    // offsets list, naturally producing an empty (inactive) group drag.
+    groupDrag.startGroupDrag(step, [step]);
+
+    const graph = graphOf(bodyOwner);
+    const selectedSteps = graph.steps.filter(s => fileStore.selectedElements.includes(s));
+    if (selectedSteps.length > 1 && selectedSteps.includes(step)) {
+      groupDrag.startGroupDrag(step, selectedSteps);
+    }
+  };
+
+  // dragmove: continuous, visual-only. Snaps the dragged step to the grid (if
+  // enabled), repositions every other selected step's live node by the same
+  // delta if this is a group move, and bumps dragTick so connected arrows
+  // keep redrawing live (unchanged behavior, now folded into this handler
+  // instead of being called separately from Workspace.vue).
+  const handleStepDragMoveLive = (bodyOwner, e, step) => {
+    const node = e.target;
+    let { x, y } = node.position();
+
+    if (snapToGridEnabled.value) {
+      x = snapValue(x, settingsStore.editor.gridSize);
+      y = snapValue(y, settingsStore.editor.gridSize);
+      node.position({ x, y });
+    }
+
+    if (groupDrag.isGroupDragActive()) {
+      groupDrag.applyLiveDelta(resolveStepNode, x, y);
+    }
+
+    bumpDragTick();
+  };
+
   const handleStepDragMove = (bodyOwner, e, step) => {
     const node = e.target;
     const { x, y } = node.position();
-    fileStore.updateBodyStepPosition(bodyOwner, step.id, x, y);
+
+    const body = normalizeBody(bodyOwner.body);
+
+    const draggedStep = body.steps.find(s => s.id === step.id);
+    if (draggedStep) {
+      draggedStep.x = x;
+      draggedStep.y = y;
+    }
+
+    if (groupDrag.isGroupDragActive()) {
+      const others = groupDrag.finishGroupDrag(x, y);
+      others.forEach(({ element, x: ox, y: oy }) => {
+        const otherStep = body.steps.find(s => s.id === element.id);
+        if (otherStep) {
+          otherStep.x = ox;
+          otherStep.y = oy;
+        }
+      });
+    }
+
+    bodyOwner.body = body;
+    fileStore.saveHistory();
   };
 
   const startConnection = (step) => {
@@ -167,6 +232,8 @@ export function useStepGraph(layerRef, stageRef) {
   return {
     graphOf,
     handleStepDragMove,
+    handleStepDragStart,
+    handleStepDragMoveLive,
     bumpDragTick,
     startConnection,
     updateConnectionPreview,

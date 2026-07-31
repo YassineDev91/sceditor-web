@@ -1,10 +1,72 @@
 // src/composables/useStructuralDragAndDrop.js
 import { useContractStorage } from '@/stores/contract';
+import { useSettingsStore } from '@/stores/settings';
+import { snapValue } from '@/utils/snapToGrid';
 
 const FD_STEP_KINDS = ['Action', 'Call', 'Emit', 'Decision', 'Return', 'Revert'];
 
-export function useStructuralDragAndDrop(stageRef, mainLayer) {
+export function useStructuralDragAndDrop(stageRef, mainLayer, groupDrag, snapToGridEnabled) {
   const fileStore = useContractStorage();
+  const settingsStore = useSettingsStore();
+
+  const resolveScdNode = (element) => {
+    const layer = mainLayer.value?.getNode();
+    if (!layer) return null;
+    return layer.getChildren().find(n => n.attrs.data === element);
+  };
+
+  // dragstart: only begins a group move when the dragged element is part of
+  // an active multi-selection — dragging a lone element never touches
+  // useGroupDrag at all.
+  const handleScdDragStart = (e, cmp) => {
+    // Unconditional reset — clears any stale state left over from a drag
+    // that never reached dragend (e.g. mouse released outside the window),
+    // so a later single-element drag can never inherit a stale multi-element
+    // group. startGroupDrag([cmp]) filters the dragged element out of the
+    // offsets list, naturally producing an empty (inactive) group drag.
+    groupDrag.startGroupDrag(cmp, [cmp]);
+
+    // fileStore.selectedElements can include leftover FD step objects from
+    // before a layer switch (switching layers doesn't clear selection), so
+    // narrow it down to genuine SCD elements before treating it as a group —
+    // otherwise a stray selected Step would get silently repositioned here.
+    const scdElements = [
+      ...fileStore.contract.variables || [],
+      ...fileStore.contract.structs || [],
+      ...fileStore.contract.functions || [],
+      ...fileStore.contract.enums || [],
+      ...fileStore.contract.guards || [],
+      ...fileStore.contract.errorDeclarations || [],
+      ...fileStore.contract.events || [],
+    ];
+    if (fileStore.contract._constructor) {
+      scdElements.push(fileStore.contract._constructor);
+    }
+
+    const selectedScdElements = fileStore.selectedElements.filter(el => scdElements.includes(el));
+    if (selectedScdElements.length > 1 && selectedScdElements.includes(cmp)) {
+      groupDrag.startGroupDrag(cmp, selectedScdElements);
+    }
+  };
+
+  // dragmove: continuous, visual-only. Snaps the dragged node to the grid
+  // (if enabled) and, if this is a group move, repositions every other
+  // selected element's live Konva node by the same delta. Nothing is
+  // persisted here — persistence happens once, on dragend.
+  const handleScdDragMoveLive = (e, cmp) => {
+    const node = e.target;
+    let { x, y } = node.position();
+
+    if (snapToGridEnabled.value) {
+      x = snapValue(x, settingsStore.editor.gridSize);
+      y = snapValue(y, settingsStore.editor.gridSize);
+      node.position({ x, y });
+    }
+
+    if (groupDrag.isGroupDragActive()) {
+      groupDrag.applyLiveDelta(resolveScdNode, x, y);
+    }
+  };
 
   const handleScdDragMove = (e, cmp) => {
     const node = e.target;
@@ -19,7 +81,15 @@ export function useStructuralDragAndDrop(stageRef, mainLayer) {
     cmp.x = x;
     cmp.y = y;
 
-    // Save history after drag
+    if (groupDrag.isGroupDragActive()) {
+      const others = groupDrag.finishGroupDrag(x, y);
+      others.forEach(({ element, x: ox, y: oy }) => {
+        element.x = ox;
+        element.y = oy;
+      });
+    }
+
+    // Save history once for the whole move (dragged element plus any group).
     fileStore.saveHistory();
   };
 
@@ -95,5 +165,5 @@ export function useStructuralDragAndDrop(stageRef, mainLayer) {
     }
   };
 
-  return { handleDrop, handleScdDragMove };
+  return { handleDrop, handleScdDragMove, handleScdDragStart, handleScdDragMoveLive };
 }

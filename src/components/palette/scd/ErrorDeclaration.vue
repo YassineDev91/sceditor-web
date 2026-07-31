@@ -41,6 +41,7 @@ const groupConfig = computed(() => ({
   y: props.y,
   name: props.name,
   type: 'ErrorDeclaration',
+  data: props.data,
   draggable: true,
 }))
 

@@ -41,6 +41,7 @@ const groupConfig = computed(() => ({
   y: props.y,
   name: props.name,
   type: 'Event',
+  data: props.data,
   draggable: true,
 }))
 

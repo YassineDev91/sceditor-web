@@ -1,6 +1,6 @@
 <!-- Step.vue -->
 <template>
-    <v-group ref="groupRef" :config="groupConfig" @dragmove="(e) => emit('dragging', e)" @dragend="(e) => emit('dragend', e)" @mousedown="handleSelect">
+    <v-group ref="groupRef" :config="groupConfig" @dragstart="(e) => emit('dragstart', e)" @dragmove="(e) => emit('dragging', e)" @dragend="(e) => emit('dragend', e)" @mousedown="handleSelect">
         <v-line v-if="isDecision" :config="diamondConfig"></v-line>
         <v-rect v-else ref="rectRef" :config="rectConfig"></v-rect>
         <v-text :config="textConfig" />
@@ -20,8 +20,9 @@ import { useImage } from 'vue-konva';
 import { useContractStorage } from '@/stores/contract';
 import ContentRectangle from './ContentRectangle.vue';
 import { SPACING_UNIT, ICON_SIZE, CORNER_RADIUS, STROKE_WIDTH_NORMAL, HANDLE_VISIBLE_RADIUS, HANDLE_HIT_RADIUS } from '@/constants/nodeStyleTokens';
+import { isMultiSelectModifier } from '@/utils/canvasEvents';
 
-const emit = defineEmits(['dragging', 'dragend', 'select', 'start-connect', 'set-start']);
+const emit = defineEmits(['dragging', 'dragstart', 'dragend', 'select', 'start-connect', 'set-start']);
 const fileStore = useContractStorage();
 
 const props = defineProps({
@@ -194,9 +195,16 @@ const groupConfig = computed(() => ({
     data: props.step,
 }));
 
-function handleSelect() {
+function handleSelect(e) {
     console.log('✅ Step clicked:', props.step);
-    emit('select', props.step);
+    const multi = isMultiSelectModifier(e);
+    // A plain press on an already-multi-selected step may be the start of a
+    // group drag — collapsing the selection here (via showProperties's
+    // clearSelection) would kill the group drag before dragstart ever fires.
+    if (!multi && props.step?.isSelected && fileStore.selectedElements.length > 1) {
+        return;
+    }
+    emit('select', props.step, multi);
 }
 
 function handleStartConnect(e) {
