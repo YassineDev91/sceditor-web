@@ -8,7 +8,7 @@
         <v-image :config="iconConfig" />
         <v-text v-if="isReadOnly" :config="mutabilityBadgeConfig" />
         <v-text v-if="isPayable" :config="payableBadgeConfig" />
-        <v-text v-if="guardNames.length > 0" :config="guardChipConfig" />
+        <v-text v-if="guardNames.length > 0" :config="guardChipConfig" @mouseenter="handleGuardMouseEnter" @mouseleave="canvasTooltip.hideTooltip()" />
         <!-- Parameters -->
         <Parameter v-for="param in params" :key="param.id" :name="param.name" :x="props.x" :y="props.y - 20" />
 
@@ -22,13 +22,16 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, inject, ref } from "vue";
 import Parameter from "./Parameter.vue";
 import Return from './Return.vue';
 import Statement from '@/components/palette/scd/Statement.vue';
 import { useImage } from "vue-konva";
 import { useContractStorage } from "@/stores/contract";
-import { data } from "autoprefixer";
+import { SPACING_UNIT, ICON_SIZE, CORNER_RADIUS, STROKE_WIDTH_NORMAL, STROKE_WIDTH_SELECTED } from '@/constants/nodeStyleTokens';
+import { measureTextWidth } from '@/utils/measureText';
+
+const canvasTooltip = inject('canvasTooltip');
 
 const emit = defineEmits(['click', 'dragend', 'dblclick']);
 
@@ -50,7 +53,13 @@ const groupConfig = computed(() => ({
 }));    
 
 const rectRef = ref(null);
-const maxWidth = ref(170);
+const NAME_X = SPACING_UNIT * 2 + ICON_SIZE + SPACING_UNIT; // 36
+const MIN_WIDTH = 170;
+const RIGHT_PADDING = SPACING_UNIT * 2; // 8
+const badgeReserve = computed(() => (isReadOnly.value ? 30 : 0) + (isPayable.value ? 20 : 0));
+const maxWidth = computed(() =>
+  Math.max(MIN_WIDTH, NAME_X + measureTextWidth(props.name, 12) + badgeReserve.value + RIGHT_PADDING)
+);
 
 const baseHeight = 50;       // fixed top area
 const statementHeight = 30;  // height per statement
@@ -76,28 +85,21 @@ const props = defineProps({
 const rectConfig = computed(() => ({
     x: 0,
     y: 0,
-    width: maxWidth.value, // Bind to dynamic maxWidth
+    width: maxWidth.value,
     height: dynamicHeight.value,
     stroke: props.name == '<<constructor>>' ? '#D6B656' : '#ADD8F6',
     fill: props.name == '<<constructor>>' ? '#FBF7E3' : '#E0F2FE',
-    cornerRadius: 5,
-    strokeWidth: 1,
-    // dash: [3, 2],
+    cornerRadius: CORNER_RADIUS,
+    strokeWidth: STROKE_WIDTH_NORMAL,
 }));
 
-const nameConfig = computed(() => {
-    const badgeReserve = (isReadOnly.value ? 30 : 0) + (isPayable.value ? 20 : 0);
-    return {
-        x: 35,
-        y: 10,
-        fontSize: 12,
-        text: props.name,
-        data: props.data,
-        width: rectConfig.value.width - 35 - 10 - badgeReserve,
-        ellipsis: true,
-        wrap: 'none',
-    };
-});
+const nameConfig = computed(() => ({
+    x: NAME_X,
+    y: SPACING_UNIT * 2, // 8
+    fontSize: 12,
+    text: props.name,
+    data: props.data,
+}));
 
 const mutabilityBadgeConfig = computed(() => ({
     x: rectConfig.value.width - 28,
@@ -116,15 +118,20 @@ const payableBadgeConfig = computed(() => ({
 }));
 
 const guardChipConfig = computed(() => ({
-    x: 5,
+    x: SPACING_UNIT * 2, // 8
     y: dynamicHeight.value - guardRowHeight + 2,
     text: guardNames.value.join(', '),
     fontSize: 9,
     fill: '#6b7280',
-    width: maxWidth.value - 10,
+    width: maxWidth.value - SPACING_UNIT * 4, // 16
     ellipsis: true,
     wrap: 'none',
 }));
+
+function handleGuardMouseEnter(e) {
+  const pos = e.target.getStage().getRelativePointerPosition();
+  canvasTooltip.showTooltip(guardNames.value.join(', '), pos.x, pos.y);
+}
 
 const returnConfig = computed(() => ({
 
@@ -137,32 +144,20 @@ const paramsConfig = computed(() => ({
 }));
 
 const selectionConfig = computed(() => ({
-    width: rectConfig.value.width, // Bind to dynamic maxWidth
+    width: rectConfig.value.width,
     height: rectConfig.value.height,
     stroke: '#3498db',
-    cornerRadius: 5,
-    strokeWidth: 1.5,
+    cornerRadius: CORNER_RADIUS,
+    strokeWidth: STROKE_WIDTH_SELECTED,
 }));
 
 const imageAddress = props.name == '<<constructor>>' ? 'src/assets/icons/constructor_icon.png' : "src/assets/icons/function.png"
 const [image] = useImage(imageAddress)
 const iconConfig = ref({
-    x: 7,
-    y:  7,
-    width: 20,
-    height: 20,
+    x: SPACING_UNIT * 2, // 8
+    y: SPACING_UNIT * 2, // 8
+    width: ICON_SIZE,
+    height: ICON_SIZE,
     image: image
 })
-
-onMounted(() => {
-    // console.log("statements",props.statements);
-    // console.log("params",props.params);
-})
-
-function handleClick() {
-    console.log("✅ Clicked struct with data:", props.data);
-    console.log('🧪 props.data.type =', props.data?.type)
-    console.log('🧪 coordinates =', rectConfig.value.x, ",", rectConfig.value.y)
-    fileStore.showProperties(props.data);
-}
 </script>
