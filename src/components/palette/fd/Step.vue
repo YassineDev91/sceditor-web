@@ -197,7 +197,14 @@ const groupConfig = computed(() => ({
 
 function handleSelect(e) {
     console.log('✅ Step clicked:', props.step);
-    emit('select', props.step, isMultiSelectModifier(e));
+    const multi = isMultiSelectModifier(e);
+    // A plain press on an already-multi-selected step may be the start of a
+    // group drag — collapsing the selection here (via showProperties's
+    // clearSelection) would kill the group drag before dragstart ever fires.
+    if (!multi && props.step?.isSelected && fileStore.selectedElements.length > 1) {
+        return;
+    }
+    emit('select', props.step, multi);
 }
 
 function handleStartConnect(e) {

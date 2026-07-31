@@ -37,6 +37,13 @@ export function useStepGraph(layerRef, stageRef, groupDrag, snapToGridEnabled) {
   // dragstart: only begins a group move when the dragged step is part of an
   // active multi-selection.
   const handleStepDragStart = (bodyOwner, step) => {
+    // Unconditional reset — clears any stale state left over from a drag
+    // that never reached dragend (e.g. mouse released outside the window),
+    // so a later single-step drag can never inherit a stale multi-step
+    // group. startGroupDrag([step]) filters the dragged step out of the
+    // offsets list, naturally producing an empty (inactive) group drag.
+    groupDrag.startGroupDrag(step, [step]);
+
     const graph = graphOf(bodyOwner);
     const selectedSteps = graph.steps.filter(s => fileStore.selectedElements.includes(s));
     if (selectedSteps.length > 1 && selectedSteps.includes(step)) {

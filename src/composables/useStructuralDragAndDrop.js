@@ -19,8 +19,33 @@ export function useStructuralDragAndDrop(stageRef, mainLayer, groupDrag, snapToG
   // an active multi-selection — dragging a lone element never touches
   // useGroupDrag at all.
   const handleScdDragStart = (e, cmp) => {
-    if (fileStore.selectedElements.length > 1 && fileStore.selectedElements.includes(cmp)) {
-      groupDrag.startGroupDrag(cmp, fileStore.selectedElements);
+    // Unconditional reset — clears any stale state left over from a drag
+    // that never reached dragend (e.g. mouse released outside the window),
+    // so a later single-element drag can never inherit a stale multi-element
+    // group. startGroupDrag([cmp]) filters the dragged element out of the
+    // offsets list, naturally producing an empty (inactive) group drag.
+    groupDrag.startGroupDrag(cmp, [cmp]);
+
+    // fileStore.selectedElements can include leftover FD step objects from
+    // before a layer switch (switching layers doesn't clear selection), so
+    // narrow it down to genuine SCD elements before treating it as a group —
+    // otherwise a stray selected Step would get silently repositioned here.
+    const scdElements = [
+      ...fileStore.contract.variables || [],
+      ...fileStore.contract.structs || [],
+      ...fileStore.contract.functions || [],
+      ...fileStore.contract.enums || [],
+      ...fileStore.contract.guards || [],
+      ...fileStore.contract.errorDeclarations || [],
+      ...fileStore.contract.events || [],
+    ];
+    if (fileStore.contract._constructor) {
+      scdElements.push(fileStore.contract._constructor);
+    }
+
+    const selectedScdElements = fileStore.selectedElements.filter(el => scdElements.includes(el));
+    if (selectedScdElements.length > 1 && selectedScdElements.includes(cmp)) {
+      groupDrag.startGroupDrag(cmp, selectedScdElements);
     }
   };
 
