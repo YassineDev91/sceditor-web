@@ -3,13 +3,19 @@ import { useContractStorage } from '@/stores/contract';
 import { useSettingsStore } from '@/stores/settings';
 import { normalizeBody } from '@/schema/steps';
 import { snapValue } from '@/utils/snapToGrid';
-import { HANDLE_VISIBLE_RADIUS, HANDLE_HIT_RADIUS } from '@/constants/nodeStyleTokens';
+import { HANDLE_VISIBLE_RADIUS, HANDLE_HIT_RADIUS, SPACING_UNIT } from '@/constants/nodeStyleTokens';
 
 // Must match Step.vue's own WIDTH/HEIGHT constants — duplicated locally
 // (same convention Step.vue itself uses) rather than imported, since these
 // describe the fixed box every step renders at, not schema data.
 const STEP_WIDTH = 200;
 const STEP_HEIGHT = 80;
+
+// Arrow endpoints stop short of the box edges by the same offset Step.vue's
+// own connector/start handles already sit at (x: WIDTH + 8 / x: -8), so an
+// edge visually starts at the connector handle and ends at the start
+// handle instead of touching the plain box edge underneath them.
+const EDGE_GAP = SPACING_UNIT * 2; // 8
 
 export function useStepGraph(layerRef, stageRef, groupDrag, snapToGridEnabled) {
   const fileStore = useContractStorage();
@@ -117,7 +123,7 @@ export function useStepGraph(layerRef, stageRef, groupDrag, snapToGridEnabled) {
     // by Konva in real time during a drag) — using the known box size here
     // instead of getClientRect() avoids the decorations (connector handle,
     // start handle, start marker) skewing where the line actually starts.
-    const fromX = fromNode.x() + STEP_WIDTH;
+    const fromX = fromNode.x() + STEP_WIDTH + EDGE_GAP;
     const fromY = fromNode.y() + STEP_HEIGHT / 2;
     const pos = layer.getRelativePointerPosition();
     if (!pos) return;
@@ -186,9 +192,9 @@ export function useStepGraph(layerRef, stageRef, groupDrag, snapToGridEnabled) {
     // the center of the plain rounded box's edges, not skewed by the
     // connector handle / start handle / start marker that also live in the
     // same group and would otherwise widen the group's bounding box.
-    const fromX = fromNode.x() + STEP_WIDTH;
+    const fromX = fromNode.x() + STEP_WIDTH + EDGE_GAP;
     const fromY = fromNode.y() + STEP_HEIGHT / 2;
-    const toX = toNode.x();
+    const toX = toNode.x() - EDGE_GAP;
     const toY = toNode.y() + STEP_HEIGHT / 2;
 
     return {
