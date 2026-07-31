@@ -1,5 +1,4 @@
-// src/composables/useCanvasSizing.js
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useContractStorage } from '@/stores/contract';
 
 export function useCanvasSizing(workspaceRef, stageRef) {
@@ -39,8 +38,24 @@ export function useCanvasSizing(workspaceRef, stageRef) {
     }
   };
 
+  const RESIZE_DEBOUNCE_MS = 200;
+  let resizeTimeoutId = null;
+
+  const handleWindowResize = () => {
+    if (resizeTimeoutId) clearTimeout(resizeTimeoutId);
+    resizeTimeoutId = setTimeout(() => {
+      initializeSize();
+    }, RESIZE_DEBOUNCE_MS);
+  };
+
   onMounted(() => {
     initializeSize();
+    window.addEventListener('resize', handleWindowResize);
+  });
+
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleWindowResize);
+    if (resizeTimeoutId) clearTimeout(resizeTimeoutId);
   });
 
   watch(
