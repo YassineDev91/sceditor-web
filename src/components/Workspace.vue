@@ -90,7 +90,7 @@
                 </v-layer>
 
                 <!-- Function Layer -->
-                <v-layer ref="functionLayer" :visible="isFunctionLayerVisible" v-if="isFunctionLayerVisible">
+                <v-layer ref="functionLayer" :visible="isFunctionLayerVisible">
                     <Step v-for="step in stepGraph.steps" :key="step.id" :step="step" :x="step.x" :y="step.y"
                         :is-start="step.id === stepGraph.startStepId"
                         @dragstart="() => handleStepDragStart(selectedFunction, step)"
