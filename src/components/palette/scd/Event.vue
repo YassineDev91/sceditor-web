@@ -54,19 +54,21 @@ const prefixConfig = computed(() => ({
   fill: '#000',
 }));
 
+const paramsWidth = computed(() => Math.min(PARAMS_FIELD_WIDTH, measureTextWidth(paramTypesText.value, 12)));
+
 const paramsConfig = computed(() => ({
   x: NAME_X + measureTextWidth(prefixText.value, 12) + GAP,
   y: SPACING_UNIT * 4,
   text: paramTypesText.value,
   fontSize: 12,
   fill: '#6b7280',
-  width: PARAMS_FIELD_WIDTH,
+  width: paramsWidth.value,
   wrap: 'none',
   ellipsis: true,
 }));
 
 const closingConfig = computed(() => ({
-  x: paramsConfig.value.x + PARAMS_FIELD_WIDTH + GAP,
+  x: paramsConfig.value.x + paramsWidth.value + GAP,
   y: SPACING_UNIT * 4,
   text: ');',
   fontSize: 12,

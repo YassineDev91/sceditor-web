@@ -33,7 +33,6 @@ const typeMarginY = nameMarginY + SPACING_UNIT * 4; // 24
 const MIN_RECT_WIDTH = 120;
 const RIGHT_PADDING = SPACING_UNIT * 2;         // 8
 const variableRectheight = 40;
-const TYPE_FIELD_WIDTH = 64;
 const isHovered = ref(false)
 
 
@@ -88,7 +87,7 @@ const typeTextConfig = computed(() => ({
     text: typeText.value,
     fill: 'gray',
     fontSize: 12,
-    width: TYPE_FIELD_WIDTH,
+    width: rectConfig.value.width - typeMarginX - RIGHT_PADDING,
     wrap: 'none',
     ellipsis: true,
 }))

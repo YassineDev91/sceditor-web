@@ -147,7 +147,7 @@ const connectorHandleConfig = ref({
 });
 
 const connectorHitConfig = ref({
-    x: WIDTH + 8,
+    x: WIDTH + HANDLE_HIT_RADIUS,
     y: HEIGHT / 2,
     radius: HANDLE_HIT_RADIUS,
     fill: 'transparent',
@@ -174,7 +174,7 @@ const startHandleConfig = ref({
 });
 
 const startHitConfig = ref({
-    x: -8,
+    x: -HANDLE_HIT_RADIUS,
     y: HEIGHT / 2,
     radius: HANDLE_HIT_RADIUS,
     fill: 'transparent',
