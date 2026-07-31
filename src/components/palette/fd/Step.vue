@@ -126,14 +126,14 @@ const iconConfig = computed(() => isDecision
         y: HEIGHT / 2 - 19,
         width: 22,
         height: 22,
-        image: image,
+        image: image.value,
     }
     : {
         x: 12,
         y: 8,
         width: 22,
         height: 22,
-        image: image,
+        image: image.value,
     });
 
 const connectorHandleConfig = ref({
