@@ -93,7 +93,8 @@
                 <v-layer ref="functionLayer" :visible="isFunctionLayerVisible" v-if="isFunctionLayerVisible">
                     <Step v-for="step in stepGraph.steps" :key="step.id" :step="step" :x="step.x" :y="step.y"
                         :is-start="step.id === stepGraph.startStepId"
-                        @dragging="bumpDragTick"
+                        @dragstart="() => handleStepDragStart(selectedFunction, step)"
+                        @dragging="(e) => handleStepDragMoveLive(selectedFunction, e, step)"
                         @dragend="(e) => handleStepDragMove(selectedFunction, e, step)"
                         @select="handleStatementSelect"
                         @start-connect="startConnection"
@@ -200,10 +201,10 @@ const groupDrag = useGroupDrag();
 const { handleDrop, handleScdDragMove, handleScdDragStart, handleScdDragMoveLive } = useStructuralDragAndDrop(stageRef, mainLayer, groupDrag, snapToGridEnabled);
 
 const {
-  graphOf, handleStepDragMove, bumpDragTick, startConnection, updateConnectionPreview,
+  graphOf, handleStepDragMove, handleStepDragStart, handleStepDragMoveLive, startConnection, updateConnectionPreview,
   finishConnectionAtPointer, cancelConnection, connectingLineConfig, edgeArrowConfig,
   edgeDeleteHandleConfig, edgeDeleteHitConfig,
-} = useStepGraph(functionLayer, stageRef);
+} = useStepGraph(functionLayer, stageRef, groupDrag, snapToGridEnabled);
 
 const bodySteps = (owner) => graphOf(owner).steps;
 

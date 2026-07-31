@@ -1,6 +1,6 @@
 <!-- Step.vue -->
 <template>
-    <v-group ref="groupRef" :config="groupConfig" @dragmove="(e) => emit('dragging', e)" @dragend="(e) => emit('dragend', e)" @mousedown="handleSelect">
+    <v-group ref="groupRef" :config="groupConfig" @dragstart="(e) => emit('dragstart', e)" @dragmove="(e) => emit('dragging', e)" @dragend="(e) => emit('dragend', e)" @mousedown="handleSelect">
         <v-line v-if="isDecision" :config="diamondConfig"></v-line>
         <v-rect v-else ref="rectRef" :config="rectConfig"></v-rect>
         <v-text :config="textConfig" />
@@ -22,7 +22,7 @@ import ContentRectangle from './ContentRectangle.vue';
 import { SPACING_UNIT, ICON_SIZE, CORNER_RADIUS, STROKE_WIDTH_NORMAL, HANDLE_VISIBLE_RADIUS, HANDLE_HIT_RADIUS } from '@/constants/nodeStyleTokens';
 import { isMultiSelectModifier } from '@/utils/canvasEvents';
 
-const emit = defineEmits(['dragging', 'dragend', 'select', 'start-connect', 'set-start']);
+const emit = defineEmits(['dragging', 'dragstart', 'dragend', 'select', 'start-connect', 'set-start']);
 const fileStore = useContractStorage();
 
 const props = defineProps({
