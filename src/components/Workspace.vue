@@ -43,19 +43,20 @@
                     }" />
                     <variable v-for="variable in fileStore.contract.variables" :key="variable.id" :data="variable"
                         :x="variable.x" :y="variable.y" :selected="isElementSelected(variable)"
-                        @click="(e) => fileStore.showProperties(variable, isMultiSelectModifier(e))" @dragend="(e) => handleScdDragMove(e, variable)" />
+                        @click="(e) => fileStore.showProperties(variable, isMultiSelectModifier(e))"
+                        @dragstart="(e) => handleScdDragStart(e, variable)" @dragmove="(e) => handleScdDragMoveLive(e, variable)" @dragend="(e) => handleScdDragMove(e, variable)" />
 
                     <struct v-for="struct in fileStore.contract.structs" :key="struct.name" :name="struct.name"
                         :data="struct" :literals="struct.literals" :x="struct.x" :y="struct.y"
                         :selected="isElementSelected(struct)" @click="(e) => fileStore.showProperties(struct, isMultiSelectModifier(e))"
-                        @dragend="(e) => handleScdDragMove(e, struct)" />
+                        @dragstart="(e) => handleScdDragStart(e, struct)" @dragmove="(e) => handleScdDragMoveLive(e, struct)" @dragend="(e) => handleScdDragMove(e, struct)" />
 
                     <function v-for="_function in fileStore.contract.functions" :key="_function.id"
                         :name="_function.name" :x="_function.x" :y="_function.y" :data="_function"
                         :params="_function.params" :statements="bodySteps(_function)"
                         :returnParams="_function.returnParams" :selected="isElementSelected(_function)"
                         @click="(e) => fileStore.showProperties(_function, isMultiSelectModifier(e))" @dblclick="showFunctionLayer(_function)"
-                        @dragend="(e) => handleScdDragMove(e, _function)" />
+                        @dragstart="(e) => handleScdDragStart(e, _function)" @dragmove="(e) => handleScdDragMoveLive(e, _function)" @dragend="(e) => handleScdDragMove(e, _function)" />
 
                     <function v-if="fileStore.contract._constructor" name="<<constructor>>"
                         :x="fileStore.contract._constructor.x" :y="fileStore.contract._constructor.y"
@@ -64,28 +65,28 @@
                         :selected="isElementSelected(fileStore.contract._constructor)"
                         @click="(e) => fileStore.showProperties(fileStore.contract._constructor, isMultiSelectModifier(e))"
                         @dblclick="showFunctionLayer(fileStore.contract._constructor)"
-                        @dragend="(e) => handleScdDragMove(e, fileStore.contract._constructor)" />
+                        @dragstart="(e) => handleScdDragStart(e, fileStore.contract._constructor)" @dragmove="(e) => handleScdDragMoveLive(e, fileStore.contract._constructor)" @dragend="(e) => handleScdDragMove(e, fileStore.contract._constructor)" />
 
                     <Enum v-for="enumItem in fileStore.contract.enums" :key="enumItem.name" :name="enumItem.name"
                         :data="enumItem" :x="enumItem.x" :y="enumItem.y" :values="enumItem.values"
                         :selected="isElementSelected(enumItem)" @click="(e) => fileStore.showProperties(enumItem, isMultiSelectModifier(e))"
-                        @dragend="(e) => handleScdDragMove(e, enumItem)" />
+                        @dragstart="(e) => handleScdDragStart(e, enumItem)" @dragmove="(e) => handleScdDragMoveLive(e, enumItem)" @dragend="(e) => handleScdDragMove(e, enumItem)" />
 
                     <Guard v-for="guard in fileStore.contract.guards" :key="guard.id"
                         :name="guard.name" :data="guard" :x="guard.x" :y="guard.y" :params="guard.parameters"
                         :statements="bodySteps(guard)" :selected="isElementSelected(guard)"
                         @click="(e) => fileStore.showProperties(guard, isMultiSelectModifier(e))" @dblclick="showFunctionLayer(guard)"
-                        @dragend="(e) => handleScdDragMove(e, guard)" />
+                        @dragstart="(e) => handleScdDragStart(e, guard)" @dragmove="(e) => handleScdDragMoveLive(e, guard)" @dragend="(e) => handleScdDragMove(e, guard)" />
 
                     <ErrorDeclaration v-for="_error in fileStore.contract.errorDeclarations" :key="_error.name"
                         :name="_error.name" :data="_error" :x="_error.x" :y="_error.y" :literals="_error.literals"
                         :selected="isElementSelected(_error)" @click="(e) => fileStore.showProperties(_error, isMultiSelectModifier(e))"
-                        @dragend="(e) => handleScdDragMove(e, _error)" />
+                        @dragstart="(e) => handleScdDragStart(e, _error)" @dragmove="(e) => handleScdDragMoveLive(e, _error)" @dragend="(e) => handleScdDragMove(e, _error)" />
 
                     <Event v-for="event in fileStore.contract.events" :key="event.id"
                         :name="event.name" :data="event" :x="event.x" :y="event.y"
                         :selected="isElementSelected(event)" @click="(e) => fileStore.showProperties(event, isMultiSelectModifier(e))"
-                        @dragend="(e) => handleScdDragMove(e, event)" />
+                        @dragstart="(e) => handleScdDragStart(e, event)" @dragmove="(e) => handleScdDragMoveLive(e, event)" @dragend="(e) => handleScdDragMove(e, event)" />
                 </v-layer>
 
                 <!-- Function Layer -->
@@ -164,6 +165,7 @@ import { useAutosave } from '@/composables/useAutosave';
 import { useCanvasKeyboardShortcuts } from '@/composables/useCanvasKeyboardShortcuts';
 import { useLayerSwitching } from '@/composables/useLayerSwitching';
 import { useCanvasTooltip } from '@/composables/useCanvasTooltip';
+import { useGroupDrag } from '@/composables/useGroupDrag';
 import { isMultiSelectModifier } from '@/utils/canvasEvents';
 
 const fileStore = useContractStorage()
@@ -193,7 +195,9 @@ const {
   selectionBox, isElementSelected, handleMouseDown, handleMouseMove, handleMouseUp, handleContractClick,
 } = useSelectionBox(stageRef, mainLayer);
 
-const { handleDrop, handleScdDragMove } = useStructuralDragAndDrop(stageRef, mainLayer);
+const groupDrag = useGroupDrag();
+
+const { handleDrop, handleScdDragMove, handleScdDragStart, handleScdDragMoveLive } = useStructuralDragAndDrop(stageRef, mainLayer, groupDrag, snapToGridEnabled);
 
 const {
   graphOf, handleStepDragMove, bumpDragTick, startConnection, updateConnectionPreview,
