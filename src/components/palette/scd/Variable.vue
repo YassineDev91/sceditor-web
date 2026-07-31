@@ -4,7 +4,7 @@
         <v-rect :config="rectConfig">
         </v-rect>
         <v-text :config="textConfig" />
-        <v-text :config="typeTextConfig" />
+        <v-text :config="typeTextConfig" @mouseenter="handleTypeMouseEnter" @mouseleave="canvasTooltip.hideTooltip()" />
         <v-rect :config="selectionRectConfig" v-if="selected == true"></v-rect>
         <v-image :config="iconConfig" />
     </v-group>
@@ -12,21 +12,28 @@
 <script setup>
 import { useContractStorage } from "@/stores/contract";
 import { formatTypeNode } from '@/schema/typeFormat'
-import { data } from "autoprefixer";
-import { computed, onMounted, ref } from "vue";
+import { computed, inject, ref } from "vue";
 import { useImage } from "vue-konva";
+import { SPACING_UNIT, ICON_SIZE, CORNER_RADIUS, STROKE_WIDTH_NORMAL, STROKE_WIDTH_SELECTED } from '@/constants/nodeStyleTokens';
+import { measureTextWidth } from '@/utils/measureText';
+
+const canvasTooltip = inject('canvasTooltip');
 
 const emit = defineEmits(['click', 'dragend']);
 
 const fileStore = useContractStorage();
 
 
-const nameMarginX = 35
-const nameMarginY = 5
-const typeMarginX = nameMarginX
-const typeMarginY = 20
-const variableRectWidth = 120
-const variableRectheight = 35
+const ICON_X = SPACING_UNIT * 2;               // 8
+const ICON_Y = SPACING_UNIT * 2;                // 8
+const nameMarginX = ICON_X + ICON_SIZE + SPACING_UNIT; // 36
+const nameMarginY = SPACING_UNIT * 2;           // 8
+const typeMarginX = nameMarginX;                // 36
+const typeMarginY = nameMarginY + SPACING_UNIT * 4; // 24
+const MIN_RECT_WIDTH = 120;
+const RIGHT_PADDING = SPACING_UNIT * 2;         // 8
+const variableRectheight = 40;
+const TYPE_FIELD_WIDTH = 64;
 const isHovered = ref(false)
 
 
@@ -46,24 +53,21 @@ const props = defineProps({
 const rectConfig = computed(() => ({
     fill: '#DBF1ED',
     stroke: '#9FD6CF',
-    width: variableRectWidth,
+    width: Math.max(MIN_RECT_WIDTH, nameMarginX + measureTextWidth(props.data.name, 12) + RIGHT_PADDING),
     height: variableRectheight,
-    cornerRadius: 5,
-    strokeWidth: 1,
-
+    cornerRadius: CORNER_RADIUS,
+    strokeWidth: STROKE_WIDTH_NORMAL,
 }))
 const selectionRectConfig = computed(() => ({
     width: rectConfig.value.width,
     height: rectConfig.value.height,
-    cornerRadius: 5,
+    cornerRadius: CORNER_RADIUS,
     stroke: '#3498db',
-    strokeWidth: 2,
+    strokeWidth: STROKE_WIDTH_SELECTED,
 }))
 const textConfig = computed(() => ({
-
     x: nameMarginX,
     y: nameMarginY,
-
     text: props.data.name,
     fontSize: 12,
     data: props.data
@@ -84,14 +88,22 @@ const typeTextConfig = computed(() => ({
     text: typeText.value,
     fill: 'gray',
     fontSize: 12,
+    width: TYPE_FIELD_WIDTH,
+    wrap: 'none',
+    ellipsis: true,
 }))
+
+function handleTypeMouseEnter(e) {
+  const pos = e.target.getStage().getRelativePointerPosition();
+  canvasTooltip.showTooltip(typeText.value, pos.x, pos.y);
+}
 const [image] = useImage("src/assets/icons/variable.svg")
 const iconConfig = ref({
-    x: 5,
-    y: 5,
+    x: ICON_X,
+    y: ICON_Y,
     image: image,
-    width: 25,
-    height: 25
+    width: ICON_SIZE,
+    height: ICON_SIZE
 })
 
 const hoverRectConfig = computed(() => ({
@@ -103,18 +115,9 @@ const hoverRectConfig = computed(() => ({
     strokeWidth: 2,
     dash: [4, 2],
     listening: false,  // prevent this rect from capturing mouse events
-    cornerRadius: 5
+    cornerRadius: CORNER_RADIUS
 }));
 
-onMounted(() => {
-    // console.log("Variable mounted", props.data.name.length)
-})
-
-function handleClick() {
-    console.log("✅ Clicked struct with data:", props.data);
-    console.log('🧪 props.data.type =', props.data?.cmp_type)
-    fileStore.showProperties(props.data);
-}
 
 
 </script>
