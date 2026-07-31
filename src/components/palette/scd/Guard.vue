@@ -1,5 +1,5 @@
 <template>
-  <v-group :config="groupConfig" @mousedown="handleClick">
+  <v-group :config="groupConfig">
     <v-rect :config="rectConfig" />
     <v-rect v-if="selected" :config="selectionRectConfig" />
     <v-text :config="titleConfig" />
@@ -14,12 +14,16 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useContractStorage } from '@/stores/contract'
 import { useImage } from 'vue-konva'
 import Statement from './Statement.vue'
 import Parameter from './Parameter.vue'
+import { SPACING_UNIT, ICON_SIZE, CORNER_RADIUS, STROKE_WIDTH_NORMAL, STROKE_WIDTH_SELECTED } from '@/constants/nodeStyleTokens';
+import { measureTextWidth } from '@/utils/measureText';
 
-const fileStore = useContractStorage()
+const NAME_X = SPACING_UNIT * 2 + ICON_SIZE + SPACING_UNIT; // 36
+const MIN_WIDTH = 170;
+const RIGHT_PADDING = SPACING_UNIT * 2; // 8
+
 const props = defineProps({
   name: String,
   x: Number,
@@ -43,15 +47,17 @@ const dynamicHeight = computed(() => {
   return baseHeight + (props.statements?.length || 0) * statementHeight;
 })
 
+const dynamicWidth = computed(() => Math.max(MIN_WIDTH, NAME_X + measureTextWidth(props.name, 12) + RIGHT_PADDING));
+
 const rectConfig = computed(() => ({
   x: 0,
   y: 0,
-  width: 170,
+  width: dynamicWidth.value,
   height: dynamicHeight.value,
   fill: '#FFECD1',
   stroke: '#FABB81',
-  cornerRadius: 5,
-  strokeWidth: 1,
+  cornerRadius: CORNER_RADIUS,
+  strokeWidth: STROKE_WIDTH_NORMAL,
 }))
 
 const selectionRectConfig = computed(() => ({
@@ -60,28 +66,24 @@ const selectionRectConfig = computed(() => ({
   width: rectConfig.value.width,
   height: dynamicHeight.value,
   stroke: '#3498db',
-  strokeWidth: 2,
-  cornerRadius: 5,
+  strokeWidth: STROKE_WIDTH_SELECTED,
+  cornerRadius: CORNER_RADIUS,
 }))
 
-const titleConfig = ref({
-  x: 30,
-  y: 10,
+const titleConfig = computed(() => ({
+  x: NAME_X,
+  y: SPACING_UNIT * 2, // 8
   text: props.name || 'guard',
   fontSize: 12,
   fill: '#000',
-})
+}))
 
 const [icon] = useImage('src/assets/icons/modifier.png')
 const iconConfig = ref({
-  x: 5,
-  y: 5,
-  width: 20,
-  height: 20,
+  x: SPACING_UNIT * 2, // 8
+  y: SPACING_UNIT * 2, // 8
+  width: ICON_SIZE,
+  height: ICON_SIZE,
   image: icon,
 })
-
-function handleClick() {
-  fileStore.showProperties(props.data)
-}
 </script>
