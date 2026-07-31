@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { useContractStorage } from '@/stores/contract';
 import { normalizeBody } from '@/schema/steps';
+import { HANDLE_VISIBLE_RADIUS, HANDLE_HIT_RADIUS } from '@/constants/nodeStyleTokens';
 
 // Must match Step.vue's own WIDTH/HEIGHT constants — duplicated locally
 // (same convention Step.vue itself uses) rather than imported, since these
@@ -145,10 +146,21 @@ export function useStepGraph(layerRef, stageRef) {
     return {
       x: (x1 + x2) / 2,
       y: (y1 + y2) / 2,
-      radius: 7,
+      radius: HANDLE_VISIBLE_RADIUS,
       fill: '#E57373',
       stroke: '#B71C1C',
       strokeWidth: 1,
+      listening: false,
+    };
+  };
+
+  const edgeDeleteHitConfig = (bodyOwner, edge) => {
+    const cfg = edgeDeleteHandleConfig(bodyOwner, edge);
+    return {
+      x: cfg.x,
+      y: cfg.y,
+      radius: HANDLE_HIT_RADIUS,
+      fill: 'transparent',
     };
   };
 
@@ -164,5 +176,6 @@ export function useStepGraph(layerRef, stageRef) {
     connectingLineConfig,
     edgeArrowConfig,
     edgeDeleteHandleConfig,
+    edgeDeleteHitConfig,
   };
 }

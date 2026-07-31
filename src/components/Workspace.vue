@@ -98,9 +98,11 @@
                         @start-connect="startConnection"
                         @set-start="(s) => fileStore.setBodyStartStep(selectedFunction, s.id)" />
                     <v-arrow v-for="edge in stepGraph.edges" :key="edge.id" :config="edgeArrowConfig(selectedFunction, edge)" />
-                    <v-circle v-for="edge in stepGraph.edges" :key="'del-' + edge.id"
-                        :config="edgeDeleteHandleConfig(selectedFunction, edge)"
+                    <v-circle v-for="edge in stepGraph.edges" :key="'del-hit-' + edge.id"
+                        :config="edgeDeleteHitConfig(selectedFunction, edge)"
                         @click="handleDeleteEdge(edge)"></v-circle>
+                    <v-circle v-for="edge in stepGraph.edges" :key="'del-' + edge.id"
+                        :config="edgeDeleteHandleConfig(selectedFunction, edge)"></v-circle>
                     <v-line v-if="connectingLineConfig" :config="connectingLineConfig"></v-line>
                 </v-layer>
 
@@ -195,7 +197,7 @@ const { handleDrop, handleScdDragMove } = useStructuralDragAndDrop(stageRef, mai
 const {
   graphOf, handleStepDragMove, bumpDragTick, startConnection, updateConnectionPreview,
   finishConnectionAtPointer, cancelConnection, connectingLineConfig, edgeArrowConfig,
-  edgeDeleteHandleConfig,
+  edgeDeleteHandleConfig, edgeDeleteHitConfig,
 } = useStepGraph(functionLayer, stageRef);
 
 const bodySteps = (owner) => graphOf(owner).steps;

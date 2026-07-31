@@ -6,9 +6,11 @@
         <v-text :config="textConfig" />
         <v-image :config="iconConfig" />
         <ContentRectangle v-if="secondaryLabel && !isDecision" :config="secondaryRect" />
-        <v-circle :config="connectorHandleConfig" @mousedown="handleStartConnect"></v-circle>
+        <v-circle :config="connectorHitConfig" @mousedown="handleStartConnect"></v-circle>
+        <v-circle :config="connectorHandleConfig" :listening="false"></v-circle>
         <v-text v-if="props.isStart" :config="startMarkerConfig" />
-        <v-circle :config="startHandleConfig" @mousedown="handleSetStart"></v-circle>
+        <v-circle :config="startHitConfig" @mousedown="handleSetStart"></v-circle>
+        <v-circle :config="startHandleConfig" :listening="false"></v-circle>
     </v-group>
 </template>
 
@@ -17,6 +19,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useImage } from 'vue-konva';
 import { useContractStorage } from '@/stores/contract';
 import ContentRectangle from './ContentRectangle.vue';
+import { SPACING_UNIT, ICON_SIZE, CORNER_RADIUS, STROKE_WIDTH_NORMAL, HANDLE_VISIBLE_RADIUS, HANDLE_HIT_RADIUS } from '@/constants/nodeStyleTokens';
 
 const emit = defineEmits(['dragging', 'dragend', 'select', 'start-connect', 'set-start']);
 const fileStore = useContractStorage();
@@ -51,10 +54,10 @@ const rectConfig = computed(() => ({
     y: 0,
     width: WIDTH,
     height: HEIGHT,
-    cornerRadius: 5,
+    cornerRadius: CORNER_RADIUS,
     fill: style.fill,
     stroke: style.stroke,
-    strokeWidth: 1,
+    strokeWidth: STROKE_WIDTH_NORMAL,
 }));
 
 const diamondConfig = computed(() => ({
@@ -67,7 +70,7 @@ const diamondConfig = computed(() => ({
     closed: true,
     fill: style.fill,
     stroke: style.stroke,
-    strokeWidth: 1,
+    strokeWidth: STROKE_WIDTH_NORMAL,
 }));
 
 // Decision's diamond interior is much narrower than the rect-sized layout
@@ -81,7 +84,7 @@ const textConfig = computed(() => isDecision
         fontSize: 13,
     }
     : {
-        x: 45,
+        x: SPACING_UNIT * 3 + ICON_SIZE + SPACING_UNIT, // 40
         y: 12,
         text: props.step?.name || props.step?.cmp_type,
         fontSize: 13,
@@ -109,11 +112,11 @@ const referenceLabel = computed(() => {
 const secondaryLabel = computed(() => referenceLabel.value || props.step?.description || '');
 
 const secondaryRect = computed(() => ({
-    x: 10,
-    y: 34,
+    x: SPACING_UNIT * 2,      // 8
+    y: SPACING_UNIT * 11,     // 44 — was ContentRectangle's implicit +10 on top of the old y:34; now explicit here since ContentRectangle no longer adds an offset (Task 9, Step 4)
     content: secondaryLabel.value,
-    height: 22,
-    width: WIDTH - 20,
+    height: SPACING_UNIT * 6, // 24
+    width: WIDTH - SPACING_UNIT * 4, // 184
     fillColor: '#FEFDF8',
     borderColor: style.stroke,
     fontSize: 12,
@@ -122,25 +125,32 @@ const secondaryRect = computed(() => ({
 const [image] = useImage('src/assets/icons/' + style.icon);
 const iconConfig = computed(() => isDecision
     ? {
-        x: WIDTH / 2 - 11,
-        y: HEIGHT / 2 - 19,
-        width: 22,
-        height: 22,
+        x: WIDTH / 2 - ICON_SIZE / 2,
+        y: HEIGHT / 2 - 20,
+        width: ICON_SIZE,
+        height: ICON_SIZE,
         image: image.value,
     }
     : {
-        x: 12,
-        y: 8,
-        width: 22,
-        height: 22,
+        x: SPACING_UNIT * 3, // 12
+        y: SPACING_UNIT * 2, // 8
+        width: ICON_SIZE,
+        height: ICON_SIZE,
         image: image.value,
     });
 
 const connectorHandleConfig = ref({
     x: WIDTH + 8,
     y: HEIGHT / 2,
-    radius: 6,
+    radius: HANDLE_VISIBLE_RADIUS,
     fill: '#666666',
+});
+
+const connectorHitConfig = ref({
+    x: WIDTH + 8,
+    y: HEIGHT / 2,
+    radius: HANDLE_HIT_RADIUS,
+    fill: 'transparent',
 });
 
 // The start marker (a small label + a dedicated hotspot to (re)designate this
@@ -159,8 +169,15 @@ const startMarkerConfig = ref({
 const startHandleConfig = ref({
     x: -8,
     y: HEIGHT / 2,
-    radius: 6,
+    radius: HANDLE_VISIBLE_RADIUS,
     fill: '#2E7D32',
+});
+
+const startHitConfig = ref({
+    x: -8,
+    y: HEIGHT / 2,
+    radius: HANDLE_HIT_RADIUS,
+    fill: 'transparent',
 });
 
 function handleSetStart(e) {
