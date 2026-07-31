@@ -1,6 +1,8 @@
 // src/composables/useStructuralDragAndDrop.js
 import { useContractStorage } from '@/stores/contract';
 
+const FD_STEP_KINDS = ['Action', 'Call', 'Emit', 'Decision', 'Return', 'Revert'];
+
 export function useStructuralDragAndDrop(stageRef, mainLayer) {
   const fileStore = useContractStorage();
 
@@ -40,6 +42,15 @@ export function useStructuralDragAndDrop(stageRef, mainLayer) {
       y: event.clientY - rect.top
     };
     console.log("🧭 Pointer position:", pointerPosition);
+
+    if (FD_STEP_KINDS.includes(item.label)) {
+      if (!fileStore.selectedFunction?.id) {
+        console.warn("⚠️ No function/guard open — can't drop a step");
+        return;
+      }
+      fileStore.createBodyStep(fileStore.selectedFunction, item.label, `new_${item.label.toLowerCase()}`, pointerPosition);
+      return;
+    }
 
     const layer = mainLayer.value.getNode();
     const nodes = layer.getChildren();

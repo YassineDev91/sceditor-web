@@ -94,11 +94,18 @@ export function normalizeBody(body) {
 const STEP_BASE_X = 50
 const STEP_BASE_Y = 50
 const STEP_VERTICAL_GAP = 200
+const STEP_HORIZONTAL_GAP = 250
+const STEP_ROWS_PER_COLUMN = 3
 
-// Simple non-overlapping cascade for newly created steps (matches the
-// Palette's structural-element positioning fix, sized for a 200x80 step box
-// instead of a ~160x100 structural element).
+// Non-overlapping cascade for newly created steps, wrapping into a new
+// column every STEP_ROWS_PER_COLUMN steps so a growing function body stays
+// on-canvas instead of walking straight down past the visible area forever
+// (matches the Palette's structural-element positioning fix in spirit, sized
+// for a 200x80 step box instead of a ~160x100 structural element).
 export function nextStepPosition(bodyOwner) {
   const body = normalizeBody(bodyOwner?.body)
-  return { x: STEP_BASE_X, y: STEP_BASE_Y + body.steps.length * STEP_VERTICAL_GAP }
+  const count = body.steps.length
+  const col = Math.floor(count / STEP_ROWS_PER_COLUMN)
+  const row = count % STEP_ROWS_PER_COLUMN
+  return { x: STEP_BASE_X + col * STEP_HORIZONTAL_GAP, y: STEP_BASE_Y + row * STEP_VERTICAL_GAP }
 }

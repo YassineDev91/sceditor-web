@@ -125,11 +125,17 @@ describe('nextStepPosition', () => {
     expect(nextStepPosition(owner)).toEqual({ x: 50, y: 50 })
   })
 
-  it('produces strictly non-overlapping positions across consecutive step counts', () => {
-    const positions = [0, 1, 2, 3].map(n => {
+  it('wraps into a new column after 3 steps in a row, never overlapping', () => {
+    const positions = [0, 1, 2, 3, 4].map(n => {
       const steps = Array.from({ length: n }, (_, i) => createActionStep(`s${i}`))
-      return nextStepPosition({ body: createStepGraph({ steps }) }).y
+      return nextStepPosition({ body: createStepGraph({ steps }) })
     })
-    expect(positions).toEqual([50, 250, 450, 650])
+    expect(positions).toEqual([
+      { x: 50, y: 50 },
+      { x: 50, y: 250 },
+      { x: 50, y: 450 },
+      { x: 300, y: 50 },
+      { x: 300, y: 250 },
+    ])
   })
 })
