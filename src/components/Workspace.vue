@@ -210,7 +210,7 @@ const {
 } = useLayerSwitching({ onToggle: cancelConnection });
 
 useCanvasKeyboardShortcuts(
-  { handleZoomIn, handleZoomOut, handleZoomReset, fitToScreen, handleUndo, handleRedo, togglePanMode },
+  { handleZoomIn, handleZoomOut, handleZoomReset, fitToScreen, handleUndo, handleRedo, togglePanMode, isPanMode },
   isMainLayerVisible
 );
 
