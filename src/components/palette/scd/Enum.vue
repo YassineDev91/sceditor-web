@@ -43,6 +43,7 @@ const groupConfig = computed(() => ({
   y: props.y,
   name: props.name,
   type: 'Enum',
+  data: props.data,
   width: dynamicWidth.value,
   height: calculateHeight.value,
   draggable: true,
