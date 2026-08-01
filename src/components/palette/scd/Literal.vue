@@ -2,29 +2,15 @@
     <v-group>
         <v-rect ref="textRectRef" :config="textRectConfig"></v-rect>
         <!-- <v-text ref="textRectRef" :config="visibilityConfig"></v-text> -->
-        <v-text ref="literalTextRef" :config="nameConfig" @mouseenter="handleNameMouseEnter" @mouseleave="canvasTooltip.hideTooltip()"></v-text>
-        <v-text v-if="props.data?.type" :config="typeConfig" @mouseenter="handleTypeMouseEnter" @mouseleave="canvasTooltip.hideTooltip()"></v-text>
+        <v-text ref="literalTextRef" :config="nameConfig"></v-text>
+        <!-- <v-text :config="commaConfig"></v-text>
+        <v-text :config="typeConfig"></v-text> -->
     </v-group>
 </template>
 
 <script setup>
-import { onMounted, ref, inject } from "vue";
+import { onMounted, ref } from "vue";
 import { computed } from 'vue'
-import { formatTypeNode } from '@/schema/typeFormat'
-import { useContractStorage } from '@/stores/contract'
-
-const fileStore = useContractStorage()
-const canvasTooltip = inject('canvasTooltip');
-
-function handleNameMouseEnter(e) {
-  const pos = e.target.getStage().getRelativePointerPosition();
-  canvasTooltip.showTooltip(props.name, pos.x, pos.y);
-}
-
-function handleTypeMouseEnter(e) {
-  const pos = e.target.getStage().getRelativePointerPosition();
-  canvasTooltip.showTooltip(typeConfig.value.text, pos.x, pos.y);
-}
 
 var textRectRef = ref({})
 var literalTextRef = ref({})
@@ -54,31 +40,24 @@ const visibilityConfig = computed(() =>({
 }))
 
 const nameConfig = computed(() =>({
-    x: textRectConfig.value.x + 6,
+    x: textRectConfig.value.x + 30,
     y: textRectConfig.value.y + 5,
     text: props.name,
     fontSize: 12,
-    width: 60,
-    wrap: 'none',
-    ellipsis: true,
 }))
-const typeConfig = computed(() => ({
-    x: textRectConfig.value.x + 68,
-    y: nameConfig.value.y,
-    text: props.data?.type
-        ? formatTypeNode(props.data.type, {
-            resolveRef: (id) =>
-              fileStore.contract.structs.find(s => s.id === id)?.name ||
-              fileStore.contract.enums.find(e => e.id === id)?.name ||
-              id,
-          })
-        : '',
-    fontSize: 11,
-    fill: '#7C6BAE',
-    width: 56,
-    wrap: 'none',
-    ellipsis: true,
-}))
+// const typeConfig = ref({
+//     x: nameConfig.value.x + nameConfig.value.fontSize*5,
+//     y: nameConfig.value.y,
+//     text: props.type,
+//     fontSize: 12,
+// })
+
+// const commaConfig = ref({
+//     x: nameConfig.value.x + nameConfig.value.fontSize*4,
+//     y: nameConfig.value.y,
+//     text: ":",
+//     fontSize: 12,
+// })
 onMounted(() => {
   
 

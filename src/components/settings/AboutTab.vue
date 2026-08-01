@@ -64,7 +64,7 @@
                 </li>
                 <li class="flex items-start">
                     <span class="text-blue-600 dark:text-blue-400 mr-2">•</span>
-                    <span>Integration with LLMs for Solidity, Rust, and ink! code generation</span>
+                    <span>Integration with LLMs for Solidity, Vyper, Rust, and ink! code generation</span>
                 </li>
                 <li class="flex items-start">
                     <span class="text-blue-600 dark:text-blue-400 mr-2">•</span>

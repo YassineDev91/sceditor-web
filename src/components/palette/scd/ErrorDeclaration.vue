@@ -2,29 +2,20 @@
   <v-group :config="groupConfig" @click="e => emit('click', e)"
   @dragend="e => emit('dragend', e)">
     <v-rect :config="rectConfig" />
-    <v-text :config="prefixConfig" />
-    <v-text :config="paramsConfig" @mouseenter="handleParamsMouseEnter" @mouseleave="canvasTooltip.hideTooltip()" />
-    <v-text :config="closingConfig" />
+    <v-text :config="textConfig" />
     <v-image :config="iconConfig" />
     <v-rect :config="selectionConfig" v-if="props.data.isSelected" />
   </v-group>
 </template>
 
 <script setup>
-import { ref, computed, inject } from 'vue'
+import { ref, computed } from 'vue'
+import { useContractStorage } from '@/stores/contract'
 import { useImage } from 'vue-konva'
-import { formatTypeNode } from '@/schema/typeFormat'
-import { SPACING_UNIT, ICON_SIZE, CORNER_RADIUS, STROKE_WIDTH_NORMAL, STROKE_WIDTH_SELECTED } from '@/constants/nodeStyleTokens';
-import { measureTextWidth } from '@/utils/measureText';
 
-const canvasTooltip = inject('canvasTooltip');
-
-const NAME_X = SPACING_UNIT * 2 + ICON_SIZE + SPACING_UNIT; // 36
-const PARAMS_FIELD_WIDTH = 100;
-const GAP = SPACING_UNIT; // 4
-const KEYWORD = 'error';
 
 const emit = defineEmits(['click', 'dragend'])
+const fileStore = useContractStorage()
 const props = defineProps({
   name: String,
   x: Number,
@@ -32,83 +23,50 @@ const props = defineProps({
   data: Object,
 })
 
-const paramTypesText = computed(() =>
-  (props.data.parameters || []).map(p => formatTypeNode(p.type)).join(', ')
-)
+const contentWidth = props.name.length*9 + 60
 
 const groupConfig = computed(() => ({
   x: props.x,
   y: props.y,
   name: props.name,
   type: 'ErrorDeclaration',
-  data: props.data,
   draggable: true,
 }))
 
-const prefixText = computed(() => `${KEYWORD} ${props.name}(`);
-
-const prefixConfig = computed(() => ({
-  x: NAME_X,
-  y: SPACING_UNIT * 4, // 16
-  text: prefixText.value,
-  fontSize: 12,
-  fill: '#000',
-}));
-
-const paramsWidth = computed(() => Math.min(PARAMS_FIELD_WIDTH, measureTextWidth(paramTypesText.value, 12)));
-
-const paramsConfig = computed(() => ({
-  x: NAME_X + measureTextWidth(prefixText.value, 12) + GAP,
-  y: SPACING_UNIT * 4,
-  text: paramTypesText.value,
-  fontSize: 12,
-  fill: '#6b7280',
-  width: paramsWidth.value,
-  wrap: 'none',
-  ellipsis: true,
-}));
-
-const closingConfig = computed(() => ({
-  x: paramsConfig.value.x + paramsWidth.value + GAP,
-  y: SPACING_UNIT * 4,
-  text: ');',
-  fontSize: 12,
-  fill: '#000',
-}));
-
-const contentWidth = computed(() => closingConfig.value.x + measureTextWidth(');', 12) + SPACING_UNIT * 2);
-
-function handleParamsMouseEnter(e) {
-  const pos = e.target.getStage().getRelativePointerPosition();
-  canvasTooltip.showTooltip(paramTypesText.value, pos.x, pos.y);
-}
-
-const rectConfig = computed(() => ({
+const rectConfig = ref({
   x: 0,
   y: 0,
-  width: contentWidth.value,
+  width: contentWidth,
   height: 40,
   fill: '#FDECEA',
   stroke: '#E57373',
-  cornerRadius: CORNER_RADIUS,
-  strokeWidth: STROKE_WIDTH_NORMAL,
-}))
+  cornerRadius: 5,
+  strokeWidth: 1,
+})
+
+const textConfig = ref({
+  x: 35,
+  y: 15,
+  text: `error ${props.name}();`,
+  fontSize: 12,
+  fill: '#000',
+})
 
 const selectionConfig = computed(() => ({
-    width: rectConfig.value.width,
+    width: rectConfig.value.width, // Bind to dynamic maxWidth
     height: rectConfig.value.height,
     stroke: '#3498db',
-    cornerRadius: CORNER_RADIUS,
-    strokeWidth: STROKE_WIDTH_SELECTED,
+    cornerRadius: 5,
+    strokeWidth: 1.5,
 }));
 
 const [image] = useImage("src/assets/icons/error.png")
 const iconConfig = ref({
-  x: SPACING_UNIT * 2, // 8
-  y: SPACING_UNIT * 2, // 8
+  x: 5,
+  y: 5,
   image: image,
-  width: ICON_SIZE,
-  height: ICON_SIZE,
+  width: 30,
+  height: 30
 })
 
 </script>

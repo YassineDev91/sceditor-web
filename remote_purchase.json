@@ -1,496 +1,63 @@
 {
-  "schemaVersion": 2,
-  "id": "contract_ms53xl6n_1_8vmcgldr",
   "name": "Purchase",
   "x": 10,
   "y": 10,
   "variables": [
     {
-      "id": "variable_ms53xl6n_3_havac1ql",
-      "cmp_type": "Variable",
       "name": "state",
-      "x": 381,
-      "y": 138,
-      "description": "",
+      "cmp_type": "Variable",
       "type": {
-        "kind": "reference",
-        "ref": "enum_ms53xl6n_2_wtkge0z7"
+        "base": "State"
       },
-      "visibility": "public"
+      "x": 381.54046630859375,
+      "y": 138.01470947265625,
+      "visibility": "public",
+      "description": "",
+      "isSelected": false
     },
     {
-      "id": "variable_ms53xl6n_4_868avsud",
-      "cmp_type": "Variable",
       "name": "value",
-      "x": 380,
+      "cmp_type": "Variable",
+      "type": {
+        "base": "uint"
+      },
+      "x": 380.40625,
       "y": 53,
+      "visibility": "public",
       "description": "",
-      "type": {
-        "kind": "primitive",
-        "name": "uint",
-        "size": 256
-      },
-      "visibility": "public"
+      "isSelected": false
     },
     {
-      "id": "variable_ms53xl6n_5_ej0fjupy",
-      "cmp_type": "Variable",
       "name": "seller",
-      "x": 381,
-      "y": 94,
-      "description": "",
+      "cmp_type": "Variable",
       "type": {
-        "kind": "primitive",
-        "name": "address",
-        "payable": true
+        "base": "address"
       },
-      "visibility": "public"
+      "x": 381.40625,
+      "y": 94,
+      "visibility": "public",
+      "description": "",
+      "isSelected": false
     },
     {
-      "id": "variable_ms53xl6n_6_4tninkcp",
-      "cmp_type": "Variable",
       "name": "buyer",
-      "x": 382,
-      "y": 179,
-      "description": "",
+      "cmp_type": "Variable",
       "type": {
-        "kind": "primitive",
-        "name": "address",
-        "payable": true
+        "base": "address"
       },
-      "visibility": "public"
+      "x": 382.40625,
+      "y": 179,
+      "visibility": "public",
+      "description": "",
+      "isSelected": false
     }
   ],
   "structs": [],
-  "functions": [
-    {
-      "id": "function_ms53xl6n_19_759wh5y6",
-      "cmp_type": "Function",
-      "name": "abort",
-      "x": 245,
-      "y": 238,
-      "description": "",
-      "params": [],
-      "returnParams": null,
-      "mutability": "write",
-      "acceptsValue": false,
-      "visibility": "external",
-      "guards": [
-        {
-          "ref": "guard_ms53xl6n_7_guf1vdjd",
-          "args": []
-        },
-        {
-          "ref": "guard_ms53xl6n_9_wx5ht3e0",
-          "args": [
-            "State.Created"
-          ]
-        }
-      ],
-      "body": {
-        "type": "Block",
-        "statements": [
-          {
-            "cmp_type": "EmitStatement",
-            "eventRef": "event_ms53xl6n_14_9h7ficpu",
-            "args": [],
-            "description": ""
-          },
-          {
-            "cmp_type": "AssignmentStatement",
-            "expressions": [
-              {
-                "left": {
-                  "type": "",
-                  "name": "state"
-                },
-                "right": {
-                  "type": "",
-                  "value": "State.Inactive"
-                }
-              }
-            ],
-            "description": ""
-          },
-          {
-            "cmp_type": "CallStatement",
-            "object": "seller",
-            "method": "transfer(address(this).balance)",
-            "params": [],
-            "description": ""
-          }
-        ]
-      }
-    },
-    {
-      "id": "function_ms53xl6n_20_vlf7rpkj",
-      "cmp_type": "Function",
-      "name": "confirmPurchase",
-      "x": 432,
-      "y": 265,
-      "description": "",
-      "params": [],
-      "returnParams": null,
-      "mutability": "write",
-      "acceptsValue": true,
-      "visibility": "external",
-      "guards": [
-        {
-          "ref": "guard_ms53xl6n_9_wx5ht3e0",
-          "args": [
-            "State.Created"
-          ]
-        }
-      ],
-      "body": {
-        "type": "Block",
-        "statements": [
-          {
-            "cmp_type": "EmitStatement",
-            "eventRef": "event_ms53xl6n_16_a6oq3h1e",
-            "args": [
-              "msg.sender"
-            ],
-            "description": ""
-          },
-          {
-            "cmp_type": "AssignmentStatement",
-            "expressions": [
-              {
-                "left": {
-                  "type": "",
-                  "name": "buyer"
-                },
-                "right": {
-                  "type": "",
-                  "value": "payable(msg.sender)"
-                }
-              }
-            ],
-            "description": ""
-          },
-          {
-            "cmp_type": "AssignmentStatement",
-            "expressions": [
-              {
-                "left": {
-                  "type": "",
-                  "name": "state"
-                },
-                "right": {
-                  "type": "",
-                  "value": "State.Locked"
-                }
-              }
-            ],
-            "description": ""
-          }
-        ]
-      }
-    },
-    {
-      "id": "function_ms53xl6n_21_vhdie30m",
-      "cmp_type": "Function",
-      "name": "confirmReceived",
-      "x": 250,
-      "y": 389,
-      "description": "",
-      "params": [],
-      "returnParams": null,
-      "mutability": "write",
-      "acceptsValue": false,
-      "visibility": "external",
-      "guards": [
-        {
-          "ref": "guard_ms53xl6n_8_8dlmgdeg",
-          "args": []
-        },
-        {
-          "ref": "guard_ms53xl6n_9_wx5ht3e0",
-          "args": [
-            "State.Locked"
-          ]
-        }
-      ],
-      "body": {
-        "type": "Block",
-        "statements": [
-          {
-            "cmp_type": "EmitStatement",
-            "eventRef": "event_ms53xl6n_15_bk4takry",
-            "args": [],
-            "description": ""
-          },
-          {
-            "cmp_type": "AssignmentStatement",
-            "expressions": [
-              {
-                "left": {
-                  "type": "",
-                  "name": "state"
-                },
-                "right": {
-                  "type": "",
-                  "value": "State.Release"
-                }
-              }
-            ],
-            "description": ""
-          },
-          {
-            "cmp_type": "CallStatement",
-            "object": "buyer",
-            "method": "transfer(value)",
-            "params": [],
-            "description": ""
-          }
-        ]
-      }
-    },
-    {
-      "id": "function_ms53xl6n_22_wxowdkg3",
-      "cmp_type": "Function",
-      "name": "refundSeller",
-      "x": 62,
-      "y": 239,
-      "description": "",
-      "params": [],
-      "returnParams": null,
-      "mutability": "write",
-      "acceptsValue": false,
-      "visibility": "external",
-      "guards": [
-        {
-          "ref": "guard_ms53xl6n_7_guf1vdjd",
-          "args": []
-        },
-        {
-          "ref": "guard_ms53xl6n_9_wx5ht3e0",
-          "args": [
-            "State.Locked"
-          ]
-        }
-      ],
-      "body": {
-        "type": "Block",
-        "statements": [
-          {
-            "cmp_type": "EmitStatement",
-            "eventRef": "event_ms53xl6n_17_k56at49f",
-            "args": [],
-            "description": ""
-          },
-          {
-            "cmp_type": "AssignmentStatement",
-            "expressions": [
-              {
-                "left": {
-                  "type": "",
-                  "name": "state"
-                },
-                "right": {
-                  "type": "",
-                  "value": "State.Inactive"
-                }
-              }
-            ],
-            "description": ""
-          },
-          {
-            "cmp_type": "CallStatement",
-            "object": "seller",
-            "method": "transfer(3 * value)",
-            "params": [],
-            "description": ""
-          }
-        ]
-      }
-    }
-  ],
-  "enums": [
-    {
-      "id": "enum_ms53xl6n_2_wtkge0z7",
-      "cmp_type": "Enum",
-      "name": "State",
-      "x": 206,
-      "y": 56,
-      "description": "",
-      "values": [
-        {
-          "name": "Created"
-        },
-        {
-          "name": "Locked"
-        },
-        {
-          "name": "Release"
-        },
-        {
-          "name": "Inactive"
-        }
-      ]
-    }
-  ],
-  "guards": [
-    {
-      "id": "guard_ms53xl6n_7_guf1vdjd",
-      "cmp_type": "Guard",
-      "name": "OnlySeller",
-      "x": 524,
-      "y": 39,
-      "description": "",
-      "parameters": [],
-      "body": {
-        "type": "Block",
-        "statements": []
-      }
-    },
-    {
-      "id": "guard_ms53xl6n_8_8dlmgdeg",
-      "cmp_type": "Guard",
-      "name": "OnlyBuyer",
-      "x": 525,
-      "y": 189,
-      "description": "",
-      "parameters": [],
-      "body": {
-        "type": "Block",
-        "statements": []
-      }
-    },
-    {
-      "id": "guard_ms53xl6n_9_wx5ht3e0",
-      "cmp_type": "Guard",
-      "name": "InState",
-      "x": 522,
-      "y": 115,
-      "description": "",
-      "parameters": [
-        {
-          "name": "state_",
-          "type": {
-            "kind": "reference",
-            "ref": "enum_ms53xl6n_2_wtkge0z7"
-          }
-        }
-      ],
-      "body": {
-        "type": "Block",
-        "statements": []
-      }
-    }
-  ],
-  "errorDeclarations": [
-    {
-      "id": "errordeclaration_ms53xl6n_10_p1vb15v6",
-      "cmp_type": "ErrorDeclaration",
-      "name": "OnlySeller",
-      "x": 45,
-      "y": 517,
-      "description": "",
-      "parameters": []
-    },
-    {
-      "id": "errordeclaration_ms53xl6n_11_z0t9vxqn",
-      "cmp_type": "ErrorDeclaration",
-      "name": "OnlyBuyer",
-      "x": 46,
-      "y": 418,
-      "description": "",
-      "parameters": []
-    },
-    {
-      "id": "errordeclaration_ms53xl6n_12_i1ixzwsc",
-      "cmp_type": "ErrorDeclaration",
-      "name": "InvalidState",
-      "x": 45,
-      "y": 467,
-      "description": "",
-      "parameters": [
-        {
-          "name": "expected",
-          "type": {
-            "kind": "reference",
-            "ref": "enum_ms53xl6n_2_wtkge0z7"
-          }
-        }
-      ]
-    },
-    {
-      "id": "errordeclaration_ms53xl6n_13_x6wpmzu9",
-      "cmp_type": "ErrorDeclaration",
-      "name": "ValueNotEven",
-      "x": 45,
-      "y": 564,
-      "description": "",
-      "parameters": [
-        {
-          "name": "value",
-          "type": {
-            "kind": "primitive",
-            "name": "uint",
-            "size": 256
-          }
-        }
-      ]
-    }
-  ],
-  "events": [
-    {
-      "id": "event_ms53xl6n_14_9h7ficpu",
-      "cmp_type": "Event",
-      "name": "Aborted",
-      "x": 700,
-      "y": 40,
-      "description": "",
-      "parameters": []
-    },
-    {
-      "id": "event_ms53xl6n_15_bk4takry",
-      "cmp_type": "Event",
-      "name": "ItemReceived",
-      "x": 700,
-      "y": 100,
-      "description": "",
-      "parameters": []
-    },
-    {
-      "id": "event_ms53xl6n_16_a6oq3h1e",
-      "cmp_type": "Event",
-      "name": "PurchaseConfirmed",
-      "x": 700,
-      "y": 160,
-      "description": "",
-      "parameters": [
-        {
-          "name": "buyer",
-          "type": {
-            "kind": "primitive",
-            "name": "address"
-          }
-        }
-      ]
-    },
-    {
-      "id": "event_ms53xl6n_17_k56at49f",
-      "cmp_type": "Event",
-      "name": "SellerRefunded",
-      "x": 700,
-      "y": 220,
-      "description": "",
-      "parameters": []
-    }
-  ],
   "_constructor": {
-    "id": "constructor_ms53xl6n_18_rg4bumnz",
-    "cmp_type": "Constructor",
     "x": 25,
     "y": 59,
-    "description": "",
     "params": [],
-    "mutability": "write",
-    "acceptsValue": true,
-    "guards": [],
+    "modifiers": [],
     "body": {
       "type": "Block",
       "statements": [
@@ -508,7 +75,8 @@
               }
             }
           ],
-          "description": ""
+          "description": "",
+          "isSelected": false
         },
         {
           "cmp_type": "AssignmentStatement",
@@ -524,7 +92,8 @@
               }
             }
           ],
-          "description": ""
+          "description": "",
+          "isSelected": false
         },
         {
           "cmp_type": "ConditionStatement",
@@ -534,20 +103,384 @@
             "operator": "!=",
             "right": "msg.value"
           },
-          "body": [
-            {
-              "cmp_type": "RevertStatement",
-              "errorRef": "errordeclaration_ms53xl6n_13_x6wpmzu9",
-              "args": [
-                "msg.value"
-              ],
-              "description": ""
-            }
-          ],
-          "description": ""
+          "body": [],
+          "description": "",
+          "isSelected": false
         }
       ]
-    }
+    },
+    "isSelected": false
   },
+  "functions": [
+    {
+      "name": "abort",
+      "cmp_type": "Function",
+      "x": 245.40625,
+      "y": 238,
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "EmitStatement",
+            "event": "Aborted()",
+            "args": [],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "AssignmentStatement",
+            "expressions": [
+              {
+                "left": {
+                  "type": "",
+                  "name": "state"
+                },
+                "right": {
+                  "type": "",
+                  "value": "State.Inactive"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "CallStatement",
+            "object": "seller",
+            "method": "transfer(address(this).balance)",
+            "params": [
+              {
+                "type": "BinaryOperation",
+                "operator": "*",
+                "left": {
+                  "type": "Literal",
+                  "value": 2
+                },
+                "right": {
+                  "type": "Identifier",
+                  "value": "value"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "confirmReceived",
+      "cmp_type": "Function",
+      "x": 250.40625,
+      "y": 389,
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "EmitStatement",
+            "event": "ItemReceived",
+            "args": [],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "AssignmentStatement",
+            "expressions": [
+              {
+                "left": {
+                  "type": "",
+                  "name": "state"
+                },
+                "right": {
+                  "type": "",
+                  "value": "State.Release"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "CallStatement",
+            "object": "buyer",
+            "method": "transfer(value)",
+            "params": [
+              {
+                "type": "BinaryOperation",
+                "operator": "*",
+                "left": {
+                  "type": "Literal",
+                  "value": 2
+                },
+                "right": {
+                  "type": "Identifier",
+                  "value": "value"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "confirmPurchase",
+      "cmp_type": "Function",
+      "x": 432.40625,
+      "y": 265,
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "EmitStatement",
+            "event": "PurchaseConfirmed",
+            "args": [],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "AssignmentStatement",
+            "expressions": [
+              {
+                "left": {
+                  "type": "",
+                  "name": "buyer"
+                },
+                "right": {
+                  "type": "",
+                  "value": "payable(msg.sender)"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "AssignmentStatement",
+            "expressions": [
+              {
+                "left": {
+                  "type": "",
+                  "name": "state"
+                },
+                "right": {
+                  "type": "",
+                  "value": "State.Locked"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "refundSeller",
+      "cmp_type": "Function",
+      "x": 62.40625,
+      "y": 239,
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "EmitStatement",
+            "event": "SellerRefunded",
+            "args": [],
+            "description": "",
+            "isSelected": true
+          },
+          {
+            "cmp_type": "AssignmentStatement",
+            "expressions": [
+              {
+                "left": {
+                  "type": "",
+                  "name": "state"
+                },
+                "right": {
+                  "type": "",
+                  "value": "State.Inactive"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          },
+          {
+            "cmp_type": "CallStatement",
+            "object": "seller",
+            "method": "transfer(3 * value)",
+            "params": [
+              {
+                "type": "BinaryOperation",
+                "operator": "*",
+                "left": {
+                  "type": "Literal",
+                  "value": 2
+                },
+                "right": {
+                  "type": "Identifier",
+                  "value": "value"
+                }
+              }
+            ],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "description": "",
+      "isSelected": false
+    }
+  ],
+  "enums": [
+    {
+      "name": "State",
+      "x": 206,
+      "y": 56,
+      "cmp_type": "Enum",
+      "values": [
+        {
+          "name": "Created"
+        },
+        {
+          "name": "Locked"
+        },
+        {
+          "name": "Release"
+        },
+        {
+          "name": "Inactive"
+        }
+      ],
+      "description": "",
+      "isSelected": false
+    }
+  ],
+  "modifiers": [
+    {
+      "name": "OnlyBuyer",
+      "x": 525,
+      "y": 189,
+      "cmp_type": "Modifier",
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "ConditionStatement",
+            "condition": {
+              "type": "BinaryExpression",
+              "left": "msg.sender",
+              "operator": "!=",
+              "right": "buyer"
+            },
+            "body": [],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "values": [],
+      "parameters": [],
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "InState",
+      "x": 522,
+      "y": 115,
+      "cmp_type": "Modifier",
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "ConditionStatement",
+            "condition": {
+              "type": "BinaryExpression",
+              "left": "state",
+              "operator": "!=",
+              "right": "state_"
+            },
+            "body": [],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "values": [],
+      "parameters": [],
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "OnlySeller",
+      "x": 524,
+      "y": 39,
+      "cmp_type": "Modifier",
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "cmp_type": "ConditionStatement",
+            "condition": {
+              "type": "BinaryExpression",
+              "left": "msg.sender",
+              "operator": "!=",
+              "right": "seller"
+            },
+            "body": [],
+            "description": "",
+            "isSelected": false
+          }
+        ]
+      },
+      "values": [],
+      "parameters": [],
+      "description": "",
+      "isSelected": false
+    }
+  ],
+  "errorDeclarations": [
+    {
+      "name": "OnlyBuyer",
+      "x": 46,
+      "y": 418,
+      "cmp_type": "ErrorDeclaration",
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "OnlySeller",
+      "x": 45,
+      "y": 517,
+      "cmp_type": "ErrorDeclaration",
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "InvalidState",
+      "x": 45,
+      "y": 467,
+      "cmp_type": "ErrorDeclaration",
+      "description": "",
+      "isSelected": false
+    },
+    {
+      "name": "ValueNotEven",
+      "x": 45,
+      "y": 564,
+      "cmp_type": "ErrorDeclaration",
+      "description": "",
+      "isSelected": false
+    }
+  ],
   "description": ""
 }

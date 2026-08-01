@@ -1,53 +1,50 @@
 <template>
-    <v-group @mouseenter="handleMouseEnter" @mouseleave="canvasTooltip.hideTooltip()">
-        <v-rect :config="rectConfig"></v-rect>
-        <v-text :config="textConfig"></v-text>
+
+    <v-group>
+        <v-rect :config="rectConfig">
+
+        </v-rect>
+        <v-text :config="textConfig">
+
+        </v-text>
     </v-group>
+
 </template>
 <script setup>
-import { computed, inject } from 'vue';
-import { CORNER_RADIUS, STROKE_WIDTH_NORMAL } from '@/constants/nodeStyleTokens';
-
+import { computed, onMounted, ref } from 'vue';
 const props = defineProps({
     config: {
         x: Number,
         y: Number,
-        height: Number,
-        width: Number,
+        height:Number,
+        width:Number,
         content: String,
         fillColor: String,
         borderColor: String,
-        fontSize: Number
+        fontSize:Number
     }
 })
 
-const canvasTooltip = inject('canvasTooltip');
-
-const rectConfig = computed(() => ({
+const rectConfig = ref({
     x: props.config.x,
-    y: props.config.y,
+    y: props.config.y+10,
     height: props.config.height,
     width: props.config.width,
     fill: props.config.fillColor,
     stroke: props.config.borderColor,
-    strokeWidth: STROKE_WIDTH_NORMAL,
-    cornerRadius: CORNER_RADIUS,
-}))
-
-const textConfig = computed(() => ({
-    x: rectConfig.value.x,
-    y: rectConfig.value.y + (rectConfig.value.height - props.config.fontSize) / 2,
-    width: rectConfig.value.width,
-    align: 'center',
+    strokeWidth: 1,
+    cornerRadius: 5,
+})
+const textConfig = computed(()=>({
+    x: rectConfig.value.x + (rectConfig.value.width - props.config.content.length * 8) / 2,
+    y: rectConfig.value.y + (rectConfig.value.height - 15) / 2,
     text: props.config.content,
-    fill: 'black',
-    fontSize: props.config.fontSize,
-    wrap: 'none',
-    ellipsis: true,
+    color: "black",
+    fontSize:props.config.fontSize
 }))
+onMounted(()=>{
+    console.log(props.config.content.length);
+    
+})
 
-function handleMouseEnter(e) {
-  const pos = e.target.getStage().getRelativePointerPosition();
-  canvasTooltip.showTooltip(props.config.content, pos.x, pos.y);
-}
 </script>

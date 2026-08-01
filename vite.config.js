@@ -12,9 +12,5 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
-  },
-  test: {
-    environment: 'node',
-    include: ['src/**/*.test.js', 'server/**/*.test.js', 'verification-service/**/*.test.js'],
-  },
+  }
 })

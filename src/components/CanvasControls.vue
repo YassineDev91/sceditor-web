@@ -1,22 +1,7 @@
 <template>
-    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-[5] pointer-events-auto">
-        <div v-if="collapsed"
-            class="flex items-center bg-white dark:bg-gray-800 rounded-lg shadow-2xl border-2 border-blue-500 dark:border-blue-700 p-1">
-            <button @click="collapsed = false" title="Expand toolbar"
-                class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                <ChevronDownIcon class="w-5 h-5 text-gray-700 dark:text-gray-300" />
-            </button>
-        </div>
-        <div v-else
+    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-[9999] pointer-events-auto">
+        <div
             class="flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border-2 border-blue-500 dark:border-blue-700 p-2">
-
-            <!-- Collapse -->
-            <button @click="collapsed = true" title="Collapse toolbar"
-                class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                <ChevronUpIcon class="w-5 h-5 text-gray-700 dark:text-gray-300" />
-            </button>
-
-            <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
 
             <!-- Undo -->
             <button @click="$emit('undo')" :disabled="!canUndo"
@@ -107,7 +92,6 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import {
     PlusIcon,
     MinusIcon,
@@ -117,12 +101,8 @@ import {
     MagnifyingGlassIcon,
     HandRaisedIcon,
     ArrowUturnLeftIcon,
-    ArrowUturnRightIcon,
-    ChevronUpIcon,
-    ChevronDownIcon
+    ArrowUturnRightIcon
 } from '@heroicons/vue/24/outline'
-
-const collapsed = ref(false)
 
 defineProps({
     zoom: {

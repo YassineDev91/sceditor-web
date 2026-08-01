@@ -39,16 +39,7 @@ const imageRef = ref({});
 const textRef = ref({});
 const textRectRef = ref({});
 const maxWidth = ref(0);
-const STEP_ICONS = {
-    Action: 'assignment_icon.png',
-    Call: 'call_icon.png',
-    Emit: 'emit_icon.png',
-    Decision: 'git.png',
-    Return: 'call_icon.png',
-    Revert: 'error.png',
-}
-const iconFile = STEP_ICONS[props.statement.cmp_type] || (props.statement.cmp_type.toLowerCase() + 'Icon.png')
-const [image] = useImage("src/assets/icons/" + iconFile)
+const [image] = useImage("src/assets/icons/" + props.statement.cmp_type.toLowerCase() + 'Icon.png')
 const iconConfig = ref({
     x: props.x + 12,
     y: props.y + 12,

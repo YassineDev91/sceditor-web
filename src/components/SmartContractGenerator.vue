@@ -23,6 +23,7 @@
             <option value="ink">ink! for Polkadot</option>
             <option value="solana">Rust for Solana</option>
             <option value="solidity">Solidity for Ethereum</option>
+            <option value="vyper">Vyper for Ethereum</option>
         </select>
 
         <div class="flex flex-row space-x-2">
@@ -37,25 +38,8 @@
         </p>
     </div>
     <Drawer v-model:open="showDrawer">
-        <div class="bg-slate-800 border-solid border-white outline-1 w-full h-full rounded-md flex flex-col">
-            <div v-if="verified !== null" class="px-3 pt-3">
-                <span v-if="verified === 'ok'" class="inline-flex items-center gap-1 text-green-400 text-xs font-medium">
-                    ✓ Verified — compiles successfully
-                </span>
-                <span v-else-if="verified === 'failed'" class="inline-flex items-center gap-1 text-red-400 text-xs font-medium">
-                    ✗ Not verified — compilation failed after {{ attempts.length }} attempt(s)
-                </span>
-                <span v-else class="inline-flex items-center gap-1 text-yellow-400 text-xs font-medium">
-                    ⚠ Could not verify — see error below
-                </span>
-            </div>
-            <div v-if="attempts.length > 1" class="px-3 pt-2 text-xs text-gray-400 space-y-1">
-                <div v-for="a in attempts" :key="a.attempt">
-                    Attempt {{ a.attempt }}: {{ a.success ? '✓ compiled' : '✗ failed' }}
-                    <span v-if="!a.success" class="text-gray-500">— {{ a.errors?.slice(0, 120) }}</span>
-                </div>
-            </div>
-            <div class="text-white text-sm p-3 overflow-auto flex-1">
+        <div class=" bg-slate-800 border-solid border-white outline-1 w-full h-full rounded-md ">
+            <div class="text-white text-sm p-3">
                 <code v-html="highlightedCode"></code>
             </div>
         </div>
@@ -65,26 +49,17 @@
 <script setup>
 import { useContractStorage } from "@/stores/contract";
 import { useSettingsStore } from "@/stores/settings";
-import { useUIStore } from "@/stores/uiStore";
 import { InboxIcon } from "@heroicons/vue/24/outline";
 import { computed, ref, watch } from "vue";
 import Drawer from "./Drawer.vue";
 import hljs from "highlight.js";
 import 'highlight.js/styles/github-dark-dimmed.css';
-import { runVerificationLoop } from '@/codegen/verificationLoop'
 
 const generatedCode = ref("empty");
-const attempts = ref([]);
-const verified = ref(null);
 var showDrawer = ref(false)
 const fileStore = useContractStorage()
 const settingsStore = useSettingsStore()
-const ui = useUIStore()
 const sc_language = ref("");
-
-// Keep the shared UI store in sync so the canvas toolbar can hide itself
-// while this drawer is open (it otherwise renders on top of the drawer).
-watch(showDrawer, (open) => ui.setCodeDrawerOpen(open));
 
 // Provider and model selection from settings store
 const selectedProvider = computed(() => settingsStore.llm.provider);
@@ -151,60 +126,104 @@ ${JSON.stringify(fileStore.contract, null, 2)}
 Now generate the ${sc_language.value} code. Output only the smart contract code. Do not include explanations.`
 });
 
-// Proxy API call handler
-async function callProxy(provider, model, prompt) {
-    const { url, secret } = settingsStore.llm.proxy;
-    const response = await fetch(`${url}/api/generate`, {
+// Provider-specific API call handlers
+async function callOllama(prompt) {
+    const ollamaUrl = settingsStore.llm.ollama.url;
+    const response = await fetch(`${ollamaUrl}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model: selectedModel.value,
+            prompt: prompt,
+            stream: false
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ollama request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.response;
+}
+
+async function callGemini(prompt) {
+    const apiKey = settingsStore.llm.gemini.apiKey;
+    if (!apiKey) {
+        throw new Error("Gemini API key not configured. Please configure it in Settings.");
+    }
+
+    const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel.value}:generateContent?key=${apiKey}`,
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }]
+            })
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Gemini request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.candidates[0]?.content?.parts?.[0]?.text;
+}
+
+async function callOpenAI(prompt) {
+    const apiKey = settingsStore.llm.openai.apiKey;
+    if (!apiKey) {
+        throw new Error("OpenAI API key not configured. Please configure it in Settings.");
+    }
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-Proxy-Secret': secret,
+            'Authorization': `Bearer ${apiKey}`
         },
-        body: JSON.stringify({ provider, model, prompt }),
+        body: JSON.stringify({
+            model: selectedModel.value,
+            messages: [{ role: 'user', content: prompt }]
+        })
     });
 
-    const data = await response.json().catch(() => ({}));
-
     if (!response.ok) {
-        throw new Error(data.error || `Proxy request failed: ${response.status} ${response.statusText}`);
+        throw new Error(`OpenAI request failed: ${response.status} ${response.statusText}`);
     }
 
-    return data.code;
+    const data = await response.json();
+    return data.choices[0]?.message?.content;
 }
 
-// Verify service API call handler
-async function verifyCode(language, code) {
-    const { url, secret } = settingsStore.llm.verify;
-    const response = await fetch(`${url}/api/verify`, {
+async function callAnthropic(prompt) {
+    const apiKey = settingsStore.llm.anthropic.apiKey;
+    if (!apiKey) {
+        throw new Error("Anthropic API key not configured. Please configure it in Settings.");
+    }
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-Verify-Secret': secret,
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
         },
-        body: JSON.stringify({ language, code }),
+        body: JSON.stringify({
+            model: selectedModel.value,
+            max_tokens: 4096,
+            messages: [{ role: 'user', content: prompt }]
+        })
     });
 
-    const data = await response.json().catch(() => ({}));
-
     if (!response.ok) {
-        throw new Error(data.error || `Verification request failed: ${response.status} ${response.statusText}`);
+        throw new Error(`Anthropic request failed: ${response.status} ${response.statusText}`);
     }
 
-    return data;
-}
-
-function buildFixPrompt(previousCode, errors) {
-    return `The following ${sc_language.value} smart contract failed to compile.
-
-<CODE>
-${previousCode}
-</CODE>
-
-<COMPILER_ERRORS>
-${errors}
-</COMPILER_ERRORS>
-
-Fix the code so it compiles successfully, while still implementing the same contract specification as before. Output only the corrected ${sc_language.value} smart contract code. Do not include explanations.`;
+    const data = await response.json();
+    return data.content[0]?.text;
 }
 
 async function generate() {
@@ -225,35 +244,37 @@ async function generate() {
 
     showDrawer.value = true;
     generatedCode.value = "Generating code... Please wait.";
-    attempts.value = [];
-    verified.value = null;
 
     console.log(`Generating code using ${selectedProvider.value} (${selectedModel.value})`);
 
-    const result = await runVerificationLoop({
-        language: sc_language.value,
-        buildPrompt: () => prompt.value,
-        buildFixPrompt,
-        generate: (p) => callProxy(selectedProvider.value, selectedModel.value, p).then(extractCode),
-        verify: verifyCode,
-    });
+    try {
+        let rawCode = "";
 
-    attempts.value = result.attempts;
+        // Call the appropriate provider API
+        switch (selectedProvider.value) {
+            case "ollama":
+                rawCode = await callOllama(prompt.value);
+                break;
+            case "gemini":
+                rawCode = await callGemini(prompt.value);
+                break;
+            case "openai":
+                rawCode = await callOpenAI(prompt.value);
+                break;
+            case "anthropic":
+                rawCode = await callAnthropic(prompt.value);
+                break;
+            default:
+                throw new Error(`Unknown provider: ${selectedProvider.value}`);
+        }
 
-    if (result.success) {
-        verified.value = 'ok';
-        generatedCode.value = result.code;
-        console.log("✅ Code generated and verified successfully");
-    } else if (result.attempts.length > 0 && result.attempts.every(a => !a.success) && result.code) {
-        // genuinely exhausted all compile attempts — every recorded attempt actually ran and failed to compile
-        verified.value = 'failed';
-        generatedCode.value = result.code;
-        console.warn("⚠️ Code generated but did not pass verification after all attempts:", result.finalError);
-    } else {
-        // infra error: proxy/verify-service unreachable, or generate/verify threw before completing an attempt
-        verified.value = 'error';
-        generatedCode.value = result.code || `Error generating code: ${result.finalError}\n\nPlease check:\n- Your provider/model configuration in Settings\n- The proxy server and verify server are both running and reachable\n- The Proxy/Verify URLs and Shared Secrets in Settings are correct\n- Ollama is running locally (if the proxy is configured to reach it)`;
-        console.error("❌ Error generating code:", result.finalError);
+        // Extract code from markdown blocks if present
+        generatedCode.value = extractCode(rawCode);
+        console.log("✅ Code generated successfully");
+
+    } catch (error) {
+        console.error("❌ Error generating code:", error);
+        generatedCode.value = `Error generating code: ${error.message}\n\nPlease check:\n- Your provider configuration in Settings\n- Your API key is valid (for cloud providers)\n- Ollama is running (for local provider)\n- The API endpoint is accessible`;
     }
 }
 
@@ -262,10 +283,10 @@ const highlightedCode = computed(() => {
 
     return highlighted
 });
-// Function to extract Solidity or Rust code from response
+// Function to extract Solidity, Rust, or Vyper code from response
 function extractCode(response) {
     // Try to extract code from markdown code blocks
-    const match = response.match(/```(?:solidity|rust|sol|rs)?\n?([\s\S]+?)\n?```/);
+    const match = response.match(/```(?:solidity|rust|vyper|sol|rs)?\n?([\s\S]+?)\n?```/);
     if (match) {
         return match[1].trim();
     }

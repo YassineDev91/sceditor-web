@@ -19,11 +19,5 @@ export const useUIStore = defineStore('ui', () => {
         isSaving.value = saving;
     };
 
-    // Code-generation drawer state (used to hide the canvas toolbar while the drawer is open)
-    const codeDrawerOpen = ref(false);
-    const setCodeDrawerOpen = (open) => {
-        codeDrawerOpen.value = open;
-    };
-
-    return { stageScale, setScale, lastSavedTime, isSaving, setLastSavedTime, setSaving, codeDrawerOpen, setCodeDrawerOpen };
+    return { stageScale, setScale, lastSavedTime, isSaving, setLastSavedTime, setSaving };
 });

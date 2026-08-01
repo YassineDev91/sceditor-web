@@ -9,8 +9,6 @@ lerna-debug.log*
 
 node_modules
 .DS_Store
-Thumbs.db
-desktop.ini
 dist
 dist-ssr
 coverage
@@ -23,7 +21,6 @@ coverage
 .vscode/*
 !.vscode/extensions.json
 .idea
-*.code-workspace
 *.suo
 *.ntvs*
 *.njsproj
@@ -32,11 +29,7 @@ coverage
 
 *.tsbuildinfo
 .env
-.env.local
-.env.*.local
 .claude/
-.superpowers/
-docs/
 
 # Archive/backup files
 *.zip
@@ -46,7 +39,3 @@ notes.txt
 notes*.txt
 tmpclaude-*
 ToDo.md
-
-# Claude Code conversation exports (/export) - may contain local paths or
-# session content that shouldn't be published
-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-*.txt

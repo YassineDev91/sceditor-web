@@ -40,46 +40,6 @@
 
     </div>
 
-    <Menu as="div" class="relative">
-      <MenuButton
-        class="rounded-md border border-gray-600 inline-flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:relative dark:text-gray-200 dark:hover:bg-gray-800">
-        <CircleStackIcon class="w-4 h-4" />
-        Projects
-        <ChevronDownIcon class="w-4 h-4" />
-      </MenuButton>
-      <Transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95"
-        enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75"
-        leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
-        <MenuItems
-          class="absolute left-0 z-20 mt-2 w-72 origin-top-left rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 focus:outline-none max-h-96 overflow-y-auto">
-          <div v-if="projectsStore.projects.length === 0" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-            No saved projects yet.
-          </div>
-          <MenuItem v-for="proj in projectsStore.projects" :key="proj.id" v-slot="{ active }">
-            <div :class="[active ? 'bg-gray-100 dark:bg-gray-700' : '', proj.id === projectsStore.activeProjectId ? 'font-semibold' : '']"
-              class="flex items-center justify-between gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer"
-              @click="openProject(proj.id)">
-              <span class="truncate flex-1">
-                {{ proj.name }}
-                <span v-if="proj.id === projectsStore.activeProjectId" class="ml-1 text-xs text-blue-500">(current)</span>
-              </span>
-              <div class="flex items-center gap-1 shrink-0">
-                <button @click.stop="renameProjectPrompt(proj)" title="Rename" class="p-1 hover:text-blue-500">
-                  <PencilIcon class="w-4 h-4" />
-                </button>
-                <button @click.stop="projectsStore.duplicateProject(proj.id)" title="Duplicate" class="p-1 hover:text-blue-500">
-                  <DocumentDuplicateIcon class="w-4 h-4" />
-                </button>
-                <button @click.stop="projectsStore.deleteProject(proj.id)" title="Delete" class="p-1 hover:text-red-500">
-                  <TrashIcon class="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </MenuItem>
-        </MenuItems>
-      </Transition>
-    </Menu>
-
     <!-- Autosave indicator -->
     <div class="ml-auto mr-4 text-xs text-gray-500 dark:text-gray-400">
       <span v-if="uiStore.isSaving" class="flex items-center gap-1">
@@ -108,10 +68,10 @@
       <UserCircleIcon class="w-10 h-10"></UserCircleIcon>
     </div>
   </div>
-  <Modal v-model:open="showModal" title="New Smart Contract Diagram" :contractName="newContractName">
+  <Modal v-model:open="showModal" title="New Smart Contract Diagram">
     <div class="flex flex-col gap-2">
       <label for="contractName">Title</label>
-      <input type="text" name="contractName" id="contractName" v-model="newContractName"
+      <input type="text" name="contractName" id="contractName" :value="fileStore.contract.name"
         class="p-1 outline-none border border-1 rounded focus:border-blue-600">
     </div>
   </Modal>
@@ -126,17 +86,14 @@ import Modal from './Modal.vue';
 import SettingsModal from './SettingsModal.vue';
 import { useContractStorage } from '@/stores/contract';
 import { useUIStore } from '@/stores/uiStore';
-import { useProjectsStore } from '@/stores/projects';
 import { CircleStackIcon, UserCircleIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
-import { ChevronDownIcon, CodeBracketIcon, PhotoIcon, TrashIcon, PencilIcon, DocumentDuplicateIcon } from '@heroicons/vue/20/solid'
+import { ChevronDownIcon, CodeBracketIcon, PhotoIcon, TrashIcon } from '@heroicons/vue/20/solid'
 import IconDocumentation from './icons/IconDocumentation.vue';
 
 var fileStore = useContractStorage()
 const uiStore = useUIStore()
-const projectsStore = useProjectsStore()
 const showModal = ref(false)
-const newContractName = ref('')
 const showSettingsModal = ref(false)
 const isExportButtonPressed = ref(false)
 
@@ -164,18 +121,6 @@ const props = defineProps({
   workspace: Object
 
 })
-const openProject = async (id) => {
-  if (id === projectsStore.activeProjectId) return
-  await projectsStore.openProject(id)
-}
-
-const renameProjectPrompt = (proj) => {
-  const name = prompt('Rename project', proj.name)
-  if (name && name.trim()) {
-    projectsStore.renameProject(proj.id, name.trim())
-  }
-}
-
 // Function to call the function inside Workspace
 const callWorkspaceHandleExportFunction = () => {
   console.log("exporting");
@@ -207,14 +152,11 @@ const importContractFromJson = () => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = async (e) => {
+      reader.onload = (e) => {
         try {
           const data = JSON.parse(e.target.result);
-          if (data.schemaVersion !== 2) {
-            alert("This file uses an older format — some fields may be missing or display incorrectly.");
-          }
-          data.name = data.name || 'Imported Contract';
-          await projectsStore.createProjectFromContract(data);
+          fileStore.contract = data;
+          fileStore.contract.name = data.name || 'Imported Contract';
           console.log('Contract imported successfully:', fileStore.contract);
         } catch (error) {
           console.error('Error parsing JSON:', error);

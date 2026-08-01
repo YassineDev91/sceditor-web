@@ -69,7 +69,7 @@
             </DisclosureButton>
             <DisclosurePanel class="px-4 pb-2 pt-4 text-xl text-gray-500">
               The metamodel is designed to be platform-agnostic. Actual support for specific blockchain platforms (e.g.,
-              Solidity, Rust) depends on the capabilities of the integrated LLM used for code generation.
+              Solidity, Vyper, Rust) depends on the capabilities of the integrated LLM used for code generation.
             </DisclosurePanel>
           </Disclosure>
           <Disclosure as="div" class="mt-2" v-slot="{ open }">

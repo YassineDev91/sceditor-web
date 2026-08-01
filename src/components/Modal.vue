@@ -53,9 +53,9 @@
 import { ref, defineProps, defineEmits, watch, nextTick } from 'vue'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import { NewspaperIcon } from '@heroicons/vue/24/outline'
-import { useProjectsStore } from '@/stores/projects'
+import { useContractStorage } from '@/stores/contract'
 
-const projectsStore = useProjectsStore()
+const fileStore = useContractStorage()
 
 const props = defineProps({
     open: {
@@ -66,11 +66,8 @@ const props = defineProps({
         type: String,
         default: "NewSmartContract"
     },
-    stageRef: Object, // ref from Workspace.vue
-    contractName: {
-        type: String,
-        default: ""
-    }
+    stageRef: Object // ref from Workspace.vue
+
 })
 
 const emit = defineEmits(['update:open', 'contract-created'])
@@ -88,11 +85,17 @@ const closeModal = () => {
     emit('update:open', false)
 }
 const newContract = () => {
-    createNewContract(props.contractName)
+    const isContractEmpty = fileStore.contract.name == null ? true : false
+    if (isContractEmpty) {
+        createNewContract(contractName.value)
+    } else {
+        if (confirm("A new contract will replace the current one, are you sure ?", "yes or no"))
+            createNewContract(contractName.value)
+    }
     localOpen.value = false
     emit('contract-created');
     emit('update:open', false)
-    console.log("done", props.contractName);
+    console.log("done", contractName.value);
     nextTick(() => {
         props.stageRef?.getNode()?.draw();
         const stage = props.stageRef?.getNode();
@@ -101,6 +104,28 @@ const newContract = () => {
 
 }
 const createNewContract = (name) => {
-    projectsStore.createProject(name)
+    fileStore.contract =
+    {
+        "name": name,
+        "x": 10,
+        "y": 10,
+        "variables": [],
+        "structs": [],
+        "_constructor": {
+            "x": 50,
+            "y": 120,
+            "params": [],
+            "modifiers": [],
+            "body": {
+                "type": "Block",
+                "statements": []
+            }
+        },
+        "functions": [],
+        "enums": [],
+        "modifiers": [],
+        "errorDeclarations": [],
+        "description": "",
+    }
 }
 </script>

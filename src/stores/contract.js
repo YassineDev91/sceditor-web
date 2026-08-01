@@ -1,18 +1,5 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { createContract } from "@/schema/contract";
-import {
-  createVariable,
-  createStruct,
-  createFunction,
-  createConstructor,
-  createEnum,
-  createGuard,
-  createErrorDeclaration,
-  createEvent,
-} from "@/schema/elements";
-import { primitiveType } from "@/schema/types";
-import { createStep, createFlowEdge, maxOutgoingEdges, normalizeBody } from "@/schema/steps";
 
 export const useContractStorage = defineStore("contract", {
   state: () => {
@@ -32,40 +19,6 @@ export const useContractStorage = defineStore("contract", {
   actions: {
     logSomthing() {
       console.log("im calling from the store !");
-    },
-    initNewContract(name) {
-      this.contract = createContract(name);
-      this.contract._constructor = createConstructor({ x: 50, y: 120 });
-      this.clearHistory();
-      this.saveHistory();
-    },
-    createVariableElement({ x, y }) {
-      this.contract.variables.push(createVariable("new_variable", primitiveType("string"), { x, y }));
-      this.saveHistory();
-    },
-    createStructElement({ x, y }) {
-      this.contract.structs.push(createStruct("new_struct", { x, y }));
-      this.saveHistory();
-    },
-    createFunctionElement({ x, y }) {
-      this.contract.functions.push(createFunction("new_function", { x, y }));
-      this.saveHistory();
-    },
-    createEnumElement({ x, y }) {
-      this.contract.enums.push(createEnum("new_enum", { x, y }));
-      this.saveHistory();
-    },
-    createGuardElement({ x, y }) {
-      this.contract.guards.push(createGuard("new_guard", { x, y }));
-      this.saveHistory();
-    },
-    createErrorDeclarationElement({ x, y }) {
-      this.contract.errorDeclarations.push(createErrorDeclaration("new_error", { x, y }));
-      this.saveHistory();
-    },
-    createEventElement({ x, y }) {
-      this.contract.events.push(createEvent("new_event", { x, y }));
-      this.saveHistory();
     },
     showProperties(element, multiSelect = false) {
 
@@ -127,16 +80,17 @@ export const useContractStorage = defineStore("contract", {
       }
     },
     selectAll() {
+      // Select all elements on the current stage
       const allElements = [
         ...this.contract.variables || [],
         ...this.contract.structs || [],
         ...this.contract.functions || [],
         ...this.contract.enums || [],
-        ...this.contract.guards || [],
+        ...this.contract.modifiers || [],
         ...this.contract.errorDeclarations || [],
-        ...this.contract.events || [],
       ];
 
+      // Add constructor if it exists
       if (this.contract._constructor) {
         allElements.push(this.contract._constructor);
       }
@@ -145,9 +99,10 @@ export const useContractStorage = defineStore("contract", {
         el.isSelected = true;
       });
 
+      // Set entire array at once with NEW reference
       this.selectedElements = allElements;
 
-      console.log(`✅ Selected all ${this.selectedElements.length} element(s)`);
+      console.log(`✅ Selected all ${this.selectedElements.length} elements`);
     },
     showFunctionalDiagram(element) {
 
@@ -163,14 +118,8 @@ export const useContractStorage = defineStore("contract", {
         ...this.contract.variables,
         ...this.contract.structs,
         ...this.contract.functions,
-        ...this.contract.enums,
-        ...this.contract.guards,
-        ...this.contract.errorDeclarations,
-        ...this.contract.events,
+        this.contract.constructor
       ];
-      if (this.contract._constructor) {
-        all.push(this.contract._constructor);
-      }
 
       const target = all.find(el => el?.id === id);
       if (target) {
@@ -218,22 +167,11 @@ export const useContractStorage = defineStore("contract", {
           case "Enum":
             this.contract.enums = this.contract.enums.filter(e => e !== element);
             break;
-          case "Guard":
-            this.contract.guards = this.contract.guards.filter(g => g !== element);
+          case "Modifier":
+            this.contract.modifiers = this.contract.modifiers.filter(m => m !== element);
             break;
           case "ErrorDeclaration":
             this.contract.errorDeclarations = this.contract.errorDeclarations.filter(err => err !== element);
-            break;
-          case "Event":
-            this.contract.events = this.contract.events.filter(ev => ev !== element);
-            break;
-          case "Action":
-          case "Call":
-          case "Emit":
-          case "Decision":
-          case "Return":
-          case "Revert":
-            this.deleteBodyStep(this.selectedFunction, element.id);
             break;
           default:
             console.warn("⚠️ Unknown element type:", type);
@@ -242,74 +180,6 @@ export const useContractStorage = defineStore("contract", {
 
       console.log(`✅ Deleted ${count} element(s)`);
       this.clearSelection();
-      this.saveHistory();
-    },
-
-    // Step-graph actions (Function/Guard/Constructor bodies)
-    createBodyStep(bodyOwner, kind, name, { x, y } = {}) {
-      const body = normalizeBody(bodyOwner.body);
-      const step = createStep(kind, name, { x: x ?? 0, y: y ?? 0 });
-      body.steps.push(step);
-      if (!body.startStepId) {
-        body.startStepId = step.id;
-      }
-      bodyOwner.body = body;
-      this.saveHistory();
-      return step;
-    },
-
-    deleteBodyStep(bodyOwner, stepId) {
-      const body = normalizeBody(bodyOwner.body);
-      body.steps = body.steps.filter(s => s.id !== stepId);
-      body.edges = body.edges.filter(e => e.from !== stepId && e.to !== stepId);
-      if (body.startStepId === stepId) {
-        body.startStepId = body.steps[0]?.id ?? null;
-      }
-      bodyOwner.body = body;
-      this.saveHistory();
-    },
-
-    addBodyFlowEdge(bodyOwner, fromStepId, toStepId, label = '') {
-      const body = normalizeBody(bodyOwner.body);
-      const fromStep = body.steps.find(s => s.id === fromStepId);
-      if (!fromStep) {
-        console.warn("⚠️ addBodyFlowEdge: source step not found:", fromStepId);
-        return null;
-      }
-      const existingOutgoing = body.edges.filter(e => e.from === fromStepId).length;
-      if (existingOutgoing >= maxOutgoingEdges(fromStep.cmp_type)) {
-        console.warn(`⚠️ ${fromStep.cmp_type} steps allow at most ${maxOutgoingEdges(fromStep.cmp_type)} outgoing edge(s)`);
-        return null;
-      }
-      const edge = createFlowEdge(fromStepId, toStepId, { label });
-      body.edges.push(edge);
-      bodyOwner.body = body;
-      this.saveHistory();
-      return edge;
-    },
-
-    deleteBodyFlowEdge(bodyOwner, edgeId) {
-      const body = normalizeBody(bodyOwner.body);
-      body.edges = body.edges.filter(e => e.id !== edgeId);
-      bodyOwner.body = body;
-      this.saveHistory();
-    },
-
-    updateBodyStepPosition(bodyOwner, stepId, x, y) {
-      const body = normalizeBody(bodyOwner.body);
-      const step = body.steps.find(s => s.id === stepId);
-      if (step) {
-        step.x = x;
-        step.y = y;
-      }
-      bodyOwner.body = body;
-      this.saveHistory();
-    },
-
-    setBodyStartStep(bodyOwner, stepId) {
-      const body = normalizeBody(bodyOwner.body);
-      body.startStepId = stepId;
-      bodyOwner.body = body;
       this.saveHistory();
     },
 

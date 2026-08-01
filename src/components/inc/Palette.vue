@@ -23,31 +23,28 @@
 
 <script setup>
 import { useContractStorage } from '@/stores/contract'
-import { nextPalettePosition } from './paletteLayout.js'
-import { nextStepPosition } from '@/schema/steps'
 var fileStore = useContractStorage()
 
 
 const elements = [
     // SCD
-    { label: 'Struct', type: 'struct', icon: 'struct', stage: 'SCD', action: () => { fileStore.createStructElement(nextPalettePosition(fileStore.contract)) } },
-    { label: 'Variable', type: 'variable', icon: 'variable', stage: 'SCD', action: () => { fileStore.createVariableElement(nextPalettePosition(fileStore.contract)) } },
-    { label: 'Function', type: 'function', icon: 'function', stage: 'SCD', action: () => { fileStore.createFunctionElement(nextPalettePosition(fileStore.contract)) } },
-    { label: 'Enum', type: 'enum', icon: 'enum', stage: 'SCD', action: () => { fileStore.createEnumElement(nextPalettePosition(fileStore.contract)) }},
-    { label: 'Guard', type: 'guard', icon: 'modifier', stage: 'SCD', action: () => { fileStore.createGuardElement(nextPalettePosition(fileStore.contract)) }},
-    { label: 'ErrorDeclaration', type: 'error', icon: 'error', stage: 'SCD', action: () => { fileStore.createErrorDeclarationElement(nextPalettePosition(fileStore.contract)) }},
-    { label: 'Event', type: 'event', icon: 'emit', stage: 'SCD', action: () => { fileStore.createEventElement(nextPalettePosition(fileStore.contract)) }},
+    { label: 'Struct', type: 'struct', icon: 'struct', stage: 'SCD', action: () => { createStruct() } },
+    { label: 'Variable', type: 'variable', icon: 'variable', stage: 'SCD', action: () => { createVariable() } },
+    { label: 'Function', type: 'function', icon: 'function', stage: 'SCD', action: () => { createFunction() } },
+    { label: 'Enum', type: 'enum', icon: 'enum', stage: 'SCD', action: () => { createEnum() }},
+    { label: 'Modifier', type: 'modifier', icon: 'modifier', stage: 'SCD', action: () => { createModifier() }},
+    { label: 'ErrorDeclaration', type: 'error', icon: 'error', stage: 'SCD', action: () => { createErrorDeclaration() }},
     { label: 'Literal', type: 'literal', icon: 'three-point', stage: 'SCD', },
     // {  label: 'Return', type: 'return', icon: '' },
     // {  label: 'Parameter', type: 'parameter', icon: '' },
 
     // FD
-    { label: 'Action', icon: 'assignmentStatementIcon', type: 'image', stage: 'FD', action: () => addStep('Action', 'new_action') },
-    { label: 'Call', icon: 'callStatementIcon', type: 'call', stage: 'FD', action: () => addStep('Call', 'new_call') },
-    { label: 'Decision', icon: 'git', type: 'star', stage: 'FD', action: () => addStep('Decision', 'new_decision') },
-    { label: 'Emit', icon: 'emit', type: 'arrow', stage: 'FD', action: () => addStep('Emit', 'new_emit') },
-    { label: 'Return', icon: 'three-point', type: 'star', stage: 'FD', action: () => addStep('Return', 'new_return') },
-    { label: 'Revert', icon: 'error', type: 'star', stage: 'FD', action: () => addStep('Revert', 'new_revert') },
+    { label: 'Assignment', icon: 'assignmentStatementIcon', type: 'image', stage: 'FD', action: () => createStatement('assignment') },
+    { label: 'Call', icon: 'callStatementIcon', type: 'call', stage: 'FD', action: () => createStatement('call') },
+    { label: 'Condition', icon: 'git', type: 'star', stage: 'FD', action: () => createStatement('condition') },
+    { label: 'Emit', icon: 'emit', type: 'arrow', stage: 'FD', action: () => createStatement('emit') },
+    { label: 'Loop', icon: 'loop', type: 'star', stage: 'FD', action: () => createStatement('loop') },
+    { label: 'Literal', icon: 'three-point', type: 'star', stage: 'FD', action: () => createStatement('literal') },
 ]
 const startDrag = (event, item) => {
     event.dataTransfer.setData('application/json', JSON.stringify(item));
@@ -61,14 +58,171 @@ function getPaletteElements() {
     }
     )
 }
+function createStruct() {
+    fileStore.contract.structs.push({
+        name: "new_struct",
+        cmp_type: "Struct",
+        literals: [],
+        x: 100,
+        y: 100,
+        cmp_type: "Struct",
+        details:"sdetails"
+    })
+    console.log("creating struct ...", fileStore.contract.structs);
+}
 
-function addStep(kind, name) {
-    if (!fileStore.selectedFunction?.id) {
-        console.warn("⚠️ No function/guard open — can't add a step");
-        return;
+function createVariable() {
+    fileStore.contract.variables.push({
+        name: "new_variable",
+        x: 100,
+        y: 100,
+        cmp_type: "Variable",
+        type: {
+            base: "",
+            payable: false
+        },
+        description:""
+    })
+}
+
+function createFunction() {
+    fileStore.contract.functions.push({
+        name: "new_function",
+        x: 100,
+        y: 100,
+        cmp_type: "Function",
+        body: {
+            "type": "Block",
+            "statements": []
+        },
+        description:""
+    })
+}
+
+function createEnum() {
+    fileStore.contract.enums.push({
+        name: "new_enum",
+        x: 100,
+        y: 100,
+        cmp_type: "Enum",
+        values: [],
+        description:""
+    })
+}
+
+function createModifier() {
+    fileStore.contract.modifiers.push({
+        name: "new_modifier",
+        x: 100,
+        y: 100,
+        cmp_type: "Modifier",
+        body: {
+            "type": "Block",
+            "statements": []
+        },
+        values: [],
+        parameters: [], 
+        description:""
+    })
+}
+function createErrorDeclaration() {
+    fileStore.contract.errorDeclarations.push({
+        name: "new_error",
+        x: 100,
+        y: 100,
+        cmp_type: "ErrorDeclaration",
+        description:""
+    })
+}
+
+function createStatement(type) {
+    switch (type) {
+        case 'assignment':
+            console.log(`creating ${type} statement ...`);
+            fileStore.selectedFunction.body.statements.push({
+                cmp_type: "AssignmentStatement",
+                expressions: [
+                    {
+                        "left": {
+                            "type": "",
+                            "name": ""
+                        },
+                        "right": {
+                            "type": "",
+                            "value": ""
+                        }
+                    }
+                ],
+                description:""
+            })
+            break;
+        case "call":
+            console.log(`creating ${type} statement ...`);
+            fileStore.selectedFunction.body.statements.push({
+                cmp_type: "CallStatement",
+                object: "",
+                method: "",
+                params: [
+                    {
+                        "type": "BinaryOperation",
+                        "operator": "*",
+                        "left": {
+                            "type": "Literal",
+                            "value": 2
+                        },
+                        "right": {
+                            "type": "Identifier",
+                            "value": "value"
+                        }
+                    }
+                ],
+                description:""
+            })
+            break;
+        case "condition":
+            console.log(`creating ${type} statement ...`);
+            fileStore.selectedFunction.body.statements.push({
+                cmp_type: "ConditionStatement",
+                condition: {
+                    type: "BinaryExpression",
+                    left: "",
+                    operator: "",
+                    right: ""
+                },
+                body: [],
+                description:""
+            })
+            break;
+        case "emit":
+            console.log(`creating ${type} statement ...`);
+            fileStore.selectedFunction.body.statements.push({
+                cmp_type: "EmitStatement",
+                event: "",
+                args: [],
+                description:""
+            })
+            break;
+        case 'loop':
+            console.log(`creating ${type} statement ...`);
+
+            fileStore.selectedFunction.body.statements.push({
+                cmp_type: "LoopStatement",
+                init:{},
+                condition: {
+                    type: "BinaryExpression",
+                    left: "",
+                    operator: "",
+                    right: ""
+                },
+                post:{},
+                body: {},
+                description:""
+            })
+            break;
+
+        default:
+            break;
     }
-    const position = nextStepPosition(fileStore.selectedFunction);
-    fileStore.createBodyStep(fileStore.selectedFunction, kind, name, position);
 }
 </script>
 
